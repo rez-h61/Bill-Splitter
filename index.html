@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bill Splitter - Clean Glass UI</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="dark-mode">
+    <!-- Ambient Animated Glass Glow Orbs -->
+    <div class="glow-orb orb-1"></div>
+    <div class="glow-orb orb-2"></div>
+    <div class="glow-orb orb-3"></div>
+    <div class="glow-orb orb-4"></div>
+
+    <div class="app-wrapper">
+        <!-- Top App Bar -->
+        <header class="app-header glass-panel">
+            <div class="brand">
+                <div class="brand-icon">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/>
+                    </svg>
+                </div>
+                <div>
+                    <h1 id="app-title" data-i18n="title">Bill Splitter</h1>
+                    <p class="brand-sub" id="app-subtitle" data-i18n="subtitle">Smart group expense & grocery calculator</p>
+                </div>
+            </div>
+
+            <div class="header-actions">
+                <button id="btn-reset" class="glass-btn glass-btn-danger-soft" title="Reset all data">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                    <span data-i18n="btn_reset">Reset</span>
+                </button>
+                <button id="btn-lang" class="glass-btn" title="Change Language">
+                    <span id="lang-flag">🇲🇾</span>
+                    <span id="lang-text">Tukar BM</span>
+                </button>
+                <button id="btn-theme" class="glass-btn" title="Toggle Theme">
+                    <span id="theme-icon">☀️</span>
+                    <span id="theme-text" data-i18n="theme_light">Light</span>
+                </button>
+            </div>
+        </header>
+
+        <!-- Main Dashboard Layout -->
+        <main class="dashboard-grid">
+            <!-- Left Column: Inputs & Management -->
+            <section class="grid-col">
+                <!-- Step 1: People Management -->
+                <div class="card glass-panel" id="card-people">
+                    <div class="card-header">
+                        <div class="step-badge">1</div>
+                        <div>
+                            <h2 class="card-title" data-i18n="step1">Shoppers & Friends</h2>
+                            <p class="card-desc" data-i18n="step1_desc">Add everyone splitting this bill</p>
+                        </div>
+                        <span class="count-pill" id="people-count">0</span>
+                    </div>
+
+                    <div class="input-inline">
+                        <div class="input-with-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="field-icon"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                            <input type="text" id="input-person" class="glass-input" placeholder="Enter name (e.g. Ali)" data-i18n-placeholder="person_ph" maxlength="30" autocomplete="off">
+                        </div>
+                        <button id="btn-add-person" class="glass-btn-primary">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+                            <span data-i18n="btn_add_person">Add</span>
+                        </button>
+                    </div>
+
+                    <div class="badges-wrapper">
+                        <div id="people-badges" class="badges-container"></div>
+                        <p class="empty-state" id="empty-people-hint" data-i18n="no_people_yet">No shoppers added yet. Enter names above.</p>
+                    </div>
+                </div>
+
+                <!-- Step 2: Add Item -->
+                <div class="card glass-panel" id="card-item">
+                    <div class="card-header">
+                        <div class="step-badge">2</div>
+                        <div>
+                            <h2 class="card-title" data-i18n="step2">Add Item / Expense</h2>
+                            <p class="card-desc" data-i18n="step2_desc">Specify price and who shares it</p>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="input-with-icon flex-2">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="field-icon"><path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/></svg>
+                            <input type="text" id="item-name" class="glass-input" placeholder="Item name (e.g. Apples, Pizza)" data-i18n-placeholder="item_ph" maxlength="50" autocomplete="off">
+                        </div>
+                        <div class="input-with-icon flex-1">
+                            <span class="currency-tag">RM</span>
+                            <input type="number" id="item-price" class="glass-input with-currency" placeholder="0.00" step="0.01" min="0" data-i18n-placeholder="price_ph">
+                        </div>
+                    </div>
+
+                    <!-- Split assignment section -->
+                    <div class="share-box">
+                        <div class="share-header">
+                            <span class="label-heading" data-i18n="share_label">Who shares this item?</span>
+                            <div class="quick-select">
+                                <button type="button" id="btn-select-all" class="chip-btn" data-i18n="select_all">Select All</button>
+                                <button type="button" id="btn-clear-all" class="chip-btn" data-i18n="clear_all">Clear</button>
+                            </div>
+                        </div>
+
+                        <div id="dynamic-checkboxes" class="checkbox-grid">
+                            <p class="empty-state" id="empty-checkbox" data-i18n="empty_people">Please add shoppers first.</p>
+                        </div>
+                    </div>
+
+                    <button id="btn-add-item" class="glass-btn-primary full-width">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+                        <span data-i18n="btn_add_item">Add to Bill</span>
+                    </button>
+                </div>
+            </section>
+
+            <!-- Right Column: Calculations & Bill Summary -->
+            <section class="grid-col">
+                <!-- Step 3: Receipt Summary -->
+                <div class="card glass-panel" id="card-summary">
+                    <div class="card-header">
+                        <div class="step-badge">3</div>
+                        <div>
+                            <h2 class="card-title" data-i18n="step3">Bill & Breakdown</h2>
+                            <p class="card-desc" data-i18n="step3_desc">Live itemized receipt & splits</p>
+                        </div>
+                        <span class="count-pill" id="items-count">0 items</span>
+                    </div>
+
+                    <!-- Tab Switcher: View by Item vs View by Buyer -->
+                    <div class="view-tabs">
+                        <button type="button" id="tab-btn-items" class="view-tab active">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/></svg>
+                            <span data-i18n="tab_by_items">By Items</span>
+                        </button>
+                        <button type="button" id="tab-btn-buyers" class="view-tab">
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                            <span data-i18n="tab_by_buyers">What Each Buyer Bought</span>
+                        </button>
+                    </div>
+
+                    <!-- Items list container -->
+                    <div id="view-items" class="tab-pane active">
+                        <div class="item-list-wrap">
+                            <ul id="item-list" class="receipt-items"></ul>
+                            <div id="empty-items-state" class="empty-state-box">
+                                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="empty-icon"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 6v12"/></svg>
+                                <p data-i18n="no_items_yet">Receipt is empty. Add items from the left panel.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- What Each Buyer Bought View -->
+                    <div id="view-buyers" class="tab-pane" style="display: none;">
+                        <div class="buyers-list-wrap">
+                            <div id="buyers-breakdown-list" class="buyers-accordion"></div>
+                            <div id="empty-buyers-state" class="empty-state-box">
+                                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="empty-icon"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                                <p data-i18n="empty_buyers_hint">Add shoppers and items to see what each person bought.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tax / Discount Collapsible Accordion -->
+                    <div class="extra-fees-accordion">
+                        <button type="button" id="btn-toggle-extras" class="accordion-toggle">
+                            <span class="accordion-title">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 5c-1.5 0-2.8 1.4-3 2-3.5-1.5-11-.3-11 5 0 1.8 0 3 2 4.5V20h4v-2h3v2h4v-4c1-.5 1.7-1 2-2h2v-4h-2c0-1-.5-1.5-1-2V5z"/></svg>
+                                <span data-i18n="tax_discount_title">Tax, Service & Discount</span>
+                            </span>
+                            <span class="accordion-arrow" id="extras-arrow">▼</span>
+                        </button>
+                        <div id="extras-panel" class="accordion-content">
+                            <div class="extras-grid">
+                                <div class="extra-field">
+                                    <label for="input-tax" data-i18n="label_tax">SST / Tax (%)</label>
+                                    <input type="number" id="input-tax" class="glass-input" placeholder="0" min="0" max="100" step="0.5" value="0">
+                                </div>
+                                <div class="extra-field">
+                                    <label for="input-service" data-i18n="label_service">Service Fee (%)</label>
+                                    <input type="number" id="input-service" class="glass-input" placeholder="0" min="0" max="100" step="0.5" value="0">
+                                </div>
+                                <div class="extra-field">
+                                    <label for="input-discount" data-i18n="label_discount">Discount (RM)</label>
+                                    <input type="number" id="input-discount" class="glass-input" placeholder="0.00" min="0" step="0.5" value="0">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Receipt Totals Card -->
+                    <div class="totals-glass-card">
+                        <div class="total-row sub-row">
+                            <span data-i18n="subtotal">Subtotal:</span>
+                            <span id="sub-total">RM 0.00</span>
+                        </div>
+                        <div class="total-row sub-row" id="row-tax" style="display: none;">
+                            <span id="label-tax-applied">Tax:</span>
+                            <span id="tax-amount">+RM 0.00</span>
+                        </div>
+                        <div class="total-row sub-row" id="row-service" style="display: none;">
+                            <span id="label-service-applied">Service Fee:</span>
+                            <span id="service-amount">+RM 0.00</span>
+                        </div>
+                        <div class="total-row sub-row" id="row-discount" style="display: none;">
+                            <span id="label-discount-applied">Discount:</span>
+                            <span id="discount-amount" class="text-green">-RM 0.00</span>
+                        </div>
+                        <div class="total-row main-total">
+                            <span data-i18n="total_receipt">Grand Total:</span>
+                            <strong id="grand-total" class="highlight-total">RM 0.00</strong>
+                        </div>
+                    </div>
+
+                    <!-- Individual Split List -->
+                    <div class="debts-section">
+                        <h3 class="sub-heading" data-i18n="individual_splits">Who Owes What</h3>
+                        <p class="sub-hint" data-i18n="click_to_view_detail">Click on any person to inspect itemized breakdown</p>
+                        <div id="debt-cards-container" class="debt-cards-grid"></div>
+                    </div>
+                </div>
+
+                <!-- Step 4: Share & Export Dock -->
+                <div class="card glass-panel" id="card-share">
+                    <div class="card-header">
+                        <div class="step-badge">4</div>
+                        <div>
+                            <h2 class="card-title" data-i18n="step4">Share & Export</h2>
+                            <p class="card-desc" data-i18n="step4_desc">Send receipt to friends or copy breakdown</p>
+                        </div>
+                    </div>
+
+                    <div class="share-actions-grid">
+                        <button id="btn-whatsapp" class="glass-btn-social wa-btn">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                                <path d="M12.031 2c-5.508 0-9.986 4.477-9.986 9.984 0 1.76.459 3.481 1.332 5.003L2 22l5.176-1.357c1.469.801 3.125 1.225 4.855 1.225 5.508 0 9.986-4.477 9.986-9.984 0-5.507-4.478-9.984-9.986-9.984zm5.795 14.137c-.244.685-1.42 1.34-1.956 1.398-.519.057-1.196.082-1.93-.153-1.644-.526-3.84-2.28-4.992-3.877-1.258-1.745-1.408-2.617-1.408-3.327 0-.756.326-1.464.733-1.872.244-.244.53-.306.708-.306.177 0 .354.004.51.011.168.008.39-.063.61.465.228.547.781 1.905.85 2.045.068.14.114.306.023.491-.092.186-.138.303-.274.464-.137.162-.29.362-.414.485-.138.138-.282.288-.122.563.161.275.714 1.176 1.534 1.906 1.054.939 1.942 1.23 2.217 1.368.275.137.436.115.597-.07.161-.184.688-.801.871-1.077.184-.275.367-.23.611-.137.244.092 1.554.733 1.821.868.267.136.446.204.513.318.069.115.069.664-.175 1.349z"/>
+                            </svg>
+                            <span data-i18n="btn_wa">WhatsApp</span>
+                        </button>
+
+                        <button id="btn-copy" class="glass-btn-social copy-btn">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/>
+                            </svg>
+                            <span data-i18n="btn_copy">Copy Text</span>
+                        </button>
+
+                        <button id="btn-generate-qr" class="glass-btn-social qr-btn">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect width="5" height="5" x="3" y="3" rx="1"/><rect width="5" height="5" x="16" y="3" rx="1"/><rect width="5" height="5" x="3" y="16" rx="1"/><path d="M21 16h-3a2 2 0 0 0-2 2v3"/><path d="M21 21v.01"/><path d="M12 7v3a2 2 0 0 1-2 2H7"/><path d="M3 12h.01"/><path d="M12 3h.01"/><path d="M12 16v.01"/><path d="M16 12h1"/><path d="M21 12v.01"/><path d="M12 21v-1"/>
+                            </svg>
+                            <span data-i18n="btn_qr">QR Code</span>
+                        </button>
+                    </div>
+
+                    <!-- QR Code Expanded View -->
+                    <div id="qr-container" class="qr-preview-box" style="display: none;">
+                        <div class="qr-box-header">
+                            <p class="qr-subtitle" data-i18n="qr_desc">Scan with camera to read complete receipt:</p>
+                            <button type="button" id="btn-close-qr" class="icon-close-btn">&times;</button>
+                        </div>
+                        <div class="qr-frame">
+                            <img id="qr-image" src="" alt="QR Code" loading="lazy">
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Person Itemized Detail Modal -->
+    <div id="modal-breakdown" class="glass-modal-backdrop" style="display: none;">
+        <div class="glass-modal">
+            <div class="modal-header">
+                <div class="modal-user-info">
+                    <div class="user-avatar" id="modal-avatar">👤</div>
+                    <div>
+                        <h3 id="modal-person-name" class="modal-title">Person Name</h3>
+                        <p class="modal-sub" id="modal-person-sub">Detailed bill breakdown</p>
+                    </div>
+                </div>
+                <button type="button" id="btn-close-modal" class="icon-close-btn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <ul id="modal-items-list" class="modal-receipt-list"></ul>
+                <div class="modal-summary-card">
+                    <div class="modal-total-line">
+                        <span data-i18n="modal_subtotal">Items Share:</span>
+                        <span id="modal-subtotal-val">RM 0.00</span>
+                    </div>
+                    <div class="modal-total-line" id="modal-tax-line" style="display: none;">
+                        <span data-i18n="modal_extra">Tax & Fees Share:</span>
+                        <span id="modal-extra-val">+RM 0.00</span>
+                    </div>
+                    <div class="modal-total-line highlight">
+                        <span data-i18n="modal_final">Total to Pay:</span>
+                        <strong id="modal-final-val">RM 0.00</strong>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" id="btn-dismiss-modal" class="glass-btn full-width" data-i18n="close">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Glass Toast Notifications Container -->
+    <div id="toast-container" class="toast-stack"></div>
+
+    <script src="script.js"></script>
+</body>
+</html>
