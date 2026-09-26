@@ -1,5 +1,5 @@
 /**
- * Bill Splitter - Professional Clean Glass UI Logic & State Engine
+ * Bill Splitter - Professional Clean Glass UI Logic, Settlement & Full-Stack Supabase Engine
  */
 
 // Application State
@@ -51,12 +51,13 @@ const i18n = {
         subtotal: "Subtotal:",
         total_receipt: "Grand Total:",
         individual_splits: "Who Owes What",
-        click_to_view_detail: "Click on any person to inspect itemized breakdown",
+        click_to_view_detail: "Click on any person to inspect itemized breakdown & settlement",
         step4: "Share & Export",
         step4_desc: "Send receipt to friends or copy breakdown",
         btn_wa: "WhatsApp",
         btn_copy: "Copy Text",
         btn_qr: "QR Code",
+        btn_save_cloud: "Save Bill & Debts to Cloud",
         qr_desc: "Scan with camera to read complete receipt:",
         close: "Close",
         modal_subtotal: "Items Share:",
@@ -112,7 +113,65 @@ const i18n = {
         status_overpaid: "ℹ️ Overpaid cashier by:",
         receipt_payments_title: "💳 *Payments & Balances:*",
         receipt_settlement_title: "🔄 *Settlement Transfers:*",
-        receipt_all_settled: "✅ All debts settled! No transfers needed."
+        receipt_all_settled: "✅ All debts settled! No transfers needed.",
+        
+        // Detailed User Profile Modal
+        profile_btn: "View",
+        profile_title: "Member Profile",
+        profile_sub: "Item Breakdown & Settlement Directives",
+        profile_sec_a_title: "Purchase History & Share",
+        profile_sec_b_title: "Settlement / Who to Pay",
+        share_of: "share of",
+        needs_to_pay_who: "Needs to pay",
+        will_pay_you: "Will pay you",
+        no_items_in_profile: "No items shared in this bill.",
+        profile_all_settled: "All settled! No balance due.",
+        upfront_paid: "Paid Upfront:",
+        net_balance: "Net Balance:",
+
+        // Supabase Auth & Cloud Dashboard
+        auth_title: "Welcome to Bill Splitter",
+        auth_subtitle: "Sign in or register to sync your debts & bills to Supabase cloud",
+        auth_tab_login: "Sign In",
+        auth_tab_signup: "Register",
+        auth_name_label: "Your Display Name",
+        auth_email_label: "Email Address",
+        auth_pass_label: "Password",
+        auth_btn_login: "Sign In",
+        auth_btn_signup: "Create Account",
+        auth_logout: "Log Out",
+        auth_logged_out: "Logged out successfully.",
+        auth_login_success: "Welcome back!",
+        auth_signup_success: "Account created! You are now logged in.",
+        auth_or: "or",
+        auth_btn_guest: "Continue as Guest (Offline)",
+        auth_guest_welcome: "Guest mode activated. Calculator available offline!",
+        nav_calculator: "Split New Bill",
+        nav_dashboard: "Cloud Debts & Balances",
+        stat_i_owe: "My Total Outstanding Debt",
+        stat_i_owe_sub: "Pending payments to others",
+        stat_who_owes_me: "Who Owes Me",
+        stat_owed_to_me_sub: "Pending money to collect",
+        stat_net_balance: "Net Cloud Position",
+        stat_net_sub: "Overall balance",
+        dash_owed_to_me_title: "People Who Owe Me",
+        dash_owed_to_me_desc: "Debts where you paid upfront and are awaiting reimbursement",
+        dash_i_owe_title: "Debts I Owe to Others",
+        dash_i_owe_desc: "Outstanding payments you need to settle",
+        dash_bills_history: "Saved Bills History",
+        dash_bills_history_desc: "Bills stored in your Supabase database",
+        no_one_owes_you: "Nobody owes you money at the moment.",
+        you_owe_nothing: "You don't owe anyone any money! 🎉",
+        no_cloud_bills: "No bills saved to cloud yet.",
+        mark_paid: "✓ Mark Paid",
+        mark_pending: "↺ Mark Pending",
+        status_paid: "Paid",
+        status_pending: "Pending",
+        toast_bill_saved_cloud: "Bill and settlements successfully saved to Supabase cloud!",
+        toast_debt_marked_paid: "Debt marked as Paid!",
+        toast_debt_marked_pending: "Debt marked as Pending.",
+        toast_confirm_delete_bill: "Are you sure you want to delete this bill from the database?",
+        toast_bill_deleted: "Bill deleted from database."
     },
     ms: {
         title: "Split Bil",
@@ -144,12 +203,13 @@ const i18n = {
         subtotal: "Jumlah Kasar:",
         total_receipt: "Jumlah Keseluruhan:",
         individual_splits: "Bahagian Perlu Dibayar",
-        click_to_view_detail: "Tekan mana-mana nama untuk lihat pecahan barang",
+        click_to_view_detail: "Tekan mana-mana nama untuk lihat pecahan barang & bayaran balik",
         step4: "Kongsi & Eksport",
         step4_desc: "Hantar resit kepada rakan atau salin teks",
         btn_wa: "WhatsApp",
         btn_copy: "Salin Teks",
         btn_qr: "Kod QR",
+        btn_save_cloud: "Simpan Bil & Hutang ke Cloud",
         qr_desc: "Imbas dengan kamera untuk baca resit penuh:",
         close: "Tutup",
         modal_subtotal: "Bahagian Barang:",
@@ -205,17 +265,139 @@ const i18n = {
         status_overpaid: "ℹ️ Terlebih bayar di kaunter sebanyak:",
         receipt_payments_title: "💳 *Bayaran & Baki:*",
         receipt_settlement_title: "🔄 *Penyelesaian & Pindahan:*",
-        receipt_all_settled: "✅ Semua hutang selesai! Tiada pindahan wang diperlukan."
+        receipt_all_settled: "✅ Semua hutang selesai! Tiada pindahan wang diperlukan.",
+
+        // Detailed User Profile Modal
+        profile_btn: "Lihat",
+        profile_title: "Profil Ahli",
+        profile_sub: "Pecahan Barang & Arahan Pembayaran",
+        profile_sec_a_title: "Rekod Pembelian & Bahagian",
+        profile_sec_b_title: "Penyelesaian / Siapa Perlu Dibayar",
+        share_of: "bahagian daripada",
+        needs_to_pay_who: "Perlu bayar kepada",
+        will_pay_you: "Akan bayar kepada anda",
+        no_items_in_profile: "Tiada barang dikongsi dalam bil ini.",
+        profile_all_settled: "Semua selesai! Tiada baki tertunggak.",
+        upfront_paid: "Dibayar Dahulu:",
+        net_balance: "Baki Bersih:",
+
+        // Supabase Auth & Cloud Dashboard
+        auth_title: "Selamat Datang ke Split Bil",
+        auth_subtitle: "Log masuk atau daftar akaun untuk sync hutang & resit ke database Supabase",
+        auth_tab_login: "Log Masuk",
+        auth_tab_signup: "Daftar Akaun",
+        auth_name_label: "Nama Paparan Anda",
+        auth_email_label: "Alamat Emel",
+        auth_pass_label: "Kata Laluan",
+        auth_btn_login: "Log Masuk",
+        auth_btn_signup: "Cipta Akaun",
+        auth_logout: "Log Keluar",
+        auth_logged_out: "Berjaya log keluar.",
+        auth_login_success: "Selamat kembali!",
+        auth_signup_success: "Akaun berjaya dicipta! Anda kini telah log masuk.",
+        auth_or: "atau",
+        auth_btn_guest: "Teruskan Sebagai Tetamu (Offline)",
+        auth_guest_welcome: "Mod tetamu aktif. Kalkulator sedia digunakan secara offline!",
+        nav_calculator: "Kira Bil Baru",
+        nav_dashboard: "Hutang & Baki Cloud",
+        stat_i_owe: "Jumlah Hutang Perlu Saya Bayar",
+        stat_i_owe_sub: "Bayaran tertunggak kepada rakan",
+        stat_who_owes_me: "Siapa Berhutang Dengan Saya",
+        stat_owed_to_me_sub: "Duit yang perlu dikutip",
+        stat_net_balance: "Kedudukan Bersih Cloud",
+        stat_net_sub: "Baki keseluruhan",
+        dash_owed_to_me_title: "Rakan Yang Berhutang Dengan Saya",
+        dash_owed_to_me_desc: "Hutang di mana anda dahulukan duit dan menunggu bayaran balik",
+        dash_i_owe_title: "Hutang Perlu Saya Bayar Kepada Orang Lain",
+        dash_i_owe_desc: "Bayaran tertunggak yang perlu anda selesaikan",
+        dash_bills_history: "Sejarah Bil Tersimpan",
+        dash_bills_history_desc: "Bil yang disimpan dalam database Supabase",
+        no_one_owes_you: "Tiada sesiapa berhutang dengan anda buat masa ini.",
+        you_owe_nothing: "Anda tidak berhutang dengan sesiapa! 🎉",
+        no_cloud_bills: "Tiada bil disimpan di cloud lagi.",
+        mark_paid: "✓ Tanda Selesai",
+        mark_pending: "↺ Tanda Belum Selesai",
+        status_paid: "Selesai",
+        status_pending: "Belum Selesai",
+        toast_bill_saved_cloud: "Bil dan rekod hutang berjaya disimpan ke cloud Supabase!",
+        toast_debt_marked_paid: "Hutang ditandakan sebagai Selesai!",
+        toast_debt_marked_pending: "Hutang ditandakan sebagai Belum Selesai.",
+        toast_confirm_delete_bill: "Adakah anda pasti mahu memadam bil ini dari database?",
+        toast_bill_deleted: "Bil dipadam dari database."
     }
 };
 
-// DOM Elements
+// -------------------------------------------------------------
+// SUPABASE CLIENT INITIALIZATION
+// -------------------------------------------------------------
+const SUPABASE_URL = 'https://tdmgvqxncfezswudufyp.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InRkbWd2cXhuY2ZlenN3dWR1ZnlwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTA0MzAxNzgsImV4cCI6MjEwNjAwNjE3OH0.9bXEaeIXxL2TkTlbi_mB8LIgtlzFQNI5-SkRtJgDV2I';
+
+let supabaseClient = null;
+if (window.supabase && typeof window.supabase.createClient === 'function') {
+    supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+}
+
+let currentUser = null;
+let isGuestMode = false;
+let authMode = 'login'; // 'login' or 'signup'
+let cloudDebts = [];
+let cloudBills = [];
+let currentAppTab = 'calculator';
+
+// -------------------------------------------------------------
+// DOM ELEMENTS
+// -------------------------------------------------------------
+// Top Header & User Pill
+const appTitle = document.getElementById('app-title');
+const appSubtitle = document.getElementById('app-subtitle');
+const userHeaderProfile = document.getElementById('user-header-profile');
+const headerUserPill = document.getElementById('header-user-pill');
+const headerUserAvatar = document.getElementById('header-user-avatar');
+const headerUserName = document.getElementById('header-user-name');
+const headerUserEmail = document.getElementById('header-user-email');
+const btnLogout = document.getElementById('btn-logout');
+const btnHeaderLogin = document.getElementById('btn-header-login');
+const btnReset = document.getElementById('btn-reset');
+const btnLang = document.getElementById('btn-lang');
+const langFlag = document.getElementById('lang-flag');
+const langText = document.getElementById('lang-text');
+const btnTheme = document.getElementById('btn-theme');
+const themeIcon = document.getElementById('theme-icon');
+const themeText = document.getElementById('theme-text');
+
+// Authentication Screen
+const authScreen = document.getElementById('auth-screen');
+const authTitle = document.getElementById('auth-title');
+const authSubtitle = document.getElementById('auth-subtitle');
+const tabLogin = document.getElementById('tab-login');
+const tabSignup = document.getElementById('tab-signup');
+const authAlert = document.getElementById('auth-alert');
+const authForm = document.getElementById('auth-form');
+const fieldDisplayName = document.getElementById('field-display-name');
+const inputDisplayName = document.getElementById('input-display-name');
+const inputAuthEmail = document.getElementById('input-auth-email');
+const inputAuthPassword = document.getElementById('input-auth-password');
+const btnAuthSubmit = document.getElementById('btn-auth-submit');
+const authBtnText = document.getElementById('auth-btn-text');
+const btnGuestMode = document.getElementById('btn-guest-mode');
+
+// Main Authenticated / Active App Wrapper & Nav
+const mainAppContent = document.getElementById('main-app-content');
+const navBtnCalculator = document.getElementById('nav-btn-calculator');
+const navBtnDashboard = document.getElementById('nav-btn-dashboard');
+const navDebtCount = document.getElementById('nav-debt-count');
+const viewCalculator = document.getElementById('view-calculator');
+const viewDashboard = document.getElementById('view-dashboard');
+
+// Step 1: People
 const inputPerson = document.getElementById('input-person');
 const btnAddPerson = document.getElementById('btn-add-person');
 const peopleBadges = document.getElementById('people-badges');
 const emptyPeopleHint = document.getElementById('empty-people-hint');
 const peopleCountEl = document.getElementById('people-count');
 
+// Step 2: Items
 const inputItemName = document.getElementById('item-name');
 const inputItemPrice = document.getElementById('item-price');
 const btnAddItem = document.getElementById('btn-add-item');
@@ -223,6 +405,7 @@ const dynamicCheckboxes = document.getElementById('dynamic-checkboxes');
 const btnSelectAll = document.getElementById('btn-select-all');
 const btnClearAll = document.getElementById('btn-clear-all');
 
+// Step 3: Breakdown & Receipt
 const itemList = document.getElementById('item-list');
 const emptyItemsState = document.getElementById('empty-items-state');
 const itemsCountEl = document.getElementById('items-count');
@@ -235,13 +418,14 @@ const viewBuyers = document.getElementById('view-buyers');
 const buyersBreakdownList = document.getElementById('buyers-breakdown-list');
 const emptyBuyersState = document.getElementById('empty-buyers-state');
 
-// Cashier payments & Settlement elements
+// Cashier payments & Settlement elements (Step 4)
 const payerInputsContainer = document.getElementById('payer-inputs-container');
 const paidTotalPill = document.getElementById('paid-total-pill');
 const paymentStatusBar = document.getElementById('payment-status-bar');
 const settlementContainer = document.getElementById('settlement-container');
 const settlementCountPill = document.getElementById('settlement-count-pill');
 
+// Extras Accordion
 const btnToggleExtras = document.getElementById('btn-toggle-extras');
 const extrasPanel = document.getElementById('extras-panel');
 const extrasArrow = document.getElementById('extras-arrow');
@@ -249,6 +433,7 @@ const inputTax = document.getElementById('input-tax');
 const inputService = document.getElementById('input-service');
 const inputDiscount = document.getElementById('input-discount');
 
+// Summary Totals
 const subTotalEl = document.getElementById('sub-total');
 const grandTotalEl = document.getElementById('grand-total');
 const rowTax = document.getElementById('row-tax');
@@ -257,24 +442,48 @@ const rowService = document.getElementById('row-service');
 const serviceAmountEl = document.getElementById('service-amount');
 const rowDiscount = document.getElementById('row-discount');
 const discountAmountEl = document.getElementById('discount-amount');
-
 const debtCardsContainer = document.getElementById('debt-cards-container');
 
-const btnLang = document.getElementById('btn-lang');
-const langFlag = document.getElementById('lang-flag');
-const langText = document.getElementById('lang-text');
-const btnTheme = document.getElementById('btn-theme');
-const themeIcon = document.getElementById('theme-icon');
-const themeText = document.getElementById('theme-text');
-const btnReset = document.getElementById('btn-reset');
-
+// Step 5: Export & Cloud Save
 const btnWa = document.getElementById('btn-whatsapp');
 const btnCopy = document.getElementById('btn-copy');
 const btnQr = document.getElementById('btn-generate-qr');
+const btnSaveCloud = document.getElementById('btn-save-cloud');
 const qrContainer = document.getElementById('qr-container');
 const qrImage = document.getElementById('qr-image');
 const btnCloseQr = document.getElementById('btn-close-qr');
 
+// Cloud Dashboard elements
+const statTotalIOwe = document.getElementById('stat-total-i-owe');
+const statTotalOwedToMe = document.getElementById('stat-total-owed-to-me');
+const statNetPosition = document.getElementById('stat-net-position');
+const statNetSub = document.getElementById('stat-net-sub');
+const btnRefreshDebts = document.getElementById('btn-refresh-debts');
+const listWhoOwesMe = document.getElementById('list-who-owes-me');
+const listIOwe = document.getElementById('list-i-owe');
+const listCloudBills = document.getElementById('list-cloud-bills');
+const cloudBillsCount = document.getElementById('cloud-bills-count');
+
+// Detailed User Profile Modal Elements
+const profileModal = document.getElementById('profile-modal');
+const profileAvatar = document.getElementById('profile-avatar');
+const profileName = document.getElementById('profile-name');
+const profileSub = document.getElementById('profile-sub');
+const btnCloseProfileModal = document.getElementById('btn-close-profile-modal');
+const btnDismissProfileModal = document.getElementById('btn-dismiss-profile-modal');
+const profileItemsList = document.getElementById('profile-items-list');
+const profileSubtotalVal = document.getElementById('profile-subtotal-val');
+const profileTaxLine = document.getElementById('profile-tax-line');
+const profileExtraVal = document.getElementById('profile-extra-val');
+const profileFinalVal = document.getElementById('profile-final-val');
+const profilePaidVal = document.getElementById('profile-paid-val');
+const profileBalanceVal = document.getElementById('profile-balance-val');
+const profileSettlementList = document.getElementById('profile-settlement-list');
+const btnProfileWa = document.getElementById('btn-profile-wa');
+const btnProfileCopy = document.getElementById('btn-profile-copy');
+let activeProfilePersonId = null;
+
+// Legacy Breakdown Modal Elements (Fallbacks)
 const modalBreakdown = document.getElementById('modal-breakdown');
 const modalPersonName = document.getElementById('modal-person-name');
 const modalAvatar = document.getElementById('modal-avatar');
@@ -286,9 +495,12 @@ const modalFinalVal = document.getElementById('modal-final-val');
 const btnCloseModal = document.getElementById('btn-close-modal');
 const btnDismissModal = document.getElementById('btn-dismiss-modal');
 
+// Toast Container
 const toastContainer = document.getElementById('toast-container');
 
-// Local Storage Management
+// -------------------------------------------------------------
+// LOCAL STORAGE MANAGEMENT
+// -------------------------------------------------------------
 function saveToStorage() {
     try {
         localStorage.setItem('bill_splitter_state', JSON.stringify(state));
@@ -319,8 +531,11 @@ function loadFromStorage() {
     }
 }
 
-// Glass Toast Notification
+// -------------------------------------------------------------
+// GLASS TOAST NOTIFICATION
+// -------------------------------------------------------------
 function showToast(message, type = 'info') {
+    if (!toastContainer) return;
     const toast = document.createElement('div');
     toast.className = `toast toast-${type}`;
     
@@ -338,7 +553,9 @@ function showToast(message, type = 'info') {
     }, 3200);
 }
 
-// Language System
+// -------------------------------------------------------------
+// LANGUAGE & THEME SYSTEM
+// -------------------------------------------------------------
 function t(key) {
     const lang = state.settings.language || 'en';
     return (i18n[lang] && i18n[lang][key]) ? i18n[lang][key] : (i18n.en[key] || key);
@@ -346,7 +563,7 @@ function t(key) {
 
 function updateLanguageUI() {
     const lang = state.settings.language;
-    const dict = i18n[lang];
+    const dict = i18n[lang] || i18n.en;
 
     document.querySelectorAll('[data-i18n]').forEach(el => {
         const key = el.getAttribute('data-i18n');
@@ -359,68 +576,86 @@ function updateLanguageUI() {
     });
 
     if (lang === 'en') {
-        langFlag.textContent = '🇲🇾';
-        langText.textContent = 'Tukar BM';
+        if (langFlag) langFlag.textContent = '🇲🇾';
+        if (langText) langText.textContent = 'Tukar BM';
     } else {
-        langFlag.textContent = '🇬🇧';
-        langText.textContent = 'Switch EN';
+        if (langFlag) langFlag.textContent = '🇬🇧';
+        if (langText) langText.textContent = 'Switch EN';
     }
 
     applyTheme(state.settings.darkMode);
     renderPeopleUI();
     recalculateAndRender();
-}
-
-btnLang.addEventListener('click', () => {
-    state.settings.language = state.settings.language === 'en' ? 'ms' : 'en';
-    saveToStorage();
-    updateLanguageUI();
-});
-
-// Theme System
-function applyTheme(isDark) {
-    if (isDark) {
-        document.body.classList.add('dark-mode');
-        themeIcon.textContent = '☀️';
-        themeText.textContent = t('theme_light');
-    } else {
-        document.body.classList.remove('dark-mode');
-        themeIcon.textContent = '🌙';
-        themeText.textContent = t('theme_dark');
+    if (currentUser) {
+        renderCloudDashboard();
     }
 }
 
-btnTheme.addEventListener('click', () => {
-    state.settings.darkMode = !state.settings.darkMode;
-    applyTheme(state.settings.darkMode);
-    saveToStorage();
-});
+if (btnLang) {
+    btnLang.addEventListener('click', () => {
+        state.settings.language = state.settings.language === 'en' ? 'ms' : 'en';
+        saveToStorage();
+        updateLanguageUI();
+    });
+}
 
-// Extras (Tax, Service Fee, Discount) Accordion
-btnToggleExtras.addEventListener('click', () => {
-    extrasPanel.classList.toggle('open');
-    extrasArrow.classList.toggle('rotated');
-});
+function applyTheme(isDark) {
+    if (isDark) {
+        document.body.classList.add('dark-mode');
+        if (themeIcon) themeIcon.textContent = '☀️';
+        if (themeText) themeText.textContent = t('theme_light');
+    } else {
+        document.body.classList.remove('dark-mode');
+        if (themeIcon) themeIcon.textContent = '🌙';
+        if (themeText) themeText.textContent = t('theme_dark');
+    }
+}
 
-inputTax.addEventListener('input', () => {
-    state.extras.taxPercent = Math.max(0, parseFloat(inputTax.value) || 0);
-    saveToStorage();
-    recalculateAndRender();
-});
+if (btnTheme) {
+    btnTheme.addEventListener('click', () => {
+        state.settings.darkMode = !state.settings.darkMode;
+        applyTheme(state.settings.darkMode);
+        saveToStorage();
+    });
+}
 
-inputService.addEventListener('input', () => {
-    state.extras.servicePercent = Math.max(0, parseFloat(inputService.value) || 0);
-    saveToStorage();
-    recalculateAndRender();
-});
+// -------------------------------------------------------------
+// EXTRAS (TAX, SERVICE FEE, DISCOUNT) ACCORDION
+// -------------------------------------------------------------
+if (btnToggleExtras) {
+    btnToggleExtras.addEventListener('click', () => {
+        extrasPanel.classList.toggle('open');
+        extrasArrow.classList.toggle('rotated');
+    });
+}
 
-inputDiscount.addEventListener('input', () => {
-    state.extras.discountAmount = Math.max(0, parseFloat(inputDiscount.value) || 0);
-    saveToStorage();
-    recalculateAndRender();
-});
+if (inputTax) {
+    inputTax.addEventListener('input', () => {
+        state.extras.taxPercent = Math.max(0, parseFloat(inputTax.value) || 0);
+        saveToStorage();
+        recalculateAndRender();
+    });
+}
 
-// Shopper Management
+if (inputService) {
+    inputService.addEventListener('input', () => {
+        state.extras.servicePercent = Math.max(0, parseFloat(inputService.value) || 0);
+        saveToStorage();
+        recalculateAndRender();
+    });
+}
+
+if (inputDiscount) {
+    inputDiscount.addEventListener('input', () => {
+        state.extras.discountAmount = Math.max(0, parseFloat(inputDiscount.value) || 0);
+        saveToStorage();
+        recalculateAndRender();
+    });
+}
+
+// -------------------------------------------------------------
+// SHOPPER MANAGEMENT (STEP 1)
+// -------------------------------------------------------------
 function addPerson() {
     const name = inputPerson.value.trim();
     if (!name) {
@@ -450,13 +685,15 @@ function addPerson() {
     showToast(t('toast_person_added'), 'success');
 }
 
-btnAddPerson.addEventListener('click', addPerson);
-inputPerson.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-        e.preventDefault();
-        addPerson();
-    }
-});
+if (btnAddPerson) btnAddPerson.addEventListener('click', addPerson);
+if (inputPerson) {
+    inputPerson.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            addPerson();
+        }
+    });
+}
 
 function deletePerson(id) {
     const isSharing = state.items.some(item => item.sharedBy.includes(id));
@@ -473,13 +710,14 @@ function deletePerson(id) {
 }
 
 function renderPeopleUI() {
+    if (!peopleBadges) return;
     peopleBadges.innerHTML = '';
-    peopleCountEl.textContent = state.people.length;
+    if (peopleCountEl) peopleCountEl.textContent = state.people.length;
 
     if (state.people.length === 0) {
-        emptyPeopleHint.style.display = 'block';
+        if (emptyPeopleHint) emptyPeopleHint.style.display = 'block';
     } else {
-        emptyPeopleHint.style.display = 'none';
+        if (emptyPeopleHint) emptyPeopleHint.style.display = 'none';
         state.people.forEach(p => {
             const badge = document.createElement('div');
             badge.className = 'badge';
@@ -487,17 +725,31 @@ function renderPeopleUI() {
 
             badge.innerHTML = `
                 <span class="badge-avatar">${firstLetter}</span>
-                <span>${p.name}</span>
+                <span class="badge-name">${p.name}</span>
+                <button type="button" class="badge-view-btn" title="${t('profile_btn')} ${p.name}">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                </button>
                 <span class="delete-badge" title="Remove">&times;</span>
             `;
 
+            // Profile view button
+            const viewBtn = badge.querySelector('.badge-view-btn');
+            if (viewBtn) {
+                viewBtn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    openProfileModal(p.id);
+                });
+            }
+
+            // Remove button
             badge.querySelector('.delete-badge').addEventListener('click', (e) => {
                 e.stopPropagation();
                 deletePerson(p.id);
             });
 
+            // Clicking the badge also opens detailed profile
             badge.addEventListener('click', () => {
-                openPersonBreakdown(p.id);
+                openProfileModal(p.id);
             });
 
             peopleBadges.appendChild(badge);
@@ -507,8 +759,11 @@ function renderPeopleUI() {
     renderDynamicCheckboxes();
 }
 
-// Checkboxes for Sharing
+// -------------------------------------------------------------
+// CHECKBOXES FOR SHARING (STEP 2)
+// -------------------------------------------------------------
 function renderDynamicCheckboxes() {
+    if (!dynamicCheckboxes) return;
     dynamicCheckboxes.innerHTML = '';
 
     if (state.people.length === 0) {
@@ -536,21 +791,27 @@ function renderDynamicCheckboxes() {
     });
 }
 
-btnSelectAll.addEventListener('click', () => {
-    document.querySelectorAll('.cb-kongsi').forEach(cb => {
-        cb.checked = true;
-        cb.closest('label').classList.add('checked');
+if (btnSelectAll) {
+    btnSelectAll.addEventListener('click', () => {
+        document.querySelectorAll('.cb-kongsi').forEach(cb => {
+            cb.checked = true;
+            cb.closest('label').classList.add('checked');
+        });
     });
-});
+}
 
-btnClearAll.addEventListener('click', () => {
-    document.querySelectorAll('.cb-kongsi').forEach(cb => {
-        cb.checked = false;
-        cb.closest('label').classList.remove('checked');
+if (btnClearAll) {
+    btnClearAll.addEventListener('click', () => {
+        document.querySelectorAll('.cb-kongsi').forEach(cb => {
+            cb.checked = false;
+            cb.closest('label').classList.remove('checked');
+        });
     });
-});
+}
 
-// Item Management
+// -------------------------------------------------------------
+// ITEM MANAGEMENT (STEP 2)
+// -------------------------------------------------------------
 function addItem() {
     if (state.people.length === 0) {
         showToast(t('toast_need_people'), 'error');
@@ -591,29 +852,33 @@ function addItem() {
         cb.closest('label').classList.remove('checked');
     });
 
-    qrContainer.style.display = 'none';
+    if (qrContainer) qrContainer.style.display = 'none';
     saveToStorage();
     recalculateAndRender();
     showToast(t('toast_item_added'), 'success');
 }
 
-btnAddItem.addEventListener('click', addItem);
-inputItemPrice.addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') {
-        e.preventDefault();
-        addItem();
-    }
-});
+if (btnAddItem) btnAddItem.addEventListener('click', addItem);
+if (inputItemPrice) {
+    inputItemPrice.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            addItem();
+        }
+    });
+}
 
 function deleteItem(id) {
     state.items = state.items.filter(i => i.id !== id);
-    qrContainer.style.display = 'none';
+    if (qrContainer) qrContainer.style.display = 'none';
     saveToStorage();
     recalculateAndRender();
     showToast(t('toast_item_deleted'), 'info');
 }
 
-// Fair Mathematical Splitting Engine
+// -------------------------------------------------------------
+// FAIR MATHEMATICAL SPLITTING ENGINE
+// -------------------------------------------------------------
 function recalculateAndRender() {
     let subtotal = 0;
     state.people.forEach(p => {
@@ -686,16 +951,17 @@ function recalculateAndRender() {
 }
 
 function renderReceiptItems() {
+    if (!itemList) return;
     itemList.innerHTML = '';
     const count = state.items.length;
-    itemsCountEl.textContent = `${count} ${count === 1 ? t('item_count') : t('items_count')}`;
+    if (itemsCountEl) itemsCountEl.textContent = `${count} ${count === 1 ? t('item_count') : t('items_count')}`;
 
     if (count === 0) {
-        emptyItemsState.style.display = 'flex';
+        if (emptyItemsState) emptyItemsState.style.display = 'flex';
         return;
     }
 
-    emptyItemsState.style.display = 'none';
+    if (emptyItemsState) emptyItemsState.style.display = 'none';
 
     state.items.forEach(item => {
         const li = document.createElement('li');
@@ -727,32 +993,39 @@ function renderReceiptItems() {
 }
 
 function updateTotalsDisplay(subtotal, tax, service, discount, grandTotal) {
-    subTotalEl.textContent = `RM ${subtotal.toFixed(2)}`;
-    grandTotalEl.textContent = `RM ${grandTotal.toFixed(2)}`;
+    if (subTotalEl) subTotalEl.textContent = `RM ${subtotal.toFixed(2)}`;
+    if (grandTotalEl) grandTotalEl.textContent = `RM ${grandTotal.toFixed(2)}`;
 
-    if (tax > 0) {
-        rowTax.style.display = 'flex';
-        taxAmountEl.textContent = `+RM ${tax.toFixed(2)}`;
-    } else {
-        rowTax.style.display = 'none';
+    if (rowTax && taxAmountEl) {
+        if (tax > 0) {
+            rowTax.style.display = 'flex';
+            taxAmountEl.textContent = `+RM ${tax.toFixed(2)}`;
+        } else {
+            rowTax.style.display = 'none';
+        }
     }
 
-    if (service > 0) {
-        rowService.style.display = 'flex';
-        serviceAmountEl.textContent = `+RM ${service.toFixed(2)}`;
-    } else {
-        rowService.style.display = 'none';
+    if (rowService && serviceAmountEl) {
+        if (service > 0) {
+            rowService.style.display = 'flex';
+            serviceAmountEl.textContent = `+RM ${service.toFixed(2)}`;
+        } else {
+            rowService.style.display = 'none';
+        }
     }
 
-    if (discount > 0) {
-        rowDiscount.style.display = 'flex';
-        discountAmountEl.textContent = `-RM ${discount.toFixed(2)}`;
-    } else {
-        rowDiscount.style.display = 'none';
+    if (rowDiscount && discountAmountEl) {
+        if (discount > 0) {
+            rowDiscount.style.display = 'flex';
+            discountAmountEl.textContent = `-RM ${discount.toFixed(2)}`;
+        } else {
+            rowDiscount.style.display = 'none';
+        }
     }
 }
 
 function renderDebtCards() {
+    if (!debtCardsContainer) return;
     debtCardsContainer.innerHTML = '';
 
     if (state.people.length === 0) {
@@ -764,7 +1037,6 @@ function renderDebtCards() {
         const card = document.createElement('div');
         card.className = 'debt-card';
 
-        // Count how many items this person shares
         const sharedItemsCount = state.items.filter(item => item.sharedBy.includes(p.id)).length;
         const firstLetter = p.name.charAt(0).toUpperCase();
 
@@ -785,11 +1057,16 @@ function renderDebtCards() {
                     ${paidBadge}
                 </div>
             </div>
-            <div class="debt-amt">RM ${p.debt.toFixed(2)}</div>
+            <div class="debt-right-col" style="display:flex; align-items:center; gap:8px;">
+                <div class="debt-amt">RM ${p.debt.toFixed(2)}</div>
+                <button type="button" class="debt-view-btn mini-btn glass-btn" title="${t('profile_btn')} ${p.name}">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                </button>
+            </div>
         `;
 
         card.addEventListener('click', () => {
-            openPersonBreakdown(p.id);
+            openProfileModal(p.id);
         });
 
         debtCardsContainer.appendChild(card);
@@ -797,10 +1074,8 @@ function renderDebtCards() {
 }
 
 // -------------------------------------------------------------
-// SETTLEMENT & CASHIER PAYMENTS LOGIC
+// SETTLEMENT & CASHIER PAYMENTS LOGIC (STEP 4)
 // -------------------------------------------------------------
-
-// Greedy Settlement Matching Algorithm
 function calculateSettlements(grandTotal) {
     // 1. Calculate balance for each person: balance = amountPaid - debt
     state.people.forEach(p => {
@@ -853,7 +1128,6 @@ function calculateSettlements(grandTotal) {
     return transactions;
 }
 
-// Render inputs for Who Paid The Cashier?
 function renderPayerInputs(grandTotal) {
     if (!payerInputsContainer) return;
     payerInputsContainer.innerHTML = '';
@@ -939,14 +1213,13 @@ function renderPayerInputs(grandTotal) {
     updatePaymentStatusBar(totalPaid, grandTotal);
 }
 
-// Live update of settlement & balance pills without wiping input focus
 function updateBalancesAndSettlementLive(grandTotal) {
     const transactions = calculateSettlements(grandTotal);
     let totalPaid = 0;
 
     state.people.forEach(p => {
         totalPaid += p.amountPaid || 0;
-        const inputEl = payerInputsContainer.querySelector(`[data-person-id="${p.id}"]`);
+        const inputEl = payerInputsContainer ? payerInputsContainer.querySelector(`[data-person-id="${p.id}"]`) : null;
         if (inputEl) {
             const row = inputEl.closest('.payer-row');
             if (row) {
@@ -996,7 +1269,6 @@ function updatePaymentStatusBar(totalPaid, grandTotal) {
     }
 }
 
-// Render Settlement Transfer Cards
 function renderSettlementUI(transactions, grandTotal) {
     if (!settlementContainer) return;
     settlementContainer.innerHTML = '';
@@ -1053,7 +1325,9 @@ function renderSettlementUI(transactions, grandTotal) {
     });
 }
 
-// What Each Buyer Bought Breakdown View
+// -------------------------------------------------------------
+// BUYERS BREAKDOWN VIEW
+// -------------------------------------------------------------
 function renderBuyersBreakdown() {
     if (!buyersBreakdownList) return;
     buyersBreakdownList.innerHTML = '';
@@ -1121,6 +1395,10 @@ function renderBuyersBreakdown() {
                 ${itemsHtml}
                 ${extraShareHtml}
                 <div class="buyer-action-row">
+                    <button type="button" class="buyer-mini-btn btn-view-profile">
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        <span>${t('profile_btn')}</span>
+                    </button>
                     <button type="button" class="buyer-mini-btn btn-copy-single">
                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
                         <span>${t('copy_buyer_bill')}</span>
@@ -1138,6 +1416,15 @@ function renderBuyersBreakdown() {
         header.addEventListener('click', () => {
             card.classList.toggle('open');
         });
+
+        // View profile
+        const viewProfileBtn = card.querySelector('.btn-view-profile');
+        if (viewProfileBtn) {
+            viewProfileBtn.addEventListener('click', (e) => {
+                e.stopPropagation();
+                openProfileModal(person.id);
+            });
+        }
 
         // Copy single buyer bill
         const copyBtn = card.querySelector('.btn-copy-single');
@@ -1161,21 +1448,53 @@ function generateSingleBuyerText(person) {
     const personItems = state.items.filter(i => i.sharedBy.includes(person.id));
     if (personItems.length === 0) return null;
 
-    let text = `👤 *${person.name}'s Bill*\n`;
+    let text = `👤 *${person.name}'s Bill Breakdown*\n`;
     text += `━━━━━━━━━━━━━━━━━━━━━\n`;
+    text += `📦 *${t('profile_sec_a_title')}:*\n`;
     personItems.forEach(item => {
         const share = item.price / item.sharedBy.length;
-        text += `• ${item.name}: RM ${share.toFixed(2)} (1/${item.sharedBy.length})\n`;
+        text += `• ${item.name}: RM ${share.toFixed(2)} (1/${item.sharedBy.length} ${t('shared_by')} RM ${item.price.toFixed(2)})\n`;
     });
     text += `━━━━━━━━━━━━━━━━━━━━━\n`;
-    text += `Subtotal: RM ${person.subtotal.toFixed(2)}\n`;
+    text += `${t('modal_subtotal')} RM ${person.subtotal.toFixed(2)}\n`;
 
     const extraShare = person.debt - person.subtotal;
     if (Math.abs(extraShare) > 0.005) {
         text += `${t('tax_fee_share')} ${extraShare >= 0 ? '+RM ' : '-RM '}${Math.abs(extraShare).toFixed(2)}\n`;
     }
-    text += `💰 *${t('modal_final')} RM ${person.debt.toFixed(2)}*\n\n`;
-    text += `_${t('receipt_footer')}_`;
+    text += `💰 *${t('modal_final')} RM ${person.debt.toFixed(2)}*\n`;
+
+    // Settlement Section B info
+    const paid = person.amountPaid || 0;
+    const bal = person.balance || 0;
+    text += `💳 ${t('upfront_paid')} RM ${paid.toFixed(2)}\n`;
+    if (bal > 0.005) {
+        text += `⚖️ ${t('net_balance')} +RM ${bal.toFixed(2)} (${t('balance_gets_back')})\n`;
+    } else if (bal < -0.005) {
+        text += `⚖️ ${t('net_balance')} -RM ${Math.abs(bal).toFixed(2)} (${t('balance_owes')})\n`;
+    } else {
+        text += `⚖️ ${t('net_balance')} RM 0.00 (${t('balance_settled')})\n`;
+    }
+
+    const grandTotal = state.people.reduce((acc, p) => acc + p.debt, 0);
+    const transactions = calculateSettlements(grandTotal);
+
+    const myDebts = transactions.filter(tr => tr.fromId === person.id);
+    const myReceivables = transactions.filter(tr => tr.toId === person.id);
+
+    if (myDebts.length > 0) {
+        text += `\n🔄 *${t('profile_sec_b_title')}:*\n`;
+        myDebts.forEach(tr => {
+            text += `👉 ${t('needs_to_pay_who')} *${tr.to}*: RM ${tr.amount.toFixed(2)}\n`;
+        });
+    } else if (myReceivables.length > 0) {
+        text += `\n📥 *${t('profile_sec_b_title')}:*\n`;
+        myReceivables.forEach(tr => {
+            text += `✅ *${tr.from}* ${t('will_pay_you')}: RM ${tr.amount.toFixed(2)}\n`;
+        });
+    }
+
+    text += `\n_${t('receipt_footer')}_`;
     return text;
 }
 
@@ -1206,64 +1525,171 @@ function waSingleBuyerBill(person) {
     window.open(`https://wa.me/?text=${encoded}`, '_blank');
 }
 
-// Person Detailed Itemized Breakdown Modal
-function openPersonBreakdown(personId) {
+// -------------------------------------------------------------
+// DETAILED USER PROFILE MODAL (REQUIREMENT 6)
+// -------------------------------------------------------------
+function openProfileModal(personId) {
     const person = state.people.find(p => p.id === personId);
-    if (!person) return;
+    if (!person || !profileModal) return;
 
-    modalPersonName.textContent = person.name;
-    modalAvatar.textContent = person.name.charAt(0).toUpperCase();
-    modalItemsList.innerHTML = '';
+    activeProfilePersonId = personId;
 
-    const personItems = state.items.filter(i => i.sharedBy.includes(personId));
+    if (profileName) profileName.textContent = person.name;
+    if (profileAvatar) profileAvatar.textContent = person.name.charAt(0).toUpperCase();
 
-    if (personItems.length === 0) {
-        modalItemsList.innerHTML = `<li style="color:var(--text-muted); justify-content:center;">${t('no_items_yet')}</li>`;
-    } else {
-        personItems.forEach(item => {
-            const splitPrice = item.price / item.sharedBy.length;
-            const li = document.createElement('li');
-            li.innerHTML = `
-                <div>
-                    <strong>${item.name}</strong>
-                    <div style="font-size:11px; color:var(--text-muted);">(1/${item.sharedBy.length} of RM ${item.price.toFixed(2)})</div>
-                </div>
-                <strong style="color:var(--accent-primary);">RM ${splitPrice.toFixed(2)}</strong>
-            `;
-            modalItemsList.appendChild(li);
-        });
+    // SECTION A: Purchase History
+    if (profileItemsList) {
+        profileItemsList.innerHTML = '';
+        const personItems = state.items.filter(i => i.sharedBy.includes(personId));
+
+        if (personItems.length === 0) {
+            profileItemsList.innerHTML = `<li class="empty-state" style="padding:12px; font-size:13px;">${t('no_items_in_profile')}</li>`;
+        } else {
+            personItems.forEach(item => {
+                const splitPrice = item.price / item.sharedBy.length;
+                const li = document.createElement('li');
+                li.className = 'profile-item-row';
+                li.innerHTML = `
+                    <div class="profile-item-details">
+                        <span class="profile-item-name">${item.name}</span>
+                        <span class="profile-item-fraction">1/${item.sharedBy.length} ${t('share_of')} RM ${item.price.toFixed(2)}</span>
+                    </div>
+                    <strong class="profile-item-price">RM ${splitPrice.toFixed(2)}</strong>
+                `;
+                profileItemsList.appendChild(li);
+            });
+        }
     }
 
-    modalSubtotalVal.textContent = `RM ${person.subtotal.toFixed(2)}`;
+    if (profileSubtotalVal) profileSubtotalVal.textContent = `RM ${person.subtotal.toFixed(2)}`;
 
     const extraShare = person.debt - person.subtotal;
-    if (Math.abs(extraShare) > 0.005) {
-        modalTaxLine.style.display = 'flex';
-        modalExtraVal.textContent = (extraShare >= 0 ? '+RM ' : '-RM ') + Math.abs(extraShare).toFixed(2);
-    } else {
-        modalTaxLine.style.display = 'none';
+    if (profileTaxLine && profileExtraVal) {
+        if (Math.abs(extraShare) > 0.005) {
+            profileTaxLine.style.display = 'flex';
+            profileExtraVal.textContent = (extraShare >= 0 ? '+RM ' : '-RM ') + Math.abs(extraShare).toFixed(2);
+        } else {
+            profileTaxLine.style.display = 'none';
+        }
     }
 
-    modalFinalVal.textContent = `RM ${person.debt.toFixed(2)}`;
-    modalBreakdown.style.display = 'flex';
+    if (profileFinalVal) profileFinalVal.textContent = `RM ${person.debt.toFixed(2)}`;
+
+    // SECTION B: Settlement / Who to Pay
+    const paid = person.amountPaid || 0;
+    if (profilePaidVal) profilePaidVal.textContent = `RM ${paid.toFixed(2)}`;
+
+    if (profileBalanceVal) {
+        if (person.balance > 0.005) {
+            profileBalanceVal.className = 'payer-balance-pill balance-positive';
+            profileBalanceVal.textContent = `+RM ${person.balance.toFixed(2)} (${t('balance_gets_back')})`;
+        } else if (person.balance < -0.005) {
+            profileBalanceVal.className = 'payer-balance-pill balance-negative';
+            profileBalanceVal.textContent = `-RM ${Math.abs(person.balance).toFixed(2)} (${t('balance_owes')})`;
+        } else {
+            profileBalanceVal.className = 'payer-balance-pill balance-zero';
+            profileBalanceVal.textContent = `RM 0.00 (${t('balance_settled')})`;
+        }
+    }
+
+    // Direct transfers for this specific person
+    if (profileSettlementList) {
+        profileSettlementList.innerHTML = '';
+        const grandTotal = state.people.reduce((acc, p) => acc + p.debt, 0);
+        const transactions = calculateSettlements(grandTotal);
+
+        const myDebts = transactions.filter(tr => tr.fromId === person.id);
+        const myReceivables = transactions.filter(tr => tr.toId === person.id);
+
+        if (myDebts.length > 0) {
+            myDebts.forEach(tr => {
+                const item = document.createElement('div');
+                item.className = 'profile-settlement-item owe';
+                item.innerHTML = `
+                    <div class="profile-settlement-icon">👉</div>
+                    <div class="profile-settlement-info">
+                        <span class="profile-settlement-label">${t('needs_to_pay_who')} <strong>${tr.to}</strong></span>
+                        <span class="profile-settlement-amount text-danger">RM ${tr.amount.toFixed(2)}</span>
+                    </div>
+                `;
+                profileSettlementList.appendChild(item);
+            });
+        } else if (myReceivables.length > 0) {
+            myReceivables.forEach(tr => {
+                const item = document.createElement('div');
+                item.className = 'profile-settlement-item receive';
+                item.innerHTML = `
+                    <div class="profile-settlement-icon">📥</div>
+                    <div class="profile-settlement-info">
+                        <span class="profile-settlement-label"><strong>${tr.from}</strong> ${t('will_pay_you')}</span>
+                        <span class="profile-settlement-amount text-success">RM ${tr.amount.toFixed(2)}</span>
+                    </div>
+                `;
+                profileSettlementList.appendChild(item);
+            });
+        } else {
+            profileSettlementList.innerHTML = `
+                <div class="profile-settlement-item settled">
+                    <div class="profile-settlement-icon">✅</div>
+                    <div class="profile-settlement-info">
+                        <span class="profile-settlement-label">${t('profile_all_settled')}</span>
+                    </div>
+                </div>
+            `;
+        }
+    }
+
+    profileModal.style.display = 'flex';
 }
 
+function closeProfileModal() {
+    if (profileModal) profileModal.style.display = 'none';
+    activeProfilePersonId = null;
+}
+
+if (btnCloseProfileModal) btnCloseProfileModal.addEventListener('click', closeProfileModal);
+if (btnDismissProfileModal) btnDismissProfileModal.addEventListener('click', closeProfileModal);
+if (profileModal) {
+    profileModal.addEventListener('click', (e) => {
+        if (e.target === profileModal) closeProfileModal();
+    });
+}
+
+// Profile Modal Share Actions
+if (btnProfileCopy) {
+    btnProfileCopy.addEventListener('click', () => {
+        if (!activeProfilePersonId) return;
+        const person = state.people.find(p => p.id === activeProfilePersonId);
+        if (person) copySingleBuyerBill(person);
+    });
+}
+
+if (btnProfileWa) {
+    btnProfileWa.addEventListener('click', () => {
+        if (!activeProfilePersonId) return;
+        const person = state.people.find(p => p.id === activeProfilePersonId);
+        if (person) waSingleBuyerBill(person);
+    });
+}
+
+// Fallback alias for existing breakdown clicks
+const openPersonBreakdown = openProfileModal;
 function closeModal() {
-    modalBreakdown.style.display = 'none';
+    if (modalBreakdown) modalBreakdown.style.display = 'none';
 }
+if (btnCloseModal) btnCloseModal.addEventListener('click', closeModal);
+if (btnDismissModal) btnDismissModal.addEventListener('click', closeModal);
 
-btnCloseModal.addEventListener('click', closeModal);
-btnDismissModal.addEventListener('click', closeModal);
-modalBreakdown.addEventListener('click', (e) => {
-    if (e.target === modalBreakdown) closeModal();
-});
 document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape' && modalBreakdown.style.display === 'flex') {
-        closeModal();
+    if (e.key === 'Escape') {
+        if (profileModal && profileModal.style.display === 'flex') closeProfileModal();
+        if (modalBreakdown && modalBreakdown.style.display === 'flex') closeModal();
     }
 });
 
-// Receipt Formatting Engine for WhatsApp & Copy
+// -------------------------------------------------------------
+// RECEIPT FORMATTING FOR EXPORT (STEP 5)
+// -------------------------------------------------------------
 function generateReceiptText() {
     if (state.items.length === 0) return null;
 
@@ -1335,35 +1761,37 @@ function generateReceiptText() {
     return text;
 }
 
-// WhatsApp Share
-btnWa.addEventListener('click', () => {
-    const text = generateReceiptText();
-    if (!text) {
-        showToast(t('toast_no_items'), 'error');
-        return;
-    }
-    const encoded = encodeURIComponent(text);
-    window.open(`https://wa.me/?text=${encoded}`, '_blank');
-});
+if (btnWa) {
+    btnWa.addEventListener('click', () => {
+        const text = generateReceiptText();
+        if (!text) {
+            showToast(t('toast_no_items'), 'error');
+            return;
+        }
+        const encoded = encodeURIComponent(text);
+        window.open(`https://wa.me/?text=${encoded}`, '_blank');
+    });
+}
 
-// Copy Text
-btnCopy.addEventListener('click', () => {
-    const text = generateReceiptText();
-    if (!text) {
-        showToast(t('toast_no_items'), 'error');
-        return;
-    }
+if (btnCopy) {
+    btnCopy.addEventListener('click', () => {
+        const text = generateReceiptText();
+        if (!text) {
+            showToast(t('toast_no_items'), 'error');
+            return;
+        }
 
-    if (navigator.clipboard && navigator.clipboard.writeText) {
-        navigator.clipboard.writeText(text).then(() => {
-            showToast(t('toast_copied'), 'success');
-        }).catch(() => {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(text).then(() => {
+                showToast(t('toast_copied'), 'success');
+            }).catch(() => {
+                fallbackCopy(text);
+            });
+        } else {
             fallbackCopy(text);
-        });
-    } else {
-        fallbackCopy(text);
-    }
-});
+        }
+    });
+}
 
 function fallbackCopy(text) {
     const textArea = document.createElement('textarea');
@@ -1379,47 +1807,52 @@ function fallbackCopy(text) {
     document.body.removeChild(textArea);
 }
 
-// QR Code Generator
-btnQr.addEventListener('click', () => {
-    const text = generateReceiptText();
-    if (!text) {
-        showToast(t('toast_no_items'), 'error');
-        return;
-    }
+if (btnQr && qrImage && qrContainer) {
+    btnQr.addEventListener('click', () => {
+        const text = generateReceiptText();
+        if (!text) {
+            showToast(t('toast_no_items'), 'error');
+            return;
+        }
 
-    const encoded = encodeURIComponent(text);
-    qrImage.src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encoded}&margin=10`;
-    qrContainer.style.display = 'block';
-    qrContainer.scrollIntoView({ behavior: 'smooth' });
-});
+        const encoded = encodeURIComponent(text);
+        qrImage.src = `https://api.qrserver.com/v1/create-qr-code/?size=250x250&data=${encoded}&margin=10`;
+        qrContainer.style.display = 'block';
+        qrContainer.scrollIntoView({ behavior: 'smooth' });
+    });
+}
 
-btnCloseQr.addEventListener('click', () => {
-    qrContainer.style.display = 'none';
-});
+if (btnCloseQr && qrContainer) {
+    btnCloseQr.addEventListener('click', () => {
+        qrContainer.style.display = 'none';
+    });
+}
 
 // Reset All
-btnReset.addEventListener('click', () => {
-    if (confirm(t('toast_reset_confirm'))) {
-        state.people = [];
-        state.items = [];
-        state.extras = { taxPercent: 0, servicePercent: 0, discountAmount: 0 };
-        state.personIdCounter = 1;
-        state.itemIdCounter = 1;
+if (btnReset) {
+    btnReset.addEventListener('click', () => {
+        if (confirm(t('toast_reset_confirm'))) {
+            state.people = [];
+            state.items = [];
+            state.extras = { taxPercent: 0, servicePercent: 0, discountAmount: 0 };
+            state.personIdCounter = 1;
+            state.itemIdCounter = 1;
 
-        inputTax.value = '0';
-        inputService.value = '0';
-        inputDiscount.value = '0';
-        qrContainer.style.display = 'none';
+            if (inputTax) inputTax.value = '0';
+            if (inputService) inputService.value = '0';
+            if (inputDiscount) inputDiscount.value = '0';
+            if (qrContainer) qrContainer.style.display = 'none';
 
-        saveToStorage();
-        renderPeopleUI();
-        recalculateAndRender();
-        showToast('All data has been reset.', 'info');
-    }
-});
+            saveToStorage();
+            renderPeopleUI();
+            recalculateAndRender();
+            showToast('All data has been reset.', 'info');
+        }
+    });
+}
 
 // Tab Switching (By Items vs By Buyer)
-if (tabBtnItems && tabBtnBuyers) {
+if (tabBtnItems && tabBtnBuyers && viewItems && viewBuyers) {
     tabBtnItems.addEventListener('click', () => {
         tabBtnItems.classList.add('active');
         tabBtnBuyers.classList.remove('active');
@@ -1436,21 +1869,629 @@ if (tabBtnItems && tabBtnBuyers) {
     });
 }
 
-// App Initialization
-function initApp() {
+// -------------------------------------------------------------
+// NAVIGATION BAR (CALCULATOR VS CLOUD DASHBOARD)
+// -------------------------------------------------------------
+function switchAppTab(tab) {
+    currentAppTab = tab;
+    if (tab === 'calculator') {
+        if (navBtnCalculator) navBtnCalculator.classList.add('active');
+        if (navBtnDashboard) navBtnDashboard.classList.remove('active');
+        if (viewCalculator) viewCalculator.style.display = 'block';
+        if (viewDashboard) viewDashboard.style.display = 'none';
+    } else if (tab === 'dashboard') {
+        if (navBtnDashboard) navBtnDashboard.classList.add('active');
+        if (navBtnCalculator) navBtnCalculator.classList.remove('active');
+        if (viewDashboard) viewDashboard.style.display = 'block';
+        if (viewCalculator) viewCalculator.style.display = 'none';
+        loadCloudData();
+    }
+}
+
+if (navBtnCalculator) {
+    navBtnCalculator.addEventListener('click', () => switchAppTab('calculator'));
+}
+
+if (navBtnDashboard) {
+    navBtnDashboard.addEventListener('click', () => switchAppTab('dashboard'));
+}
+
+// -------------------------------------------------------------
+// AUTHENTICATION LOGIC & GUEST MODE
+// -------------------------------------------------------------
+function setupAuthEvents() {
+    // Tab toggling: Sign In vs Register
+    if (tabLogin && tabSignup) {
+        tabLogin.addEventListener('click', () => {
+            authMode = 'login';
+            tabLogin.classList.add('active');
+            tabSignup.classList.remove('active');
+            if (fieldDisplayName) fieldDisplayName.style.display = 'none';
+            if (authBtnText) authBtnText.textContent = t('auth_btn_login');
+            hideAuthAlert();
+        });
+
+        tabSignup.addEventListener('click', () => {
+            authMode = 'signup';
+            tabSignup.classList.add('active');
+            tabLogin.classList.remove('active');
+            if (fieldDisplayName) fieldDisplayName.style.display = 'block';
+            if (authBtnText) authBtnText.textContent = t('auth_btn_signup');
+            hideAuthAlert();
+        });
+    }
+
+    // Guest Mode Bypass
+    if (btnGuestMode) {
+        btnGuestMode.addEventListener('click', () => {
+            isGuestMode = true;
+            if (authScreen) authScreen.style.display = 'none';
+            if (mainAppContent) mainAppContent.style.display = 'block';
+            if (userHeaderProfile) userHeaderProfile.style.display = 'none';
+            if (btnHeaderLogin) btnHeaderLogin.style.display = 'inline-flex';
+            showToast(t('auth_guest_welcome'), 'info');
+        });
+    }
+
+    // Header Login button (when in guest mode)
+    if (btnHeaderLogin) {
+        btnHeaderLogin.addEventListener('click', () => {
+            if (authScreen) authScreen.style.display = 'flex';
+            if (mainAppContent) mainAppContent.style.display = 'none';
+            if (btnHeaderLogin) btnHeaderLogin.style.display = 'none';
+        });
+    }
+
+    // Log Out
+    if (btnLogout) {
+        btnLogout.addEventListener('click', async () => {
+            if (supabaseClient) {
+                await supabaseClient.auth.signOut();
+            }
+            handleUserSignedOut();
+            showToast(t('auth_logged_out'), 'info');
+        });
+    }
+
+    // Auth Form Submission (Sign In or Sign Up)
+    if (authForm) {
+        authForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            if (!supabaseClient) {
+                showAuthAlert('Supabase client is not loaded. Please check your internet connection.', 'error');
+                return;
+            }
+
+            const email = inputAuthEmail.value.trim();
+            const password = inputAuthPassword.value;
+            const displayName = inputDisplayName ? inputDisplayName.value.trim() : '';
+
+            hideAuthAlert();
+            setAuthLoading(true);
+
+            try {
+                if (authMode === 'signup') {
+                    const { data, error } = await supabaseClient.auth.signUp({
+                        email: email,
+                        password: password,
+                        options: {
+                            data: {
+                                display_name: displayName || email.split('@')[0]
+                            }
+                        }
+                    });
+
+                    if (error) throw error;
+
+                    if (data && data.user) {
+                        // Insert/Upsert into public.users profile table
+                        await supabaseClient.from('users').upsert({
+                            id: data.user.id,
+                            email: email,
+                            display_name: displayName || email.split('@')[0]
+                        });
+
+                        showToast(t('auth_signup_success'), 'success');
+                        handleUserSignedIn(data.user);
+                    }
+                } else {
+                    // Sign In
+                    const { data, error } = await supabaseClient.auth.signInWithPassword({
+                        email: email,
+                        password: password
+                    });
+
+                    if (error) throw error;
+
+                    if (data && data.user) {
+                        showToast(t('auth_login_success'), 'success');
+                        handleUserSignedIn(data.user);
+                    }
+                }
+            } catch (err) {
+                console.error('Auth error:', err);
+                showAuthAlert(err.message || 'Authentication failed. Please verify credentials.', 'error');
+            } finally {
+                setAuthLoading(false);
+            }
+        });
+    }
+}
+
+function showAuthAlert(msg, type = 'error') {
+    if (!authAlert) return;
+    authAlert.textContent = msg;
+    authAlert.className = `auth-alert ${type}`;
+    authAlert.style.display = 'block';
+}
+
+function hideAuthAlert() {
+    if (!authAlert) return;
+    authAlert.style.display = 'none';
+}
+
+function setAuthLoading(isLoading) {
+    if (!btnAuthSubmit) return;
+    btnAuthSubmit.disabled = isLoading;
+    if (isLoading) {
+        btnAuthSubmit.style.opacity = '0.7';
+    } else {
+        btnAuthSubmit.style.opacity = '1';
+    }
+}
+
+function handleUserSignedIn(user) {
+    currentUser = user;
+    isGuestMode = false;
+
+    // Display user profile in header
+    const name = (user.user_metadata && user.user_metadata.display_name) || user.email.split('@')[0];
+    if (headerUserName) headerUserName.textContent = name;
+    if (headerUserEmail) headerUserEmail.textContent = user.email;
+    if (headerUserAvatar) headerUserAvatar.textContent = name.charAt(0).toUpperCase();
+
+    if (userHeaderProfile) userHeaderProfile.style.display = 'flex';
+    if (btnHeaderLogin) btnHeaderLogin.style.display = 'none';
+
+    // Transition views
+    if (authScreen) authScreen.style.display = 'none';
+    if (mainAppContent) mainAppContent.style.display = 'block';
+
+    // If shoppers list is empty, default user as first shopper
+    if (state.people.length === 0) {
+        state.people.push({
+            id: state.personIdCounter++,
+            name: name,
+            debt: 0,
+            subtotal: 0,
+            amountPaid: 0,
+            balance: 0
+        });
+        saveToStorage();
+        renderPeopleUI();
+        recalculateAndRender();
+    }
+
+    // Load user's cloud debts & bills
+    loadCloudData();
+}
+
+function handleUserSignedOut() {
+    currentUser = null;
+    isGuestMode = false;
+
+    if (userHeaderProfile) userHeaderProfile.style.display = 'none';
+    if (btnHeaderLogin) btnHeaderLogin.style.display = 'none';
+    if (mainAppContent) mainAppContent.style.display = 'none';
+    if (authScreen) authScreen.style.display = 'flex';
+    if (navDebtCount) navDebtCount.style.display = 'none';
+
+    // Reset password field
+    if (inputAuthPassword) inputAuthPassword.value = '';
+}
+
+async function initAuth() {
+    setupAuthEvents();
+
+    if (!supabaseClient) {
+        console.warn('Supabase client unavailable. Running in offline/guest mode.');
+        if (authScreen) authScreen.style.display = 'none';
+        if (mainAppContent) mainAppContent.style.display = 'block';
+        return;
+    }
+
+    // Check active session
+    try {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (session && session.user) {
+            handleUserSignedIn(session.user);
+        } else {
+            // Unauthenticated state: show auth modal
+            if (authScreen) authScreen.style.display = 'flex';
+            if (mainAppContent) mainAppContent.style.display = 'none';
+        }
+    } catch (e) {
+        console.error('Session retrieval error:', e);
+        if (authScreen) authScreen.style.display = 'flex';
+        if (mainAppContent) mainAppContent.style.display = 'none';
+    }
+
+    // Subscribe to Auth State Changes
+    supabaseClient.auth.onAuthStateChange((event, session) => {
+        if (event === 'SIGNED_IN' && session && session.user) {
+            handleUserSignedIn(session.user);
+        } else if (event === 'SIGNED_OUT') {
+            handleUserSignedOut();
+        }
+    });
+}
+
+// -------------------------------------------------------------
+// SUPABASE CLOUD SYNC & DASHBOARD (REQUIREMENTS 3 & 4)
+// -------------------------------------------------------------
+async function saveBillToCloud() {
+    if (!currentUser) {
+        showToast('Please sign in or register to sync your bills with Supabase cloud!', 'error');
+        if (authScreen) authScreen.style.display = 'flex';
+        if (mainAppContent) mainAppContent.style.display = 'none';
+        return;
+    }
+
+    if (state.items.length === 0) {
+        showToast(t('toast_no_items'), 'error');
+        return;
+    }
+
+    if (!btnSaveCloud) return;
+    const originalText = btnSaveCloud.innerHTML;
+    btnSaveCloud.disabled = true;
+    btnSaveCloud.innerHTML = `<span>Saving...</span>`;
+
+    try {
+        let subtotal = 0;
+        state.items.forEach(i => subtotal += i.price);
+        const taxTotal = subtotal * (state.extras.taxPercent / 100);
+        const serviceTotal = subtotal * (state.extras.servicePercent / 100);
+        const discountTotal = Math.min(state.extras.discountAmount || 0, subtotal + taxTotal + serviceTotal);
+        const grandTotal = Math.max(0, subtotal + taxTotal + serviceTotal - discountTotal);
+
+        const currentUserName = (currentUser.user_metadata && currentUser.user_metadata.display_name)
+            || currentUser.email.split('@')[0];
+
+        // 1. Insert into public.bills
+        const { data: billData, error: billError } = await supabaseClient
+            .from('bills')
+            .insert([{
+                created_by: currentUser.id,
+                title: `Bill ${new Date().toLocaleDateString()}`,
+                total_amount: grandTotal
+            }])
+            .select()
+            .single();
+
+        if (billError) throw billError;
+
+        // 2. Insert into public.bill_items
+        if (state.items.length > 0) {
+            const billItems = state.items.map(item => {
+                const names = item.sharedBy.map(id => {
+                    const p = state.people.find(x => x.id === id);
+                    return p ? p.name : String(id);
+                });
+                return {
+                    bill_id: billData.id,
+                    name: item.name,
+                    price: item.price,
+                    shared_by: names
+                };
+            });
+
+            const { error: itemsError } = await supabaseClient
+                .from('bill_items')
+                .insert(billItems);
+
+            if (itemsError) throw itemsError;
+        }
+
+        // 3. Insert Settlement Transfers into public.debts
+        const transactions = calculateSettlements(grandTotal);
+        if (transactions.length > 0) {
+            const debtsToInsert = transactions.map(tr => {
+                const isDebtorMe = tr.from.toLowerCase() === currentUserName.toLowerCase();
+                const isCreditorMe = tr.to.toLowerCase() === currentUserName.toLowerCase();
+
+                return {
+                    bill_id: billData.id,
+                    debtor_id: isDebtorMe ? currentUser.id : null,
+                    debtor_name: tr.from,
+                    creditor_id: isCreditorMe ? currentUser.id : (isDebtorMe ? null : currentUser.id),
+                    creditor_name: tr.to,
+                    amount: tr.amount,
+                    status: 'pending'
+                };
+            });
+
+            const { error: debtsError } = await supabaseClient
+                .from('debts')
+                .insert(debtsToInsert);
+
+            if (debtsError) throw debtsError;
+        }
+
+        showToast(t('toast_bill_saved_cloud'), 'success');
+        loadCloudData();
+    } catch (err) {
+        console.error('Error saving to Supabase:', err);
+        showToast(err.message || 'Failed to save bill to cloud.', 'error');
+    } finally {
+        btnSaveCloud.disabled = false;
+        btnSaveCloud.innerHTML = originalText;
+    }
+}
+
+if (btnSaveCloud) {
+    btnSaveCloud.addEventListener('click', saveBillToCloud);
+}
+
+async function loadCloudData() {
+    if (!currentUser || !supabaseClient) return;
+
+    try {
+        const currentUserName = (currentUser.user_metadata && currentUser.user_metadata.display_name)
+            || currentUser.email.split('@')[0];
+
+        // Fetch all debts where user is involved
+        const { data: debts, error: debtsErr } = await supabaseClient
+            .from('debts')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (debtsErr) throw debtsErr;
+        cloudDebts = debts || [];
+
+        // Fetch user's saved bills
+        const { data: bills, error: billsErr } = await supabaseClient
+            .from('bills')
+            .select('*, bill_items(id, name, price)')
+            .eq('created_by', currentUser.id)
+            .order('created_at', { ascending: false });
+
+        if (billsErr) throw billsErr;
+        cloudBills = bills || [];
+
+        renderCloudDashboard();
+    } catch (err) {
+        console.error('Error fetching cloud data:', err);
+    }
+}
+
+if (btnRefreshDebts) {
+    btnRefreshDebts.addEventListener('click', () => {
+        loadCloudData();
+        showToast('Debts synchronized with cloud.', 'info');
+    });
+}
+
+function renderCloudDashboard() {
+    if (!currentUser) return;
+
+    const currentUserName = ((currentUser.user_metadata && currentUser.user_metadata.display_name)
+        || currentUser.email.split('@')[0]).toLowerCase();
+
+    // 1. Filter: Debts where user is CREDITOR (People owe me)
+    const whoOwesMe = cloudDebts.filter(d => {
+        const isCreditorId = d.creditor_id === currentUser.id;
+        const isCreditorName = d.creditor_name && d.creditor_name.toLowerCase() === currentUserName;
+        return (isCreditorId || isCreditorName) && d.debtor_id !== currentUser.id;
+    });
+
+    // 2. Filter: Debts where user is DEBTOR (I owe others)
+    const iOwe = cloudDebts.filter(d => {
+        const isDebtorId = d.debtor_id === currentUser.id;
+        const isDebtorName = d.debtor_name && d.debtor_name.toLowerCase() === currentUserName;
+        return (isDebtorId || isDebtorName) && d.creditor_id !== currentUser.id;
+    });
+
+    // 3. Calculate Totals (Pending only)
+    const totalOwedToMe = whoOwesMe
+        .filter(d => d.status === 'pending')
+        .reduce((sum, d) => sum + parseFloat(d.amount || 0), 0);
+
+    const totalIOwe = iOwe
+        .filter(d => d.status === 'pending')
+        .reduce((sum, d) => sum + parseFloat(d.amount || 0), 0);
+
+    const netPosition = totalOwedToMe - totalIOwe;
+
+    // Render Stat Cards
+    if (statTotalIOwe) statTotalIOwe.textContent = `RM ${totalIOwe.toFixed(2)}`;
+    if (statTotalOwedToMe) statTotalOwedToMe.textContent = `RM ${totalOwedToMe.toFixed(2)}`;
+    if (statNetPosition) {
+        const sign = netPosition >= 0 ? '+RM ' : '-RM ';
+        statNetPosition.textContent = `${sign}${Math.abs(netPosition).toFixed(2)}`;
+        if (netPosition >= 0) {
+            statNetPosition.className = 'stat-number text-success';
+        } else {
+            statNetPosition.className = 'stat-number text-danger';
+        }
+    }
+
+    // Update Nav Badge
+    const pendingTotalCount = whoOwesMe.filter(d => d.status === 'pending').length
+        + iOwe.filter(d => d.status === 'pending').length;
+
+    if (navDebtCount) {
+        if (pendingTotalCount > 0) {
+            navDebtCount.textContent = pendingTotalCount;
+            navDebtCount.style.display = 'inline-block';
+        } else {
+            navDebtCount.style.display = 'none';
+        }
+    }
+
+    // 4. Render "People Who Owe Me" List
+    if (listWhoOwesMe) {
+        listWhoOwesMe.innerHTML = '';
+        if (whoOwesMe.length === 0) {
+            listWhoOwesMe.innerHTML = `<p class="empty-state">${t('no_one_owes_you')}</p>`;
+        } else {
+            whoOwesMe.forEach(debt => {
+                const item = document.createElement('div');
+                item.className = `cloud-debt-item ${debt.status === 'paid' ? 'paid-item' : ''}`;
+                const initial = debt.debtor_name.charAt(0).toUpperCase();
+                const isPaid = debt.status === 'paid';
+
+                item.innerHTML = `
+                    <div class="debt-item-user">
+                        <span class="badge-avatar">${initial}</span>
+                        <div>
+                            <strong>${debt.debtor_name}</strong>
+                            <div class="debt-item-date">${new Date(debt.created_at).toLocaleDateString()}</div>
+                        </div>
+                    </div>
+                    <div class="debt-item-actions">
+                        <span class="debt-item-amount text-success">RM ${parseFloat(debt.amount).toFixed(2)}</span>
+                        <span class="debt-status-badge ${isPaid ? 'badge-paid' : 'badge-pending'}">
+                            ${isPaid ? t('status_paid') : t('status_pending')}
+                        </span>
+                        <button type="button" class="glass-btn mini-btn btn-toggle-debt">
+                            ${isPaid ? t('mark_pending') : t('mark_paid')}
+                        </button>
+                    </div>
+                `;
+
+                item.querySelector('.btn-toggle-debt').addEventListener('click', async () => {
+                    await toggleDebtStatus(debt.id, isPaid ? 'pending' : 'paid');
+                });
+
+                listWhoOwesMe.appendChild(item);
+            });
+        }
+    }
+
+    // 5. Render "Debts I Owe to Others" List
+    if (listIOwe) {
+        listIOwe.innerHTML = '';
+        if (iOwe.length === 0) {
+            listIOwe.innerHTML = `<p class="empty-state">${t('you_owe_nothing')}</p>`;
+        } else {
+            iOwe.forEach(debt => {
+                const item = document.createElement('div');
+                item.className = `cloud-debt-item ${debt.status === 'paid' ? 'paid-item' : ''}`;
+                const initial = debt.creditor_name.charAt(0).toUpperCase();
+                const isPaid = debt.status === 'paid';
+
+                item.innerHTML = `
+                    <div class="debt-item-user">
+                        <span class="badge-avatar recipient">${initial}</span>
+                        <div>
+                            <strong>${debt.creditor_name}</strong>
+                            <div class="debt-item-date">${new Date(debt.created_at).toLocaleDateString()}</div>
+                        </div>
+                    </div>
+                    <div class="debt-item-actions">
+                        <span class="debt-item-amount text-danger">RM ${parseFloat(debt.amount).toFixed(2)}</span>
+                        <span class="debt-status-badge ${isPaid ? 'badge-paid' : 'badge-pending'}">
+                            ${isPaid ? t('status_paid') : t('status_pending')}
+                        </span>
+                    </div>
+                `;
+                listIOwe.appendChild(item);
+            });
+        }
+    }
+
+    // 6. Render Saved Cloud Bills History
+    if (listCloudBills) {
+        listCloudBills.innerHTML = '';
+        if (cloudBillsCount) cloudBillsCount.textContent = `${cloudBills.length} bills`;
+
+        if (cloudBills.length === 0) {
+            listCloudBills.innerHTML = `<p class="empty-state">${t('no_cloud_bills')}</p>`;
+        } else {
+            cloudBills.forEach(bill => {
+                const item = document.createElement('div');
+                item.className = 'cloud-bill-row';
+                const itemsCount = (bill.bill_items && bill.bill_items.length) || 0;
+
+                item.innerHTML = `
+                    <div class="bill-row-info">
+                        <strong>${bill.title || 'Bill Split'}</strong>
+                        <span class="bill-row-meta">${new Date(bill.created_at).toLocaleString()} • ${itemsCount} items</span>
+                    </div>
+                    <div class="bill-row-actions">
+                        <strong class="bill-row-total">RM ${parseFloat(bill.total_amount).toFixed(2)}</strong>
+                        <button type="button" class="icon-delete-btn btn-delete-cloud-bill" title="Delete bill">&times;</button>
+                    </div>
+                `;
+
+                item.querySelector('.btn-delete-cloud-bill').addEventListener('click', async () => {
+                    if (confirm(t('toast_confirm_delete_bill'))) {
+                        await deleteCloudBill(bill.id);
+                    }
+                });
+
+                listCloudBills.appendChild(item);
+            });
+        }
+    }
+}
+
+async function toggleDebtStatus(debtId, newStatus) {
+    if (!supabaseClient) return;
+    try {
+        const { error } = await supabaseClient
+            .from('debts')
+            .update({ status: newStatus })
+            .eq('id', debtId);
+
+        if (error) throw error;
+        showToast(newStatus === 'paid' ? t('toast_debt_marked_paid') : t('toast_debt_marked_pending'), 'success');
+        await loadCloudData();
+    } catch (e) {
+        console.error('Error toggling debt status:', e);
+        showToast('Failed to update debt status.', 'error');
+    }
+}
+
+async function deleteCloudBill(billId) {
+    if (!supabaseClient) return;
+    try {
+        const { error } = await supabaseClient
+            .from('bills')
+            .delete()
+            .eq('id', billId);
+
+        if (error) throw error;
+        showToast(t('toast_bill_deleted'), 'info');
+        await loadCloudData();
+    } catch (e) {
+        console.error('Error deleting bill:', e);
+        showToast('Failed to delete bill.', 'error');
+    }
+}
+
+// -------------------------------------------------------------
+// APP INITIALIZATION
+// -------------------------------------------------------------
+async function initApp() {
     loadFromStorage();
 
     // Populate extra fee inputs if restored
     if (state.extras) {
-        inputTax.value = state.extras.taxPercent || 0;
-        inputService.value = state.extras.servicePercent || 0;
-        inputDiscount.value = state.extras.discountAmount || 0;
+        if (inputTax) inputTax.value = state.extras.taxPercent || 0;
+        if (inputService) inputService.value = state.extras.servicePercent || 0;
+        if (inputDiscount) inputDiscount.value = state.extras.discountAmount || 0;
     }
 
     applyTheme(state.settings.darkMode);
     updateLanguageUI();
     renderPeopleUI();
     recalculateAndRender();
+
+    // Initialize Supabase Full-Stack Authentication & Sync
+    await initAuth();
 }
 
+// Start application
 initApp();
