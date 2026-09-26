@@ -32,6 +32,19 @@
             </div>
 
             <div class="header-actions">
+                <div class="user-header-profile" id="user-header-profile" style="display: none;">
+                    <div class="user-pill" id="header-user-pill">
+                        <span class="user-avatar-small" id="header-user-avatar">👤</span>
+                        <div class="user-details-mini">
+                            <span class="user-name" id="header-user-name">User</span>
+                            <span class="user-email-text" id="header-user-email"></span>
+                        </div>
+                    </div>
+                    <button id="btn-logout" class="glass-btn glass-btn-danger-soft mini-btn" title="Sign Out">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" x2="9" y1="12" y2="12"/></svg>
+                        <span data-i18n="auth_logout">Log Out</span>
+                    </button>
+                </div>
                 <button id="btn-reset" class="glass-btn glass-btn-danger-soft" title="Reset all data">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
                     <span data-i18n="btn_reset">Reset</span>
@@ -47,8 +60,80 @@
             </div>
         </header>
 
-        <!-- Main Dashboard Layout -->
-        <main class="dashboard-grid">
+        <!-- AUTHENTICATION SCREEN (Shown when logged out) -->
+        <div id="auth-screen" class="auth-wrapper">
+            <div class="auth-card glass-panel">
+                <div class="auth-header">
+                    <div class="brand-icon auth-brand-icon">
+                        <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4Z"/><path d="M3 6h18"/><path d="M16 10a4 4 0 0 1-8 0"/>
+                        </svg>
+                    </div>
+                    <h2 id="auth-title" class="auth-title" data-i18n="auth_title">Welcome to Bill Splitter</h2>
+                    <p id="auth-subtitle" class="auth-subtitle" data-i18n="auth_subtitle">Sign in or register to sync your debts & bills to Supabase cloud</p>
+                </div>
+
+                <!-- Tabs: Sign In / Register -->
+                <div class="auth-tabs">
+                    <button type="button" id="tab-login" class="auth-tab active" data-i18n="auth_tab_login">Sign In</button>
+                    <button type="button" id="tab-signup" class="auth-tab" data-i18n="auth_tab_signup">Register</button>
+                </div>
+
+                <!-- Feedback Alert Box -->
+                <div id="auth-alert" class="auth-alert" style="display: none;"></div>
+
+                <!-- Auth Form -->
+                <form id="auth-form" class="auth-form">
+                    <div class="auth-field" id="field-display-name" style="display: none;">
+                        <label for="input-display-name" data-i18n="auth_name_label">Your Name</label>
+                        <div class="input-with-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="field-icon"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                            <input type="text" id="input-display-name" class="glass-input" placeholder="e.g. Ali" autocomplete="name">
+                        </div>
+                    </div>
+
+                    <div class="auth-field">
+                        <label for="input-auth-email" data-i18n="auth_email_label">Email Address</label>
+                        <div class="input-with-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="field-icon"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                            <input type="email" id="input-auth-email" class="glass-input" placeholder="name@example.com" required autocomplete="email">
+                        </div>
+                    </div>
+
+                    <div class="auth-field">
+                        <label for="input-auth-password" data-i18n="auth_pass_label">Password</label>
+                        <div class="input-with-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="field-icon"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                            <input type="password" id="input-auth-password" class="glass-input" placeholder="Min. 6 characters" required autocomplete="current-password">
+                        </div>
+                    </div>
+
+                    <button type="submit" id="btn-auth-submit" class="glass-btn-primary auth-submit-btn">
+                        <span id="auth-btn-text" data-i18n="auth_btn_login">Sign In</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- AUTHENTICATED APP CONTENT (Hidden until logged in) -->
+        <div id="main-app-content" style="display: none;">
+            <!-- Top App Navigation Tabs -->
+            <nav class="app-nav-bar">
+                <button type="button" id="nav-btn-calculator" class="nav-tab active">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="16" height="20" x="4" y="2" rx="2"/><line x1="8" x2="16" y1="6" y2="6"/><line x1="16" x2="16" y1="14" y2="18"/><path d="M16 10h.01"/><path d="M12 10h.01"/><path d="M8 10h.01"/><path d="M12 14h.01"/><path d="M8 14h.01"/><path d="M12 18h.01"/><path d="M8 18h.01"/></svg>
+                    <span data-i18n="nav_calculator">Split New Bill</span>
+                </button>
+                <button type="button" id="nav-btn-dashboard" class="nav-tab">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m19 9-5 5-4-4-3 3"/></svg>
+                    <span data-i18n="nav_dashboard">Cloud Debts & Balances</span>
+                    <span class="nav-badge" id="nav-debt-count" style="display: none;">0</span>
+                </button>
+            </nav>
+
+            <!-- VIEW 1: Split New Bill Calculator -->
+            <div id="view-calculator">
+                <!-- Main Dashboard Layout -->
+                <main class="dashboard-grid">
             <!-- Left Column: Inputs & Management -->
             <section class="grid-col">
                 <!-- Step 1: People Management -->
@@ -226,15 +311,47 @@
                         <p class="sub-hint" data-i18n="click_to_view_detail">Click on any person to inspect itemized breakdown</p>
                         <div id="debt-cards-container" class="debt-cards-grid"></div>
                     </div>
+
+                    <!-- Settlement & Transfers (Direct Balances) -->
+                    <div class="settlement-section" id="settlement-section">
+                        <div class="settlement-header">
+                            <div>
+                                <h3 class="sub-heading" data-i18n="settlement_title">Settlement & Transfers</h3>
+                                <p class="sub-hint" data-i18n="settlement_desc">Direct transfers to balance all payments</p>
+                            </div>
+                            <span class="count-pill" id="settlement-count-pill">0 transfers</span>
+                        </div>
+                        <div id="settlement-container" class="settlement-container">
+                            <p class="empty-state" data-i18n="settlement_no_payments">Enter who paid in Step 4 to calculate transfers.</p>
+                        </div>
+                    </div>
                 </div>
 
-                <!-- Step 4: Share & Export Dock -->
-                <div class="card glass-panel" id="card-share">
+                <!-- Step 4: Who Paid The Cashier? -->
+                <div class="card glass-panel" id="card-payments">
                     <div class="card-header">
                         <div class="step-badge">4</div>
                         <div>
-                            <h2 class="card-title" data-i18n="step4">Share & Export</h2>
-                            <p class="card-desc" data-i18n="step4_desc">Send receipt to friends or copy breakdown</p>
+                            <h2 class="card-title" data-i18n="step4_payment">Who Paid The Cashier?</h2>
+                            <p class="card-desc" data-i18n="step4_payment_desc">Record who paid upfront at the counter</p>
+                        </div>
+                        <span class="count-pill" id="paid-total-pill">Paid: RM 0.00</span>
+                    </div>
+
+                    <div id="payer-inputs-container" class="payer-inputs-grid">
+                        <p class="empty-state" data-i18n="empty_people">Please add shoppers first.</p>
+                    </div>
+
+                    <div id="payment-status-bar" class="payment-status-bar" style="display: none;"></div>
+                </div>
+
+                <!-- Step 5: Share & Export Dock -->
+                <div class="card glass-panel" id="card-share">
+                    <div class="card-header">
+                        <div class="step-badge">5</div>
+                        <div>
+                            <h2 class="card-title" data-i18n="step5">Share & Export</h2>
+                            <p class="card-desc" data-i18n="step5_desc">Send receipt to friends or copy breakdown</p>
                         </div>
                     </div>
 
@@ -259,6 +376,11 @@
                             </svg>
                             <span data-i18n="btn_qr">QR Code</span>
                         </button>
+
+                        <button type="button" id="btn-save-cloud" class="glass-btn-primary cloud-save-btn">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><polyline points="17 21 17 13 7 13 7 21"/><polyline points="7 3 7 8 15 8"/></svg>
+                            <span data-i18n="btn_save_cloud">Save Bill & Debts to Cloud</span>
+                        </button>
                     </div>
 
                     <!-- QR Code Expanded View -->
@@ -274,40 +396,169 @@
                 </div>
             </section>
         </main>
-    </div>
+    </div><!-- /#view-calculator -->
 
-    <!-- Person Itemized Detail Modal -->
-    <div id="modal-breakdown" class="glass-modal-backdrop" style="display: none;">
-        <div class="glass-modal">
+    <!-- VIEW 2: Cloud Debts & Balance Dashboard -->
+    <section id="view-dashboard" class="cloud-dashboard-view" style="display: none;">
+        <!-- Stat Summary Cards -->
+        <div class="dashboard-stats-grid">
+            <div class="stat-glass-card stat-owe">
+                <div class="stat-icon-wrap owe-wrap">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="19" x2="12" y2="5"/><polyline points="5 12 12 5 19 12"/></svg>
+                </div>
+                <div>
+                    <p class="stat-title" data-i18n="stat_i_owe">My Total Outstanding Debt</p>
+                    <h3 class="stat-number text-danger" id="stat-total-i-owe">RM 0.00</h3>
+                    <p class="stat-sub" data-i18n="stat_i_owe_sub">Pending payments to others</p>
+                </div>
+            </div>
+
+            <div class="stat-glass-card stat-receive">
+                <div class="stat-icon-wrap receive-wrap">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
+                </div>
+                <div>
+                    <p class="stat-title" data-i18n="stat_who_owes_me">Who Owes Me</p>
+                    <h3 class="stat-number text-success" id="stat-total-owed-to-me">RM 0.00</h3>
+                    <p class="stat-sub" data-i18n="stat_owed_to_me_sub">Pending money to collect</p>
+                </div>
+            </div>
+
+            <div class="stat-glass-card stat-net">
+                <div class="stat-icon-wrap net-wrap">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><line x1="12" y1="6" x2="12" y2="8"/><line x1="12" y1="16" x2="12" y2="18"/></svg>
+                </div>
+                <div>
+                    <p class="stat-title" data-i18n="stat_net_balance">Net Cloud Position</p>
+                    <h3 class="stat-number" id="stat-net-position">RM 0.00</h3>
+                    <p class="stat-sub" id="stat-net-sub" data-i18n="stat_net_sub">Overall balance</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Debts Sections -->
+        <div class="dashboard-columns-grid">
+            <!-- Column 1: People Who Owe Me -->
+            <div class="card glass-panel">
+                <div class="card-header">
+                    <div>
+                        <h3 class="card-title text-success" data-i18n="dash_owed_to_me_title">People Who Owe Me</h3>
+                        <p class="card-desc" data-i18n="dash_owed_to_me_desc">Debts where you paid upfront and are awaiting reimbursement</p>
+                    </div>
+                    <button type="button" id="btn-refresh-debts" class="glass-btn mini-btn" title="Refresh from Supabase">
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                        <span>Sync</span>
+                    </button>
+                </div>
+                <div id="list-who-owes-me" class="cloud-debt-list">
+                    <p class="empty-state" data-i18n="no_one_owes_you">Nobody owes you money at the moment.</p>
+                </div>
+            </div>
+
+            <!-- Column 2: What I Owe to Others -->
+            <div class="card glass-panel">
+                <div class="card-header">
+                    <div>
+                        <h3 class="card-title text-danger" data-i18n="dash_i_owe_title">Debts I Owe to Others</h3>
+                        <p class="card-desc" data-i18n="dash_i_owe_desc">Outstanding payments you need to settle</p>
+                    </div>
+                </div>
+                <div id="list-i-owe" class="cloud-debt-list">
+                    <p class="empty-state" data-i18n="you_owe_nothing">You don't owe anyone any money! 🎉</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Saved Cloud Bills History -->
+        <div class="card glass-panel" style="margin-top: 24px;">
+            <div class="card-header">
+                <div>
+                    <h3 class="card-title" data-i18n="dash_bills_history">Saved Bills History</h3>
+                    <p class="card-desc" data-i18n="dash_bills_history_desc">Bills stored in your Supabase database</p>
+                </div>
+                <span class="count-pill" id="cloud-bills-count">0 bills</span>
+            </div>
+            <div id="list-cloud-bills" class="cloud-bills-list">
+                <p class="empty-state" data-i18n="no_cloud_bills">No bills saved to cloud yet.</p>
+            </div>
+        </div>
+    </section>
+</div><!-- /#main-app-content -->
+</div><!-- /.app-wrapper -->
+
+    <!-- Detailed User Profile Modal -->
+    <div id="profile-modal" class="glass-modal-backdrop" style="display: none;">
+        <div class="glass-modal profile-modal-card">
             <div class="modal-header">
                 <div class="modal-user-info">
-                    <div class="user-avatar" id="modal-avatar">👤</div>
+                    <div class="user-avatar" id="profile-avatar">👤</div>
                     <div>
-                        <h3 id="modal-person-name" class="modal-title">Person Name</h3>
-                        <p class="modal-sub" id="modal-person-sub">Detailed bill breakdown</p>
+                        <h3 id="profile-name" class="modal-title">Person Name</h3>
+                        <p class="modal-sub" id="profile-sub" data-i18n="profile_sub">Member Profile & Settlement</p>
                     </div>
                 </div>
-                <button type="button" id="btn-close-modal" class="icon-close-btn">&times;</button>
+                <button type="button" id="btn-close-profile-modal" class="icon-close-btn" title="Close">&times;</button>
             </div>
-            <div class="modal-body">
-                <ul id="modal-items-list" class="modal-receipt-list"></ul>
-                <div class="modal-summary-card">
-                    <div class="modal-total-line">
-                        <span data-i18n="modal_subtotal">Items Share:</span>
-                        <span id="modal-subtotal-val">RM 0.00</span>
+
+            <div class="modal-body profile-modal-body">
+                <!-- SECTION A: Purchase History -->
+                <div class="profile-section">
+                    <div class="profile-section-header">
+                        <span class="profile-section-badge">A</span>
+                        <h4 class="profile-section-title" data-i18n="profile_sec_a_title">Purchase History</h4>
                     </div>
-                    <div class="modal-total-line" id="modal-tax-line" style="display: none;">
-                        <span data-i18n="modal_extra">Tax & Fees Share:</span>
-                        <span id="modal-extra-val">+RM 0.00</span>
-                    </div>
-                    <div class="modal-total-line highlight">
-                        <span data-i18n="modal_final">Total to Pay:</span>
-                        <strong id="modal-final-val">RM 0.00</strong>
+                    <ul id="profile-items-list" class="profile-items-list"></ul>
+                    
+                    <div class="modal-summary-card">
+                        <div class="modal-total-line">
+                            <span data-i18n="modal_subtotal">Items Share:</span>
+                            <span id="profile-subtotal-val">RM 0.00</span>
+                        </div>
+                        <div class="modal-total-line" id="profile-tax-line" style="display: none;">
+                            <span data-i18n="modal_extra">Tax & Fees Share:</span>
+                            <span id="profile-extra-val">+RM 0.00</span>
+                        </div>
+                        <div class="modal-total-line highlight">
+                            <span data-i18n="modal_final">Total to Pay:</span>
+                            <strong id="profile-final-val">RM 0.00</strong>
+                        </div>
                     </div>
                 </div>
+
+                <!-- SECTION B: Settlement / Who to Pay -->
+                <div class="profile-section">
+                    <div class="profile-section-header">
+                        <span class="profile-section-badge recipient">B</span>
+                        <h4 class="profile-section-title" data-i18n="profile_sec_b_title">Settlement & Who to Pay</h4>
+                    </div>
+
+                    <!-- Payment Status Banner -->
+                    <div class="profile-balance-banner" id="profile-balance-banner">
+                        <div class="banner-stat">
+                            <span class="stat-label" data-i18n="upfront_paid">Paid Upfront:</span>
+                            <strong id="profile-paid-val" class="stat-value">RM 0.00</strong>
+                        </div>
+                        <div class="banner-stat">
+                            <span class="stat-label" data-i18n="net_balance">Net Balance:</span>
+                            <span id="profile-balance-val" class="payer-balance-pill">RM 0.00</span>
+                        </div>
+                    </div>
+
+                    <!-- Settlement Instructions for this person -->
+                    <div id="profile-settlement-list" class="profile-settlement-list"></div>
+                </div>
             </div>
-            <div class="modal-footer">
-                <button type="button" id="btn-dismiss-modal" class="glass-btn full-width" data-i18n="close">Close</button>
+
+            <div class="modal-footer profile-modal-footer">
+                <button type="button" id="btn-profile-wa" class="glass-btn-social wa-btn mini-btn">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor"><path d="M12.031 2c-5.508 0-9.986 4.477-9.986 9.984 0 1.76.459 3.481 1.332 5.003L2 22l5.176-1.357c1.469.801 3.125 1.225 4.855 1.225 5.508 0 9.986-4.477 9.986-9.984 0-5.507-4.478-9.984-9.986-9.984zm5.795 14.137c-.244.685-1.42 1.34-1.956 1.398-.519.057-1.196.082-1.93-.153-1.644-.526-3.84-2.28-4.992-3.877-1.258-1.745-1.408-2.617-1.408-3.327 0-.756.326-1.464.733-1.872.244-.244.53-.306.708-.306.177 0 .354.004.51.011.168.008.39-.063.61.465.228.547.781 1.905.85 2.045.068.14.114.306.023.491-.092.186-.138.303-.274.464-.137.162-.29.362-.414.485-.138.138-.282.288-.122.563.161.275.714 1.176 1.534 1.906 1.054.939 1.942 1.23 2.217 1.368.275.137.436.115.597-.07.161-.184.688-.801.871-1.077.184-.275.367-.23.611-.137.244.092 1.554.733 1.821.868.267.136.446.204.513.318.069.115.069.664-.175 1.349z"/></svg>
+                    <span>WhatsApp</span>
+                </button>
+                <button type="button" id="btn-profile-copy" class="glass-btn-social copy-btn mini-btn">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                    <span data-i18n="btn_copy">Copy</span>
+                </button>
+                <button type="button" id="btn-dismiss-profile-modal" class="glass-btn" data-i18n="close">Close</button>
             </div>
         </div>
     </div>
@@ -315,6 +566,8 @@
     <!-- Glass Toast Notifications Container -->
     <div id="toast-container" class="toast-stack"></div>
 
+    <!-- Supabase JS Client via CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="script.js"></script>
 </body>
 </html>
