@@ -45,6 +45,10 @@
                         <span data-i18n="auth_logout">Log Out</span>
                     </button>
                 </div>
+                <button id="btn-header-login" class="glass-btn glass-btn-primary mini-btn" style="display: none;" title="Sign In">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" x2="3" y1="12" y2="12"/></svg>
+                    <span data-i18n="auth_btn_login">Sign In</span>
+                </button>
                 <button id="btn-reset" class="glass-btn glass-btn-danger-soft" title="Reset all data">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
                     <span data-i18n="btn_reset">Reset</span>
@@ -110,6 +114,15 @@
 
                     <button type="submit" id="btn-auth-submit" class="glass-btn-primary auth-submit-btn">
                         <span id="auth-btn-text" data-i18n="auth_btn_login">Sign In</span>
+                    </button>
+
+                    <div class="auth-divider">
+                        <span data-i18n="auth_or">or</span>
+                    </div>
+
+                    <button type="button" id="btn-guest-mode" class="glass-btn guest-btn">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                        <span data-i18n="auth_btn_guest">Continue as Guest (Offline)</span>
                     </button>
                 </form>
             </div>
