@@ -91,7 +91,28 @@ const i18n = {
         wa_buyer_bill: "WhatsApp",
         no_items_bought: "Has not shared any items yet",
         buyer_bill_copied: "Bill copied!",
-        tax_fee_share: "Tax & Fees:"
+        tax_fee_share: "Tax & Fees:",
+        step4_payment: "Who Paid The Cashier?",
+        step4_payment_desc: "Record who paid upfront at the counter",
+        paid_in_full: "Paid All",
+        paid_total_label: "Total Paid:",
+        settlement_title: "Settlement & Transfers",
+        settlement_desc: "Direct transfers to balance all payments",
+        settlement_no_payments: "Enter who paid in Step 4 to calculate transfers.",
+        settlement_all_settled: "All settled! Nobody owes anyone anything.",
+        needs_to_pay: "needs to pay",
+        balance_gets_back: "Gets back",
+        balance_owes: "Owes",
+        balance_settled: "Settled",
+        step5: "Share & Export",
+        step5_desc: "Send receipt to friends or copy breakdown",
+        toast_payment_updated: "Payment updated.",
+        status_exact: "✅ Payments match grand total exactly",
+        status_remaining: "⚠️ Remaining to match bill:",
+        status_overpaid: "ℹ️ Overpaid cashier by:",
+        receipt_payments_title: "💳 *Payments & Balances:*",
+        receipt_settlement_title: "🔄 *Settlement Transfers:*",
+        receipt_all_settled: "✅ All debts settled! No transfers needed."
     },
     ms: {
         title: "Split Bil",
@@ -163,7 +184,28 @@ const i18n = {
         wa_buyer_bill: "WhatsApp",
         no_items_bought: "Belum berkongsi sebarang barang",
         buyer_bill_copied: "Bil berjaya disalin!",
-        tax_fee_share: "Cukai & Caj:"
+        tax_fee_share: "Cukai & Caj:",
+        step4_payment: "Siapa Bayar Di Kaunter?",
+        step4_payment_desc: "Rekod siapa yang bayar dahulu semasa checkout",
+        paid_in_full: "Bayar Semua",
+        paid_total_label: "Jumlah Dibayar:",
+        settlement_title: "Penyelesaian & Pindahan",
+        settlement_desc: "Pindahan terus untuk selesaikan semua baki",
+        settlement_no_payments: "Masukkan bayaran di Bahagian 4 untuk kira siapa bayar siapa.",
+        settlement_all_settled: "Semua selesai! Tiada sesiapa berhutang lagi.",
+        needs_to_pay: "perlu bayar kepada",
+        balance_gets_back: "Dapat balik",
+        balance_owes: "Perlu bayar",
+        balance_settled: "Selesai",
+        step5: "Kongsi & Eksport",
+        step5_desc: "Hantar resit kepada rakan atau salin teks",
+        toast_payment_updated: "Bayaran dikemaskini.",
+        status_exact: "✅ Bayaran sama tepat dengan jumlah bil",
+        status_remaining: "⚠️ Baki belum dibayar di kaunter:",
+        status_overpaid: "ℹ️ Terlebih bayar di kaunter sebanyak:",
+        receipt_payments_title: "💳 *Bayaran & Baki:*",
+        receipt_settlement_title: "🔄 *Penyelesaian & Pindahan:*",
+        receipt_all_settled: "✅ Semua hutang selesai! Tiada pindahan wang diperlukan."
     }
 };
 
@@ -192,6 +234,13 @@ const viewItems = document.getElementById('view-items');
 const viewBuyers = document.getElementById('view-buyers');
 const buyersBreakdownList = document.getElementById('buyers-breakdown-list');
 const emptyBuyersState = document.getElementById('empty-buyers-state');
+
+// Cashier payments & Settlement elements
+const payerInputsContainer = document.getElementById('payer-inputs-container');
+const paidTotalPill = document.getElementById('paid-total-pill');
+const paymentStatusBar = document.getElementById('payment-status-bar');
+const settlementContainer = document.getElementById('settlement-container');
+const settlementCountPill = document.getElementById('settlement-count-pill');
 
 const btnToggleExtras = document.getElementById('btn-toggle-extras');
 const extrasPanel = document.getElementById('extras-panel');
@@ -254,6 +303,16 @@ function loadFromStorage() {
         if (saved) {
             const parsed = JSON.parse(saved);
             state = Object.assign(state, parsed);
+            if (state.people && Array.isArray(state.people)) {
+                state.people.forEach(p => {
+                    if (typeof p.amountPaid !== 'number' || isNaN(p.amountPaid)) {
+                        p.amountPaid = 0;
+                    }
+                    if (typeof p.balance !== 'number' || isNaN(p.balance)) {
+                        p.balance = 0;
+                    }
+                });
+            }
         }
     } catch (e) {
         console.warn('Could not load from localStorage:', e);
@@ -379,7 +438,9 @@ function addPerson() {
         id: state.personIdCounter++,
         name: name,
         debt: 0,
-        subtotal: 0
+        subtotal: 0,
+        amountPaid: 0,
+        balance: 0
     });
 
     inputPerson.value = '';
@@ -612,11 +673,16 @@ function recalculateAndRender() {
         highestDebtPerson.debt += diff;
     }
 
+    // 3.5 Settlement & Balances Calculation
+    const transactions = calculateSettlements(grandTotal);
+
     // 4. Render Updates
     renderReceiptItems();
     renderBuyersBreakdown();
     updateTotalsDisplay(subtotal, taxTotal, serviceTotal, discountTotal, grandTotal);
     renderDebtCards();
+    renderPayerInputs(grandTotal);
+    renderSettlementUI(transactions, grandTotal);
 }
 
 function renderReceiptItems() {
@@ -702,12 +768,21 @@ function renderDebtCards() {
         const sharedItemsCount = state.items.filter(item => item.sharedBy.includes(p.id)).length;
         const firstLetter = p.name.charAt(0).toUpperCase();
 
+        let paidBadge = '';
+        if (typeof p.amountPaid === 'number' && p.amountPaid > 0) {
+            const bal = p.balance || 0;
+            const balClass = bal >= 0 ? 'color:var(--color-success);' : 'color:var(--color-danger);';
+            const balSign = bal >= 0 ? '+' : '-';
+            paidBadge = `<div style="font-size:11px; ${balClass} font-weight:700;">Paid: RM ${p.amountPaid.toFixed(2)} (${balSign}RM ${Math.abs(bal).toFixed(2)})</div>`;
+        }
+
         card.innerHTML = `
             <div class="debt-user">
                 <div class="debt-avatar">${firstLetter}</div>
                 <div>
                     <div class="debt-name">${p.name}</div>
                     <div class="debt-sub">${sharedItemsCount} ${sharedItemsCount === 1 ? t('item_count') : t('items_count')}</div>
+                    ${paidBadge}
                 </div>
             </div>
             <div class="debt-amt">RM ${p.debt.toFixed(2)}</div>
@@ -718,6 +793,263 @@ function renderDebtCards() {
         });
 
         debtCardsContainer.appendChild(card);
+    });
+}
+
+// -------------------------------------------------------------
+// SETTLEMENT & CASHIER PAYMENTS LOGIC
+// -------------------------------------------------------------
+
+// Greedy Settlement Matching Algorithm
+function calculateSettlements(grandTotal) {
+    // 1. Calculate balance for each person: balance = amountPaid - debt
+    state.people.forEach(p => {
+        const paid = (typeof p.amountPaid === 'number' && !isNaN(p.amountPaid)) ? p.amountPaid : 0;
+        p.amountPaid = paid;
+        p.balance = Math.round((paid - p.debt) * 100) / 100;
+    });
+
+    // 2. Separate into debtors and creditors
+    const debtors = [];
+    const creditors = [];
+
+    state.people.forEach(p => {
+        if (p.balance < -0.005) {
+            debtors.push({ id: p.id, name: p.name, amount: Math.round(-p.balance * 100) / 100 });
+        } else if (p.balance > 0.005) {
+            creditors.push({ id: p.id, name: p.name, amount: Math.round(p.balance * 100) / 100 });
+        }
+    });
+
+    // 3. Sort descending for greedy optimal matches
+    debtors.sort((a, b) => b.amount - a.amount);
+    creditors.sort((a, b) => b.amount - a.amount);
+
+    const transactions = [];
+    let dIdx = 0;
+    let cIdx = 0;
+
+    while (dIdx < debtors.length && cIdx < creditors.length) {
+        const debtor = debtors[dIdx];
+        const creditor = creditors[cIdx];
+        const transfer = Math.round(Math.min(debtor.amount, creditor.amount) * 100) / 100;
+
+        if (transfer > 0.005) {
+            transactions.push({
+                fromId: debtor.id,
+                from: debtor.name,
+                toId: creditor.id,
+                to: creditor.name,
+                amount: transfer
+            });
+            debtor.amount = Math.round((debtor.amount - transfer) * 100) / 100;
+            creditor.amount = Math.round((creditor.amount - transfer) * 100) / 100;
+        }
+
+        if (debtor.amount <= 0.005) dIdx++;
+        if (creditor.amount <= 0.005) cIdx++;
+    }
+
+    return transactions;
+}
+
+// Render inputs for Who Paid The Cashier?
+function renderPayerInputs(grandTotal) {
+    if (!payerInputsContainer) return;
+    payerInputsContainer.innerHTML = '';
+
+    if (state.people.length === 0) {
+        payerInputsContainer.innerHTML = `<p class="empty-state">${t('empty_people')}</p>`;
+        if (paidTotalPill) paidTotalPill.textContent = `${t('paid_total_label')} RM 0.00`;
+        if (paymentStatusBar) paymentStatusBar.style.display = 'none';
+        return;
+    }
+
+    let totalPaid = 0;
+
+    state.people.forEach(person => {
+        totalPaid += person.amountPaid || 0;
+        const row = document.createElement('div');
+        row.className = 'payer-row';
+        const initial = person.name.charAt(0).toUpperCase();
+
+        let balanceHtml = '';
+        if (person.balance > 0.005) {
+            balanceHtml = `<span class="payer-balance-pill balance-positive">+RM ${person.balance.toFixed(2)} (${t('balance_gets_back')})</span>`;
+        } else if (person.balance < -0.005) {
+            balanceHtml = `<span class="payer-balance-pill balance-negative">-RM ${Math.abs(person.balance).toFixed(2)} (${t('balance_owes')})</span>`;
+        } else {
+            balanceHtml = `<span class="payer-balance-pill balance-zero">RM 0.00 (${t('balance_settled')})</span>`;
+        }
+
+        row.innerHTML = `
+            <div class="payer-person">
+                <span class="badge-avatar">${initial}</span>
+                <div class="payer-person-info">
+                    <span class="payer-name">${person.name}</span>
+                    <span class="payer-debt-tag">${t('modal_final')} RM ${person.debt.toFixed(2)}</span>
+                </div>
+            </div>
+            <div class="payer-controls">
+                <div class="payer-input-wrap">
+                    <span class="currency-tag">RM</span>
+                    <input type="number" class="glass-input payer-input" data-person-id="${person.id}" value="${person.amountPaid > 0 ? person.amountPaid.toFixed(2) : ''}" placeholder="0.00" min="0" step="0.01">
+                </div>
+                <button type="button" class="btn-paid-full" title="${t('paid_in_full')}">${t('paid_in_full')}</button>
+                ${balanceHtml}
+            </div>
+        `;
+
+        const input = row.querySelector('.payer-input');
+        input.addEventListener('input', () => {
+            const val = Math.max(0, parseFloat(input.value) || 0);
+            person.amountPaid = Math.round(val * 100) / 100;
+            saveToStorage();
+            updateBalancesAndSettlementLive(grandTotal);
+        });
+
+        input.addEventListener('change', () => {
+            const val = Math.max(0, parseFloat(input.value) || 0);
+            person.amountPaid = Math.round(val * 100) / 100;
+            saveToStorage();
+            recalculateAndRender();
+        });
+
+        const btnFull = row.querySelector('.btn-paid-full');
+        btnFull.addEventListener('click', () => {
+            state.people.forEach(p => {
+                if (p.id === person.id) {
+                    p.amountPaid = Math.round(grandTotal * 100) / 100;
+                } else {
+                    p.amountPaid = 0;
+                }
+            });
+            saveToStorage();
+            recalculateAndRender();
+            showToast(`${person.name}: ${t('toast_payment_updated')}`, 'info');
+        });
+
+        payerInputsContainer.appendChild(row);
+    });
+
+    if (paidTotalPill) {
+        paidTotalPill.textContent = `${t('paid_total_label')} RM ${totalPaid.toFixed(2)}`;
+    }
+
+    updatePaymentStatusBar(totalPaid, grandTotal);
+}
+
+// Live update of settlement & balance pills without wiping input focus
+function updateBalancesAndSettlementLive(grandTotal) {
+    const transactions = calculateSettlements(grandTotal);
+    let totalPaid = 0;
+
+    state.people.forEach(p => {
+        totalPaid += p.amountPaid || 0;
+        const inputEl = payerInputsContainer.querySelector(`[data-person-id="${p.id}"]`);
+        if (inputEl) {
+            const row = inputEl.closest('.payer-row');
+            if (row) {
+                const pill = row.querySelector('.payer-balance-pill');
+                if (pill) {
+                    if (p.balance > 0.005) {
+                        pill.className = 'payer-balance-pill balance-positive';
+                        pill.textContent = `+RM ${p.balance.toFixed(2)} (${t('balance_gets_back')})`;
+                    } else if (p.balance < -0.005) {
+                        pill.className = 'payer-balance-pill balance-negative';
+                        pill.textContent = `-RM ${Math.abs(p.balance).toFixed(2)} (${t('balance_owes')})`;
+                    } else {
+                        pill.className = 'payer-balance-pill balance-zero';
+                        pill.textContent = `RM 0.00 (${t('balance_settled')})`;
+                    }
+                }
+            }
+        }
+    });
+
+    if (paidTotalPill) {
+        paidTotalPill.textContent = `${t('paid_total_label')} RM ${totalPaid.toFixed(2)}`;
+    }
+
+    updatePaymentStatusBar(totalPaid, grandTotal);
+    renderSettlementUI(transactions, grandTotal);
+    renderDebtCards();
+}
+
+function updatePaymentStatusBar(totalPaid, grandTotal) {
+    if (!paymentStatusBar) return;
+    if (state.items.length > 0) {
+        paymentStatusBar.style.display = 'flex';
+        const diff = Math.round((totalPaid - grandTotal) * 100) / 100;
+        if (Math.abs(diff) < 0.01) {
+            paymentStatusBar.className = 'payment-status-bar matched';
+            paymentStatusBar.innerHTML = `<span>${t('status_exact')}</span> <strong>RM ${grandTotal.toFixed(2)}</strong>`;
+        } else if (diff < -0.01) {
+            paymentStatusBar.className = 'payment-status-bar unmatched';
+            paymentStatusBar.innerHTML = `<span>${t('status_remaining')}</span> <strong>RM ${Math.abs(diff).toFixed(2)} (${t('paid_total_label')} RM ${totalPaid.toFixed(2)} / RM ${grandTotal.toFixed(2)})</strong>`;
+        } else {
+            paymentStatusBar.className = 'payment-status-bar unmatched';
+            paymentStatusBar.innerHTML = `<span>${t('status_overpaid')}</span> <strong>+RM ${diff.toFixed(2)}</strong>`;
+        }
+    } else {
+        paymentStatusBar.style.display = 'none';
+    }
+}
+
+// Render Settlement Transfer Cards
+function renderSettlementUI(transactions, grandTotal) {
+    if (!settlementContainer) return;
+    settlementContainer.innerHTML = '';
+
+    const count = transactions.length;
+    if (settlementCountPill) {
+        settlementCountPill.textContent = `${count} ${count === 1 ? 'transfer' : 'transfers'}`;
+    }
+
+    const totalPaid = state.people.reduce((sum, p) => sum + (p.amountPaid || 0), 0);
+
+    if (state.people.length === 0 || state.items.length === 0) {
+        settlementContainer.innerHTML = `<p class="empty-state">${t('settlement_no_payments')}</p>`;
+        return;
+    }
+
+    if (totalPaid === 0) {
+        settlementContainer.innerHTML = `<p class="empty-state">${t('settlement_no_payments')}</p>`;
+        return;
+    }
+
+    if (transactions.length === 0) {
+        settlementContainer.innerHTML = `
+            <div class="settlement-success-box">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"/></svg>
+                <span>${t('settlement_all_settled')}</span>
+            </div>
+        `;
+        return;
+    }
+
+    transactions.forEach(tr => {
+        const card = document.createElement('div');
+        card.className = 'settlement-card';
+        const fromInitial = tr.from.charAt(0).toUpperCase();
+        const toInitial = tr.to.charAt(0).toUpperCase();
+
+        card.innerHTML = `
+            <div class="settlement-payer">
+                <span class="badge-avatar">${fromInitial}</span>
+                <span>${tr.from}</span>
+            </div>
+            <div class="settlement-arrow-box">
+                <span>${t('needs_to_pay')}</span>
+                <span class="settlement-amount">RM ${tr.amount.toFixed(2)}</span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="settlement-arrow-icon"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+            </div>
+            <div class="settlement-receiver">
+                <span>${tr.to}</span>
+                <span class="badge-avatar recipient">${toInitial}</span>
+            </div>
+        `;
+        settlementContainer.appendChild(card);
     });
 }
 
@@ -972,6 +1304,32 @@ function generateReceiptText() {
             text += `👤 *${p.name}*: RM ${p.debt.toFixed(2)}\n`;
         }
     });
+
+    // Check if any payments were recorded
+    const totalPaid = state.people.reduce((sum, p) => sum + (p.amountPaid || 0), 0);
+    if (totalPaid > 0) {
+        text += `\n━━━━━━━━━━━━━━━━━━━━━\n`;
+        text += `${t('receipt_payments_title')}\n`;
+        state.people.forEach(p => {
+            const paid = p.amountPaid || 0;
+            const bal = p.balance || 0;
+            let balDesc = '';
+            if (bal > 0.005) balDesc = ` (+RM ${bal.toFixed(2)} ${t('balance_gets_back')})`;
+            else if (bal < -0.005) balDesc = ` (-RM ${Math.abs(bal).toFixed(2)} ${t('balance_owes')})`;
+            else balDesc = ` (${t('balance_settled')})`;
+            text += `• ${p.name}: RM ${paid.toFixed(2)}${balDesc}\n`;
+        });
+
+        const transactions = calculateSettlements(grandTotal);
+        text += `\n${t('receipt_settlement_title')}\n`;
+        if (transactions.length > 0) {
+            transactions.forEach(tr => {
+                text += `👉 *${tr.from}* ${t('needs_to_pay')} *${tr.to}* RM ${tr.amount.toFixed(2)}\n`;
+            });
+        } else {
+            text += `${t('receipt_all_settled')}\n`;
+        }
+    }
 
     text += `\n_${t('receipt_footer')}_`;
     return text;
