@@ -183,7 +183,34 @@ const i18n = {
         debt_confirmed_by: "Confirmed by",
         btn_send_proof_wa: "WhatsApp Proof",
         only_creditor_can_settle: "Only the creditor can mark this debt as settled.",
-        wa_proof_msg: "Hi %creditor%, I have made the payment of RM %amount% for the bill. Please confirm it in the Bill Splitter app: %url%"
+        wa_proof_msg: "Hi %creditor%, I have made the payment of RM %amount% for the bill. Please confirm it in the Bill Splitter app: %url%",
+        nav_friends: "Friends",
+        friends_add_title: "Add Friend by Email",
+        friends_add_desc: "Send a friend request using their registered email address",
+        btn_send_friend_req: "Send Request",
+        friends_incoming_title: "Incoming Requests",
+        friends_incoming_desc: "People who want to add you as a friend",
+        no_incoming_requests: "No pending friend requests.",
+        friends_my_list_title: "My Friends",
+        friends_my_list_desc: "Friends you can quickly select when splitting a bill",
+        no_friends_yet: "No friends added yet. Send requests above!",
+        friends_sent_title: "Sent Requests",
+        friends_sent_desc: "Waiting for your friends to accept",
+        no_sent_requests: "No pending sent requests.",
+        btn_accept: "✓ Accept",
+        btn_reject: "✕ Reject",
+        btn_remove_friend: "Unfriend",
+        btn_cancel_request: "Cancel",
+        quick_friends_label: "⚡ Quick Add Friends:",
+        toast_req_sent: "Friend request sent!",
+        toast_req_accepted: "Friend request accepted!",
+        toast_req_rejected: "Friend request rejected.",
+        toast_friend_removed: "Friend removed.",
+        toast_user_not_found: "No user found with this email.",
+        toast_cannot_friend_self: "You cannot add yourself as a friend!",
+        toast_already_friends: "You are already friends with this user!",
+        toast_req_already_pending: "A friend request is already pending.",
+        toast_confirm_remove_friend: "Are you sure you want to remove this friend?"
     },
     ms: {
         title: "Split Bil",
@@ -347,7 +374,34 @@ const i18n = {
         debt_confirmed_by: "Disahkan selesai oleh",
         btn_send_proof_wa: "WhatsApp Bukti",
         only_creditor_can_settle: "Hanya pemiutang boleh tandakan hutang ini sebagai selesai.",
-        wa_proof_msg: "Hai %creditor%, saya dah buat bayaran RM %amount% untuk bil. Boleh tolong sahkan di aplikasi Split Bil: %url%"
+        wa_proof_msg: "Hai %creditor%, saya dah buat bayaran RM %amount% untuk bil. Boleh tolong sahkan di aplikasi Split Bil: %url%",
+        nav_friends: "Rakan",
+        friends_add_title: "Tambah Rakan Melalui Emel",
+        friends_add_desc: "Hantar permintaan rakan menggunakan emel berdaftar mereka",
+        btn_send_friend_req: "Hantar Permintaan",
+        friends_incoming_title: "Permintaan Masuk",
+        friends_incoming_desc: "Pengguna yang ingin menambah anda sebagai rakan",
+        no_incoming_requests: "Tiada permintaan rakan yang menunggu.",
+        friends_my_list_title: "Rakan Saya",
+        friends_my_list_desc: "Rakan yang boleh dipilih pantas semasa mengira bil",
+        no_friends_yet: "Belum ada rakan. Hantar permintaan di atas!",
+        friends_sent_title: "Permintaan Dihantar",
+        friends_sent_desc: "Menunggu pengesahan daripada rakan anda",
+        no_sent_requests: "Tiada permintaan keluar.",
+        btn_accept: "✓ Terima",
+        btn_reject: "✕ Tolak",
+        btn_remove_friend: "Padam",
+        btn_cancel_request: "Batal",
+        quick_friends_label: "⚡ Tambah Pantas Rakan:",
+        toast_req_sent: "Permintaan rakan telah dihantar!",
+        toast_req_accepted: "Permintaan rakan diterima!",
+        toast_req_rejected: "Permintaan rakan ditolak.",
+        toast_friend_removed: "Rakan telah dipadam.",
+        toast_user_not_found: "Tiada pengguna berdaftar dengan emel ini.",
+        toast_cannot_friend_self: "Anda tidak boleh tambah diri sendiri sebagai rakan!",
+        toast_already_friends: "Anda sudah berkawan dengan pengguna ini!",
+        toast_req_already_pending: "Permintaan rakan sedang menunggu respon.",
+        toast_confirm_remove_friend: "Adakah anda pasti mahu memadam rakan ini?"
     }
 };
 
@@ -367,6 +421,8 @@ let isGuestMode = false;
 let authMode = 'login'; // 'login' or 'signup'
 let cloudDebts = [];
 let cloudBills = [];
+let cloudFriendships = [];
+let cloudFriendsUsers = [];
 let currentAppTab = 'calculator';
 
 // -------------------------------------------------------------
@@ -410,9 +466,23 @@ const btnGuestMode = document.getElementById('btn-guest-mode');
 const mainAppContent = document.getElementById('main-app-content');
 const navBtnCalculator = document.getElementById('nav-btn-calculator');
 const navBtnDashboard = document.getElementById('nav-btn-dashboard');
+const navBtnFriends = document.getElementById('nav-btn-friends');
 const navDebtCount = document.getElementById('nav-debt-count');
+const navFriendsCount = document.getElementById('nav-friends-count');
 const viewCalculator = document.getElementById('view-calculator');
 const viewDashboard = document.getElementById('view-dashboard');
+const viewFriends = document.getElementById('view-friends');
+
+// Friends View Elements
+const formSendFriendRequest = document.getElementById('form-send-friend-request');
+const inputFriendEmail = document.getElementById('input-friend-email');
+const btnSendFriendReq = document.getElementById('btn-send-friend-req');
+const listIncomingRequests = document.getElementById('list-incoming-requests');
+const incomingRequestsCount = document.getElementById('incoming-requests-count');
+const listMyFriends = document.getElementById('list-my-friends');
+const myFriendsCount = document.getElementById('my-friends-count');
+const listSentRequests = document.getElementById('list-sent-requests');
+const sentRequestsCount = document.getElementById('sent-requests-count');
 
 // Step 1: People
 const inputPerson = document.getElementById('input-person');
@@ -421,6 +491,8 @@ const btnAddPerson = document.getElementById('btn-add-person');
 const userQuickAddWrap = document.getElementById('user-quick-add-wrap');
 const btnQuickAddMe = document.getElementById('btn-quick-add-me');
 const quickAddMeLabel = document.getElementById('quick-add-me-label');
+const quickFriendsWrap = document.getElementById('quick-friends-wrap');
+const quickFriendsChips = document.getElementById('quick-friends-chips');
 const peopleBadges = document.getElementById('people-badges');
 const emptyPeopleHint = document.getElementById('empty-people-hint');
 const peopleCountEl = document.getElementById('people-count');
@@ -910,6 +982,7 @@ function renderPeopleUI() {
     }
 
     renderDynamicCheckboxes();
+    renderQuickFriendsChips();
 }
 
 // -------------------------------------------------------------
@@ -2044,14 +2117,26 @@ function switchAppTab(tab) {
     if (tab === 'calculator') {
         if (navBtnCalculator) navBtnCalculator.classList.add('active');
         if (navBtnDashboard) navBtnDashboard.classList.remove('active');
+        if (navBtnFriends) navBtnFriends.classList.remove('active');
         if (viewCalculator) viewCalculator.style.display = 'block';
         if (viewDashboard) viewDashboard.style.display = 'none';
+        if (viewFriends) viewFriends.style.display = 'none';
     } else if (tab === 'dashboard') {
         if (navBtnDashboard) navBtnDashboard.classList.add('active');
         if (navBtnCalculator) navBtnCalculator.classList.remove('active');
+        if (navBtnFriends) navBtnFriends.classList.remove('active');
         if (viewDashboard) viewDashboard.style.display = 'block';
         if (viewCalculator) viewCalculator.style.display = 'none';
+        if (viewFriends) viewFriends.style.display = 'none';
         loadCloudData();
+    } else if (tab === 'friends') {
+        if (navBtnFriends) navBtnFriends.classList.add('active');
+        if (navBtnCalculator) navBtnCalculator.classList.remove('active');
+        if (navBtnDashboard) navBtnDashboard.classList.remove('active');
+        if (viewFriends) viewFriends.style.display = 'block';
+        if (viewCalculator) viewCalculator.style.display = 'none';
+        if (viewDashboard) viewDashboard.style.display = 'none';
+        loadCloudFriends();
     }
 }
 
@@ -2061,6 +2146,10 @@ if (navBtnCalculator) {
 
 if (navBtnDashboard) {
     navBtnDashboard.addEventListener('click', () => switchAppTab('dashboard'));
+}
+
+if (navBtnFriends) {
+    navBtnFriends.addEventListener('click', () => switchAppTab('friends'));
 }
 
 // -------------------------------------------------------------
@@ -2450,6 +2539,7 @@ async function loadCloudData() {
         cloudBills = bills || [];
 
         renderCloudDashboard();
+        await loadCloudFriends();
     } catch (err) {
         console.error('Error fetching cloud data:', err);
     }
@@ -2754,6 +2844,396 @@ async function deleteCloudBill(billId) {
         console.error('Error deleting bill:', e);
         showToast('Failed to delete bill.', 'error');
     }
+}
+
+// -------------------------------------------------------------
+// FRIENDS MANAGEMENT (CLOUD SYNC, REQUESTS, ACCEPT/REJECT)
+// -------------------------------------------------------------
+async function loadCloudFriends() {
+    if (!currentUser || !supabaseClient) return;
+
+    try {
+        const { data: friendships, error: fErr } = await supabaseClient
+            .from('friendships')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (fErr) {
+            console.warn('Friendships table not available yet:', fErr.message);
+            cloudFriendships = [];
+            renderFriendsUI();
+            return;
+        }
+
+        cloudFriendships = friendships || [];
+
+        // Fetch users involved in friendships
+        const userIds = new Set();
+        cloudFriendships.forEach(f => {
+            userIds.add(f.sender_id);
+            userIds.add(f.receiver_id);
+        });
+
+        if (userIds.size > 0) {
+            const { data: users, error: uErr } = await supabaseClient
+                .from('users')
+                .select('id, email, display_name')
+                .in('id', Array.from(userIds));
+
+            if (!uErr && users) {
+                cloudFriendsUsers = users;
+            }
+        }
+
+        renderFriendsUI();
+    } catch (e) {
+        console.error('Error loading friends:', e);
+    }
+}
+
+async function sendFriendRequest(targetEmail) {
+    if (!currentUser || !supabaseClient) return;
+    const email = (targetEmail || '').trim().toLowerCase();
+
+    if (!email) {
+        showToast(t('person_email_ph'), 'error');
+        return;
+    }
+
+    if (currentUser.email && currentUser.email.toLowerCase().trim() === email) {
+        showToast(t('toast_cannot_friend_self'), 'error');
+        return;
+    }
+
+    if (btnSendFriendReq) {
+        btnSendFriendReq.disabled = true;
+    }
+
+    try {
+        // 1. Find user in public.users
+        const { data: targetUser, error: uErr } = await supabaseClient
+            .from('users')
+            .select('id, email, display_name')
+            .eq('email', email)
+            .maybeSingle();
+
+        if (uErr || !targetUser) {
+            showToast(t('toast_user_not_found'), 'error');
+            return;
+        }
+
+        // 2. Check existing friendship
+        const existing = cloudFriendships.find(f =>
+            (f.sender_id === currentUser.id && f.receiver_id === targetUser.id) ||
+            (f.sender_id === targetUser.id && f.receiver_id === currentUser.id)
+        );
+
+        if (existing) {
+            if (existing.status === 'accepted') {
+                showToast(t('toast_already_friends'), 'info');
+                return;
+            } else if (existing.status === 'pending') {
+                showToast(t('toast_req_already_pending'), 'info');
+                return;
+            } else if (existing.status === 'rejected') {
+                // Re-open request
+                const { error: upErr } = await supabaseClient
+                    .from('friendships')
+                    .update({ status: 'pending', sender_id: currentUser.id, receiver_id: targetUser.id, updated_at: new Date().toISOString() })
+                    .eq('id', existing.id);
+
+                if (upErr) throw upErr;
+                showToast(t('toast_req_sent'), 'success');
+                if (inputFriendEmail) inputFriendEmail.value = '';
+                await loadCloudFriends();
+                return;
+            }
+        }
+
+        // 3. Insert new request
+        const { error: insErr } = await supabaseClient
+            .from('friendships')
+            .insert([{
+                sender_id: currentUser.id,
+                receiver_id: targetUser.id,
+                status: 'pending'
+            }]);
+
+        if (insErr) throw insErr;
+        showToast(t('toast_req_sent'), 'success');
+        if (inputFriendEmail) inputFriendEmail.value = '';
+        await loadCloudFriends();
+    } catch (e) {
+        console.error('Error sending friend request:', e);
+        showToast(e.message || 'Failed to send request.', 'error');
+    } finally {
+        if (btnSendFriendReq) {
+            btnSendFriendReq.disabled = false;
+        }
+    }
+}
+
+async function acceptFriendRequest(friendshipId) {
+    if (!supabaseClient) return;
+    try {
+        const { error } = await supabaseClient
+            .from('friendships')
+            .update({ status: 'accepted', updated_at: new Date().toISOString() })
+            .eq('id', friendshipId);
+
+        if (error) throw error;
+        showToast(t('toast_req_accepted'), 'success');
+        await loadCloudFriends();
+    } catch (e) {
+        console.error('Error accepting friend request:', e);
+        showToast('Failed to accept request.', 'error');
+    }
+}
+
+async function rejectFriendRequest(friendshipId) {
+    if (!supabaseClient) return;
+    try {
+        const { error } = await supabaseClient
+            .from('friendships')
+            .update({ status: 'rejected', updated_at: new Date().toISOString() })
+            .eq('id', friendshipId);
+
+        if (error) throw error;
+        showToast(t('toast_req_rejected'), 'info');
+        await loadCloudFriends();
+    } catch (e) {
+        console.error('Error rejecting friend request:', e);
+        showToast('Failed to reject request.', 'error');
+    }
+}
+
+async function removeFriend(friendshipId) {
+    if (!supabaseClient) return;
+    if (!confirm(t('toast_confirm_remove_friend'))) return;
+    try {
+        const { error } = await supabaseClient
+            .from('friendships')
+            .delete()
+            .eq('id', friendshipId);
+
+        if (error) throw error;
+        showToast(t('toast_friend_removed'), 'info');
+        await loadCloudFriends();
+    } catch (e) {
+        console.error('Error removing friend:', e);
+        showToast('Failed to remove friend.', 'error');
+    }
+}
+
+function renderFriendsUI() {
+    if (!currentUser) return;
+
+    const userMap = new Map();
+    cloudFriendsUsers.forEach(u => userMap.set(u.id, u));
+
+    // Incoming requests: receiver is me, status is pending
+    const incoming = cloudFriendships.filter(f => f.receiver_id === currentUser.id && f.status === 'pending');
+
+    // Sent requests: sender is me, status is pending
+    const sent = cloudFriendships.filter(f => f.sender_id === currentUser.id && f.status === 'pending');
+
+    // Accepted friends: either sender or receiver is me, status is accepted
+    const accepted = cloudFriendships.filter(f =>
+        (f.sender_id === currentUser.id || f.receiver_id === currentUser.id) && f.status === 'accepted'
+    );
+
+    // Nav badge
+    if (navFriendsCount) {
+        if (incoming.length > 0) {
+            navFriendsCount.textContent = incoming.length;
+            navFriendsCount.style.display = 'inline-block';
+        } else {
+            navFriendsCount.style.display = 'none';
+        }
+    }
+
+    // 1. Render Incoming Requests
+    if (incomingRequestsCount) incomingRequestsCount.textContent = incoming.length;
+    if (listIncomingRequests) {
+        listIncomingRequests.innerHTML = '';
+        if (incoming.length === 0) {
+            listIncomingRequests.innerHTML = `<p class="empty-state">${t('no_incoming_requests')}</p>`;
+        } else {
+            incoming.forEach(f => {
+                const sender = userMap.get(f.sender_id) || { display_name: 'Friend', email: '' };
+                const name = sender.display_name || (sender.email ? sender.email.split('@')[0] : 'User');
+                const initial = name.charAt(0).toUpperCase();
+
+                const row = document.createElement('div');
+                row.className = 'friend-row-item';
+                row.innerHTML = `
+                    <div class="friend-row-user">
+                        <span class="badge-avatar">${initial}</span>
+                        <div class="friend-row-info">
+                            <span class="friend-row-name">${name}</span>
+                            <span class="friend-row-email">${sender.email || ''}</span>
+                        </div>
+                    </div>
+                    <div class="friend-row-actions">
+                        <button type="button" class="btn-friend-accept">${t('btn_accept')}</button>
+                        <button type="button" class="btn-friend-reject">${t('btn_reject')}</button>
+                    </div>
+                `;
+
+                row.querySelector('.btn-friend-accept').addEventListener('click', () => acceptFriendRequest(f.id));
+                row.querySelector('.btn-friend-reject').addEventListener('click', () => rejectFriendRequest(f.id));
+
+                listIncomingRequests.appendChild(row);
+            });
+        }
+    }
+
+    // 2. Render My Friends List
+    if (myFriendsCount) myFriendsCount.textContent = `${accepted.length} friends`;
+    if (listMyFriends) {
+        listMyFriends.innerHTML = '';
+        if (accepted.length === 0) {
+            listMyFriends.innerHTML = `<p class="empty-state">${t('no_friends_yet')}</p>`;
+        } else {
+            accepted.forEach(f => {
+                const otherId = f.sender_id === currentUser.id ? f.receiver_id : f.sender_id;
+                const friend = userMap.get(otherId) || { display_name: 'Friend', email: '' };
+                const name = friend.display_name || (friend.email ? friend.email.split('@')[0] : 'Friend');
+                const initial = name.charAt(0).toUpperCase();
+
+                const row = document.createElement('div');
+                row.className = 'friend-row-item';
+                row.innerHTML = `
+                    <div class="friend-row-user">
+                        <span class="badge-avatar">${initial}</span>
+                        <div class="friend-row-info">
+                            <span class="friend-row-name">${name}</span>
+                            <span class="friend-row-email">${friend.email || ''}</span>
+                        </div>
+                    </div>
+                    <div class="friend-row-actions">
+                        <button type="button" class="btn-friend-remove" title="${t('btn_remove_friend')}">&times; ${t('btn_remove_friend')}</button>
+                    </div>
+                `;
+
+                row.querySelector('.btn-friend-remove').addEventListener('click', () => removeFriend(f.id));
+
+                listMyFriends.appendChild(row);
+            });
+        }
+    }
+
+    // 3. Render Sent Requests
+    if (sentRequestsCount) sentRequestsCount.textContent = sent.length;
+    if (listSentRequests) {
+        listSentRequests.innerHTML = '';
+        if (sent.length === 0) {
+            listSentRequests.innerHTML = `<p class="empty-state">${t('no_sent_requests')}</p>`;
+        } else {
+            sent.forEach(f => {
+                const target = userMap.get(f.receiver_id) || { display_name: 'Friend', email: '' };
+                const name = target.display_name || (target.email ? target.email.split('@')[0] : 'User');
+                const initial = name.charAt(0).toUpperCase();
+
+                const row = document.createElement('div');
+                row.className = 'friend-row-item';
+                row.innerHTML = `
+                    <div class="friend-row-user">
+                        <span class="badge-avatar">${initial}</span>
+                        <div class="friend-row-info">
+                            <span class="friend-row-name">${name}</span>
+                            <span class="friend-row-email">${target.email || ''}</span>
+                        </div>
+                    </div>
+                    <div class="friend-row-actions">
+                        <span class="badge-pending-debtor">⏳ Pending</span>
+                        <button type="button" class="btn-friend-remove" title="Cancel">&times;</button>
+                    </div>
+                `;
+
+                row.querySelector('.btn-friend-remove').addEventListener('click', () => removeFriend(f.id));
+
+                listSentRequests.appendChild(row);
+            });
+        }
+    }
+
+    // Update Quick Friends Chips in Step 1
+    renderQuickFriendsChips(accepted, userMap);
+}
+
+function renderQuickFriendsChips(acceptedFriends, userMap) {
+    if (!quickFriendsWrap || !quickFriendsChips) return;
+    if (!currentUser) {
+        quickFriendsWrap.style.display = 'none';
+        return;
+    }
+
+    const acceptedList = acceptedFriends || cloudFriendships.filter(f =>
+        (f.sender_id === currentUser.id || f.receiver_id === currentUser.id) && f.status === 'accepted'
+    );
+
+    if (!acceptedList || acceptedList.length === 0) {
+        quickFriendsWrap.style.display = 'none';
+        return;
+    }
+
+    const map = userMap || new Map(cloudFriendsUsers.map(u => [u.id, u]));
+
+    quickFriendsWrap.style.display = 'block';
+    quickFriendsChips.innerHTML = '';
+
+    acceptedList.forEach(f => {
+        const otherId = f.sender_id === currentUser.id ? f.receiver_id : f.sender_id;
+        const friend = map.get(otherId);
+        if (!friend) return;
+
+        const name = friend.display_name || (friend.email ? friend.email.split('@')[0] : 'Friend');
+        const email = friend.email || '';
+
+        const isAlreadyAdded = state.people.some(p =>
+            (email && p.email && p.email.toLowerCase() === email.toLowerCase()) ||
+            (p.userId && p.userId === otherId) ||
+            (p.name && p.name.toLowerCase() === name.toLowerCase())
+        );
+
+        const chip = document.createElement('button');
+        chip.type = 'button';
+        chip.className = `btn-quick-friend-chip ${isAlreadyAdded ? 'added' : ''}`;
+        chip.innerHTML = `<span>+ ${name}</span>`;
+
+        if (!isAlreadyAdded) {
+            chip.addEventListener('click', () => {
+                state.people.push({
+                    id: state.personIdCounter++,
+                    name: name,
+                    email: email,
+                    userId: otherId,
+                    isCurrentUser: false,
+                    debt: 0,
+                    subtotal: 0,
+                    amountPaid: 0,
+                    balance: 0
+                });
+                saveToStorage();
+                renderPeopleUI();
+                recalculateAndRender();
+                showToast(t('toast_person_added'), 'success');
+                renderQuickFriendsChips(acceptedList, map);
+            });
+        }
+
+        quickFriendsChips.appendChild(chip);
+    });
+}
+
+if (formSendFriendRequest) {
+    formSendFriendRequest.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (inputFriendEmail) {
+            await sendFriendRequest(inputFriendEmail.value);
+        }
+    });
 }
 
 // -------------------------------------------------------------
