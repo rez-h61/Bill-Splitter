@@ -49,7 +49,7 @@
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" x2="3" y1="12" y2="12"/></svg>
                     <span data-i18n="auth_btn_login">Sign In</span>
                 </button>
-                <button id="btn-reset" class="glass-btn glass-btn-danger-soft" title="Reset all data">
+                <button id="btn-reset" class="glass-btn glass-btn-danger-soft" style="display: none;" title="Reset all data">
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
                     <span data-i18n="btn_reset">Reset</span>
                 </button>
@@ -117,6 +117,9 @@
                         <div class="input-with-icon">
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="field-icon"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
                             <input type="password" id="input-auth-password" class="glass-input" placeholder="Min. 6 characters" required autocomplete="current-password">
+                        </div>
+                        <div class="auth-forgot-row" id="row-forgot-pass">
+                            <button type="button" id="btn-forgot-password" class="link-btn-text" data-i18n="auth_forgot_pass">Forgot password?</button>
                         </div>
                     </div>
 
@@ -820,6 +823,28 @@
                             <input type="tel" id="input-edit-phone" class="glass-input" placeholder="e.g. 0123456789" required autocomplete="tel">
                         </div>
                         <p class="field-hint" style="font-size: 12px; color: var(--text-muted); margin-top: 6px;" data-i18n="phone_profile_hint">Friends will be able to send payment proof straight to your WhatsApp.</p>
+                    </div>
+
+                    <!-- Password Update Section -->
+                    <div class="profile-password-section" style="margin-top: 20px; padding-top: 16px; border-top: 1px dashed var(--glass-border);">
+                        <h4 style="font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
+                            <span>🔒</span>
+                            <span data-i18n="change_password_title">Change Password (Optional)</span>
+                        </h4>
+                        <div class="form-field">
+                            <label for="input-edit-password" data-i18n="new_password_label">New Password</label>
+                            <div class="input-with-icon">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="field-icon"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                                <input type="password" id="input-edit-password" class="glass-input" placeholder="Leave blank to keep current" autocomplete="new-password">
+                            </div>
+                        </div>
+                        <div class="form-field" style="margin-top: 12px;">
+                            <label for="input-edit-password-confirm" data-i18n="confirm_password_label">Confirm New Password</label>
+                            <div class="input-with-icon">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="field-icon"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                                <input type="password" id="input-edit-password-confirm" class="glass-input" placeholder="Re-enter new password" autocomplete="new-password">
+                            </div>
+                        </div>
                     </div>
                 </div>
 
