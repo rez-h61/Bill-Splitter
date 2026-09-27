@@ -171,6 +171,13 @@
                         </button>
                     </div>
 
+                    <div id="user-quick-add-wrap" class="user-quick-add-wrap" style="display: none;">
+                        <button type="button" id="btn-quick-add-me" class="quick-add-me-btn">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                            <span id="quick-add-me-label" data-i18n="btn_add_me">+ Add Me</span>
+                        </button>
+                    </div>
+
                     <div class="badges-wrapper">
                         <div id="people-badges" class="badges-container"></div>
                         <p class="empty-state" id="empty-people-hint" data-i18n="no_people_yet">No shoppers added yet. Enter names above.</p>
@@ -479,6 +486,20 @@
                 <div id="list-i-owe" class="cloud-debt-list">
                     <p class="empty-state" data-i18n="you_owe_nothing">You don't owe anyone any money! 🎉</p>
                 </div>
+            </div>
+        </div>
+
+        <!-- Other Group Transfers In Recorded Bills (e.g. Adam -> Amin) -->
+        <div class="card glass-panel" id="card-other-transfers" style="margin-top: 24px; display: none;">
+            <div class="card-header">
+                <div>
+                    <h3 class="card-title text-info" data-i18n="dash_other_transfers_title">Other Group Transfers</h3>
+                    <p class="card-desc" data-i18n="dash_other_transfers_desc">Settlements between other friends in bills you recorded</p>
+                </div>
+                <span class="count-pill" id="other-transfers-count">0 transfers</span>
+            </div>
+            <div id="list-other-transfers" class="cloud-debt-list">
+                <p class="empty-state" data-i18n="no_other_transfers">No other group transfers in this bill.</p>
             </div>
         </div>
 
