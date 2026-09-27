@@ -249,7 +249,17 @@ const i18n = {
         badge_member: "Member",
         btn_copy_invite: "Copy Code",
         btn_leave: "Leave",
-        btn_delete: "Delete"
+        btn_delete: "Delete",
+        auth_forgot_pass: "Forgot password?",
+        prompt_enter_reset_email: "Enter your registered email address to receive password reset link:",
+        toast_reset_link_sent: "Password reset link sent to your email! Please check your inbox.",
+        change_password_title: "Change Password (Optional)",
+        new_password_label: "New Password",
+        confirm_password_label: "Confirm New Password",
+        toast_pass_min_chars: "New password must be at least 6 characters.",
+        toast_pass_mismatch: "Passwords do not match.",
+        toast_pass_updated: "Password updated successfully!",
+        toast_recovery_detected: "Password recovery mode detected. Please set your new password below."
     },
     ms: {
         title: "Split Bil",
@@ -479,7 +489,17 @@ const i18n = {
         badge_member: "Ahli",
         btn_copy_invite: "Salin Kod",
         btn_leave: "Keluar",
-        btn_delete: "Padam"
+        btn_delete: "Padam",
+        auth_forgot_pass: "Lupa kata laluan?",
+        prompt_enter_reset_email: "Masukkan alamat emel akaun anda untuk menerima pautan set semula kata laluan:",
+        toast_reset_link_sent: "Pautan set semula kata laluan telah dihantar ke emel anda! Sila semak peti masuk anda.",
+        change_password_title: "Tukar Kata Laluan (Pilihan)",
+        new_password_label: "Kata Laluan Baru",
+        confirm_password_label: "Sahkan Kata Laluan Baru",
+        toast_pass_min_chars: "Kata laluan mestilah sekurang-kurangnya 6 aksara.",
+        toast_pass_mismatch: "Kata laluan tidak sepadan.",
+        toast_pass_updated: "Kata laluan berjaya dikemaskini!",
+        toast_recovery_detected: "Mod pemulihan kata laluan dikesan. Sila tetapkan kata laluan baru anda di bawah."
     }
 };
 
@@ -542,6 +562,8 @@ const inputAuthEmail = document.getElementById('input-auth-email');
 const inputAuthPassword = document.getElementById('input-auth-password');
 const btnAuthSubmit = document.getElementById('btn-auth-submit');
 const authBtnText = document.getElementById('auth-btn-text');
+const btnForgotPassword = document.getElementById('btn-forgot-password');
+const rowForgotPass = document.getElementById('row-forgot-pass');
 const btnGuestMode = document.getElementById('btn-guest-mode');
 
 // Missing Phone Alert Banner
@@ -585,6 +607,8 @@ const myProfileEmail = document.getElementById('my-profile-email');
 const formUpdateProfile = document.getElementById('form-update-profile');
 const inputEditDisplayName = document.getElementById('input-edit-display-name');
 const inputEditPhone = document.getElementById('input-edit-phone');
+const inputEditPassword = document.getElementById('input-edit-password');
+const inputEditPasswordConfirm = document.getElementById('input-edit-password-confirm');
 const btnCloseMyProfile = document.getElementById('btn-close-my-profile');
 const btnCancelMyProfile = document.getElementById('btn-cancel-my-profile');
 
@@ -2346,6 +2370,8 @@ function openMyProfileModal() {
 
     if (inputEditDisplayName) inputEditDisplayName.value = currentName;
     if (inputEditPhone) inputEditPhone.value = currentPhone;
+    if (inputEditPassword) inputEditPassword.value = '';
+    if (inputEditPasswordConfirm) inputEditPasswordConfirm.value = '';
     if (myProfileAvatar) myProfileAvatar.textContent = currentName.charAt(0).toUpperCase();
 
     if (myProfileModal) myProfileModal.style.display = 'flex';
@@ -2384,6 +2410,8 @@ if (formUpdateProfile) {
 
         const newName = inputEditDisplayName ? inputEditDisplayName.value.trim() : '';
         const newPhone = inputEditPhone ? inputEditPhone.value.trim() : '';
+        const newPassword = inputEditPassword ? inputEditPassword.value : '';
+        const confirmPassword = inputEditPasswordConfirm ? inputEditPasswordConfirm.value : '';
 
         if (!newName) {
             showToast(t('toast_enter_name'), 'error');
@@ -2393,6 +2421,17 @@ if (formUpdateProfile) {
         if (!isValidPhone(newPhone)) {
             showToast(t('toast_invalid_phone'), 'error');
             return;
+        }
+
+        if (newPassword) {
+            if (newPassword.length < 6) {
+                showToast(t('toast_pass_min_chars'), 'error');
+                return;
+            }
+            if (newPassword !== confirmPassword) {
+                showToast(t('toast_pass_mismatch'), 'error');
+                return;
+            }
         }
 
         const submitBtn = document.getElementById('btn-save-profile');
@@ -2410,13 +2449,23 @@ if (formUpdateProfile) {
 
             if (dbErr) throw dbErr;
 
-            // 2. Update Supabase Auth user metadata
-            await supabaseClient.auth.updateUser({
+            // 2. Update Supabase Auth user metadata & password (if changed)
+            const authUpdates = {
                 data: {
                     display_name: newName,
                     phone_number: newPhone
                 }
-            });
+            };
+            if (newPassword) {
+                authUpdates.password = newPassword;
+            }
+
+            const { error: authErr } = await supabaseClient.auth.updateUser(authUpdates);
+            if (authErr) throw authErr;
+
+            // Clear password inputs
+            if (inputEditPassword) inputEditPassword.value = '';
+            if (inputEditPasswordConfirm) inputEditPasswordConfirm.value = '';
 
             // Update in-memory state
             if (!currentUserProfile) currentUserProfile = {};
@@ -2439,11 +2488,11 @@ if (formUpdateProfile) {
                 recalculateAndRender();
             }
 
-            showToast(t('toast_profile_updated'), 'success');
+            showToast(newPassword ? t('toast_pass_updated') : t('toast_profile_updated'), 'success');
             closeMyProfileModal();
         } catch (err) {
             console.error('Error updating profile:', err);
-            showToast('Failed to update profile.', 'error');
+            showToast(err.message || 'Failed to update profile.', 'error');
         } finally {
             if (submitBtn) submitBtn.disabled = false;
         }
@@ -2462,6 +2511,7 @@ function setupAuthEvents() {
             tabSignup.classList.remove('active');
             if (fieldDisplayName) fieldDisplayName.style.display = 'none';
             if (fieldPhoneNumber) fieldPhoneNumber.style.display = 'none';
+            if (rowForgotPass) rowForgotPass.style.display = 'flex';
             if (authBtnText) authBtnText.textContent = t('auth_btn_login');
             hideAuthAlert();
         });
@@ -2472,8 +2522,33 @@ function setupAuthEvents() {
             tabLogin.classList.remove('active');
             if (fieldDisplayName) fieldDisplayName.style.display = 'block';
             if (fieldPhoneNumber) fieldPhoneNumber.style.display = 'block';
+            if (rowForgotPass) rowForgotPass.style.display = 'none';
             if (authBtnText) authBtnText.textContent = t('auth_btn_signup');
             hideAuthAlert();
+        });
+    }
+
+    // Forgot Password Request
+    if (btnForgotPassword) {
+        btnForgotPassword.addEventListener('click', async () => {
+            if (!supabaseClient) {
+                showToast('Supabase client is not loaded.', 'error');
+                return;
+            }
+            const defaultEmail = inputAuthEmail ? inputAuthEmail.value.trim() : '';
+            const email = prompt(t('prompt_enter_reset_email'), defaultEmail);
+            if (!email || !email.trim()) return;
+
+            try {
+                const { error } = await supabaseClient.auth.resetPasswordForEmail(email.trim(), {
+                    redirectTo: window.location.origin + window.location.pathname
+                });
+                if (error) throw error;
+                showToast(t('toast_reset_link_sent'), 'success');
+            } catch (err) {
+                console.error('Password reset error:', err);
+                showToast(err.message || 'Failed to send reset link.', 'error');
+            }
         });
     }
 
@@ -2485,6 +2560,7 @@ function setupAuthEvents() {
             if (mainAppContent) mainAppContent.style.display = 'block';
             if (userHeaderProfile) userHeaderProfile.style.display = 'none';
             if (btnHeaderLogin) btnHeaderLogin.style.display = 'inline-flex';
+            if (btnReset) btnReset.style.display = 'inline-flex';
             showToast(t('auth_guest_welcome'), 'info');
         });
     }
@@ -2495,6 +2571,7 @@ function setupAuthEvents() {
             if (authScreen) authScreen.style.display = 'flex';
             if (mainAppContent) mainAppContent.style.display = 'none';
             if (btnHeaderLogin) btnHeaderLogin.style.display = 'none';
+            if (btnReset) btnReset.style.display = 'none';
         });
     }
 
@@ -2619,6 +2696,7 @@ function handleUserSignedIn(user) {
 
     if (userHeaderProfile) userHeaderProfile.style.display = 'flex';
     if (btnHeaderLogin) btnHeaderLogin.style.display = 'none';
+    if (btnReset) btnReset.style.display = 'inline-flex';
 
     // Transition views
     if (authScreen) authScreen.style.display = 'none';
@@ -2645,6 +2723,7 @@ function handleUserSignedOut() {
 
     if (userHeaderProfile) userHeaderProfile.style.display = 'none';
     if (btnHeaderLogin) btnHeaderLogin.style.display = 'none';
+    if (btnReset) btnReset.style.display = 'none';
     if (mainAppContent) mainAppContent.style.display = 'none';
     if (authScreen) authScreen.style.display = 'flex';
     if (navDebtCount) navDebtCount.style.display = 'none';
@@ -2665,6 +2744,7 @@ async function initAuth() {
         console.warn('Supabase client unavailable. Running in offline/guest mode.');
         if (authScreen) authScreen.style.display = 'none';
         if (mainAppContent) mainAppContent.style.display = 'block';
+        if (btnReset) btnReset.style.display = 'inline-flex';
         return;
     }
 
@@ -2677,11 +2757,13 @@ async function initAuth() {
             // Unauthenticated state: show auth modal
             if (authScreen) authScreen.style.display = 'flex';
             if (mainAppContent) mainAppContent.style.display = 'none';
+            if (btnReset) btnReset.style.display = 'none';
         }
     } catch (e) {
         console.error('Session retrieval error:', e);
         if (authScreen) authScreen.style.display = 'flex';
         if (mainAppContent) mainAppContent.style.display = 'none';
+        if (btnReset) btnReset.style.display = 'none';
     }
 
     // Subscribe to Auth State Changes
@@ -2690,6 +2772,12 @@ async function initAuth() {
             handleUserSignedIn(session.user);
         } else if (event === 'SIGNED_OUT') {
             handleUserSignedOut();
+        } else if (event === 'PASSWORD_RECOVERY') {
+            showToast(t('toast_recovery_detected'), 'info');
+            openMyProfileModal();
+            setTimeout(() => {
+                if (inputEditPassword) inputEditPassword.focus();
+            }, 300);
         }
     });
 }
