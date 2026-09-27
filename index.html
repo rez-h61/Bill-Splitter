@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css?v=2.1">
 </head>
 <body class="dark-mode">
     <!-- Ambient Animated Glass Glow Orbs -->
@@ -49,18 +49,20 @@
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" x2="3" y1="12" y2="12"/></svg>
                     <span data-i18n="auth_btn_login">Sign In</span>
                 </button>
-                <button id="btn-reset" class="glass-btn glass-btn-danger-soft" style="display: none;" title="Reset all data">
-                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
-                    <span data-i18n="btn_reset">Reset</span>
-                </button>
-                <button id="btn-lang" class="glass-btn" title="Change Language">
-                    <span id="lang-flag">🇲🇾</span>
-                    <span id="lang-text">Tukar BM</span>
-                </button>
-                <button id="btn-theme" class="glass-btn" title="Toggle Theme">
-                    <span id="theme-icon">☀️</span>
-                    <span id="theme-text" data-i18n="theme_light">Light</span>
-                </button>
+                <div class="header-quick-actions">
+                    <button id="btn-reset" class="glass-btn glass-btn-danger-soft" style="display: none;" title="Reset all data">
+                        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                        <span data-i18n="btn_reset">Reset</span>
+                    </button>
+                    <button id="btn-lang" class="glass-btn" title="Change Language">
+                        <span id="lang-flag">🇲🇾</span>
+                        <span id="lang-text">Tukar BM</span>
+                    </button>
+                    <button id="btn-theme" class="glass-btn" title="Toggle Theme">
+                        <span id="theme-icon">☀️</span>
+                        <span id="theme-text" data-i18n="theme_light">Light</span>
+                    </button>
+                </div>
             </div>
         </header>
 
@@ -304,7 +306,7 @@
                         </button>
                         <button type="button" id="tab-btn-buyers" class="view-tab">
                             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-                            <span data-i18n="tab_by_buyers">What Each Buyer Bought</span>
+                            <span data-i18n="tab_by_buyers">By Buyer</span>
                         </button>
                     </div>
 
@@ -314,7 +316,7 @@
                             <ul id="item-list" class="receipt-items"></ul>
                             <div id="empty-items-state" class="empty-state-box">
                                 <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="empty-icon"><path d="M4 2v20l2-1 2 1 2-1 2 1 2-1 2 1 2-1 2 1V2l-2 1-2-1-2 1-2-1-2 1-2-1-2 1Z"/><path d="M16 8h-6a2 2 0 1 0 0 4h4a2 2 0 1 1 0 4H8"/><path d="M12 6v12"/></svg>
-                                <p data-i18n="no_items_yet">Receipt is empty. Add items from the left panel.</p>
+                                <p data-i18n="no_items_yet">Receipt is empty. Add items from Step 2 above.</p>
                             </div>
                         </div>
                     </div>
@@ -985,6 +987,6 @@
 
     <!-- Supabase JS Client via CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="script.js"></script>
+    <script src="script.js?v=2.1"></script>
 </body>
 </html>
