@@ -160,15 +160,21 @@
                         <span class="count-pill" id="people-count">0</span>
                     </div>
 
-                    <div class="input-inline">
-                        <div class="input-with-icon">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="field-icon"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-                            <input type="text" id="input-person" class="glass-input" placeholder="Enter name (e.g. Ali)" data-i18n-placeholder="person_ph" maxlength="30" autocomplete="off">
+                    <div class="input-friend-form">
+                        <div class="input-friend-fields">
+                            <div class="input-with-icon flex-1">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="field-icon"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                                <input type="text" id="input-person" class="glass-input" placeholder="Name (e.g. Amin)" data-i18n-placeholder="person_ph" maxlength="30" autocomplete="off">
+                            </div>
+                            <div class="input-with-icon flex-1">
+                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="field-icon"><rect width="20" height="16" x="2" y="4" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                                <input type="email" id="input-person-email" class="glass-input" placeholder="Email (optional, e.g. amin@gmail.com)" data-i18n-placeholder="person_email_ph" maxlength="60" autocomplete="off">
+                            </div>
+                            <button id="btn-add-person" class="glass-btn-primary">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+                                <span data-i18n="btn_add_person">Add</span>
+                            </button>
                         </div>
-                        <button id="btn-add-person" class="glass-btn-primary">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
-                            <span data-i18n="btn_add_person">Add</span>
-                        </button>
                     </div>
 
                     <div id="user-quick-add-wrap" class="user-quick-add-wrap" style="display: none;">
