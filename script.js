@@ -210,7 +210,46 @@ const i18n = {
         toast_cannot_friend_self: "You cannot add yourself as a friend!",
         toast_already_friends: "You are already friends with this user!",
         toast_req_already_pending: "A friend request is already pending.",
-        toast_confirm_remove_friend: "Are you sure you want to remove this friend?"
+        toast_confirm_remove_friend: "Are you sure you want to remove this friend?",
+        auth_phone_label: "WhatsApp Phone Number",
+        phone_missing_title: "Action Required: Add WhatsApp Number",
+        phone_missing_desc: "Please update your WhatsApp number so friends can send payment proof directly!",
+        btn_update_profile: "Update Profile",
+        phone_profile_hint: "Friends will be able to send payment proof straight to your WhatsApp.",
+        modal_my_profile_title: "My Profile",
+        btn_save_profile: "Save Changes",
+        toast_profile_updated: "Profile updated successfully!",
+        toast_invalid_phone: "Please enter a valid WhatsApp phone number (e.g. 0123456789).",
+        nav_groups: "Groups",
+        quick_group_label: "👥 Load from Group:",
+        select_group_default: "-- Select a Group --",
+        btn_load_group_members: "+ Add All Members",
+        group_create_title: "Create a Group",
+        group_create_desc: "Create a group for housemates, trips, or dining buddies (You will be Admin)",
+        group_name_label: "Group Name",
+        group_desc_label: "Description (Optional)",
+        btn_create_group: "Create Group",
+        group_join_title: "Join with Invite Code",
+        group_join_desc: "Enter the 6-character code shared by your group admin",
+        group_code_label: "Invite Code",
+        btn_join_group: "Join Group",
+        group_my_groups_title: "My Groups",
+        group_my_groups_desc: "Groups you have joined or created",
+        no_groups_yet: "You haven't joined any groups yet. Create or join one above!",
+        toast_group_created: "Group created successfully!",
+        toast_group_joined: "Successfully joined the group!",
+        toast_group_left: "You left the group.",
+        toast_group_deleted: "Group deleted.",
+        toast_invalid_code: "Invalid invite code or group does not exist.",
+        toast_already_in_group: "You are already a member of this group!",
+        toast_confirm_leave_group: "Are you sure you want to leave this group?",
+        toast_confirm_delete_group: "Are you sure you want to delete this group? All members will be removed.",
+        toast_group_members_added: "Members added to bill!",
+        badge_admin: "Admin",
+        badge_member: "Member",
+        btn_copy_invite: "Copy Code",
+        btn_leave: "Leave",
+        btn_delete: "Delete"
     },
     ms: {
         title: "Split Bil",
@@ -401,7 +440,46 @@ const i18n = {
         toast_cannot_friend_self: "Anda tidak boleh tambah diri sendiri sebagai rakan!",
         toast_already_friends: "Anda sudah berkawan dengan pengguna ini!",
         toast_req_already_pending: "Permintaan rakan sedang menunggu respon.",
-        toast_confirm_remove_friend: "Adakah anda pasti mahu memadam rakan ini?"
+        toast_confirm_remove_friend: "Adakah anda pasti mahu memadam rakan ini?",
+        auth_phone_label: "Nombor Telefon WhatsApp",
+        phone_missing_title: "Tindakan Diperlukan: Tambah Nombor WhatsApp",
+        phone_missing_desc: "Sila kemaskini nombor WhatsApp anda agar rakan dapat menghantar bukti bayaran secara terus!",
+        btn_update_profile: "Kemaskini Profil",
+        phone_profile_hint: "Rakan boleh hantar bukti bayaran terus ke WhatsApp anda.",
+        modal_my_profile_title: "Profil Saya",
+        btn_save_profile: "Simpan Perubahan",
+        toast_profile_updated: "Profil berjaya dikemaskini!",
+        toast_invalid_phone: "Sila masukkan nombor telefon WhatsApp yang sah (cth: 0123456789).",
+        nav_groups: "Kumpulan",
+        quick_group_label: "👥 Muat dari Kumpulan:",
+        select_group_default: "-- Pilih Kumpulan --",
+        btn_load_group_members: "+ Tambah Semua Ahli",
+        group_create_title: "Cipta Kumpulan",
+        group_create_desc: "Cipta kumpulan untuk rakan serumah, percutian, atau makan-makan (Anda akan jadi Admin)",
+        group_name_label: "Nama Kumpulan",
+        group_desc_label: "Keterangan (Pilihan)",
+        btn_create_group: "Cipta Kumpulan",
+        group_join_title: "Sertai Guna Kod Jemputan",
+        group_join_desc: "Masukkan kod 6-aksara yang dikongsi oleh admin kumpulan anda",
+        group_code_label: "Kod Jemputan",
+        btn_join_group: "Sertai Kumpulan",
+        group_my_groups_title: "Kumpulan Saya",
+        group_my_groups_desc: "Kumpulan yang anda sertai atau cipta",
+        no_groups_yet: "Anda belum menyertai sebarang kumpulan. Cipta atau sertai di atas!",
+        toast_group_created: "Kumpulan berjaya dicipta!",
+        toast_group_joined: "Berjaya menyertai kumpulan!",
+        toast_group_left: "Anda telah keluar dari kumpulan.",
+        toast_group_deleted: "Kumpulan telah dipadam.",
+        toast_invalid_code: "Kod jemputan tidak sah atau kumpulan tidak wujud.",
+        toast_already_in_group: "Anda sudah menjadi ahli kumpulan ini!",
+        toast_confirm_leave_group: "Adakah anda pasti mahu keluar dari kumpulan ini?",
+        toast_confirm_delete_group: "Adakah anda pasti mahu memadam kumpulan ini? Semua ahli akan dikeluarkan.",
+        toast_group_members_added: "Ahli kumpulan dimasukkan ke dalam bil!",
+        badge_admin: "Admin",
+        badge_member: "Ahli",
+        btn_copy_invite: "Salin Kod",
+        btn_leave: "Keluar",
+        btn_delete: "Padam"
     }
 };
 
@@ -423,6 +501,8 @@ let cloudDebts = [];
 let cloudBills = [];
 let cloudFriendships = [];
 let cloudFriendsUsers = [];
+let cloudGroups = [];
+let currentUserProfile = null;
 let currentAppTab = 'calculator';
 
 // -------------------------------------------------------------
@@ -456,22 +536,57 @@ const authAlert = document.getElementById('auth-alert');
 const authForm = document.getElementById('auth-form');
 const fieldDisplayName = document.getElementById('field-display-name');
 const inputDisplayName = document.getElementById('input-display-name');
+const fieldPhoneNumber = document.getElementById('field-phone-number');
+const inputAuthPhone = document.getElementById('input-auth-phone');
 const inputAuthEmail = document.getElementById('input-auth-email');
 const inputAuthPassword = document.getElementById('input-auth-password');
 const btnAuthSubmit = document.getElementById('btn-auth-submit');
 const authBtnText = document.getElementById('auth-btn-text');
 const btnGuestMode = document.getElementById('btn-guest-mode');
 
+// Missing Phone Alert Banner
+const phoneMissingBanner = document.getElementById('phone-missing-banner');
+const btnOpenProfileEdit = document.getElementById('btn-open-profile-edit');
+
 // Main Authenticated / Active App Wrapper & Nav
 const mainAppContent = document.getElementById('main-app-content');
 const navBtnCalculator = document.getElementById('nav-btn-calculator');
 const navBtnDashboard = document.getElementById('nav-btn-dashboard');
 const navBtnFriends = document.getElementById('nav-btn-friends');
+const navBtnGroups = document.getElementById('nav-btn-groups');
 const navDebtCount = document.getElementById('nav-debt-count');
 const navFriendsCount = document.getElementById('nav-friends-count');
+const navGroupsCount = document.getElementById('nav-groups-count');
 const viewCalculator = document.getElementById('view-calculator');
 const viewDashboard = document.getElementById('view-dashboard');
 const viewFriends = document.getElementById('view-friends');
+const viewGroups = document.getElementById('view-groups');
+
+// Groups View Elements
+const formCreateGroup = document.getElementById('form-create-group');
+const inputGroupName = document.getElementById('input-group-name');
+const inputGroupDesc = document.getElementById('input-group-desc');
+const btnCreateGroup = document.getElementById('btn-create-group');
+const formJoinGroup = document.getElementById('form-join-group');
+const inputJoinCode = document.getElementById('input-join-code');
+const btnJoinGroup = document.getElementById('btn-join-group');
+const listMyGroups = document.getElementById('list-my-groups');
+const myGroupsCount = document.getElementById('my-groups-count');
+
+// Group Load in Step 1
+const groupLoadWrap = document.getElementById('group-load-wrap');
+const selectGroupLoad = document.getElementById('select-group-load');
+const btnApplyGroupLoad = document.getElementById('btn-apply-group-load');
+
+// My Profile Modal Elements
+const myProfileModal = document.getElementById('my-profile-modal');
+const myProfileAvatar = document.getElementById('my-profile-avatar');
+const myProfileEmail = document.getElementById('my-profile-email');
+const formUpdateProfile = document.getElementById('form-update-profile');
+const inputEditDisplayName = document.getElementById('input-edit-display-name');
+const inputEditPhone = document.getElementById('input-edit-phone');
+const btnCloseMyProfile = document.getElementById('btn-close-my-profile');
+const btnCancelMyProfile = document.getElementById('btn-cancel-my-profile');
 
 // Friends View Elements
 const formSendFriendRequest = document.getElementById('form-send-friend-request');
@@ -2118,25 +2233,41 @@ function switchAppTab(tab) {
         if (navBtnCalculator) navBtnCalculator.classList.add('active');
         if (navBtnDashboard) navBtnDashboard.classList.remove('active');
         if (navBtnFriends) navBtnFriends.classList.remove('active');
+        if (navBtnGroups) navBtnGroups.classList.remove('active');
         if (viewCalculator) viewCalculator.style.display = 'block';
         if (viewDashboard) viewDashboard.style.display = 'none';
         if (viewFriends) viewFriends.style.display = 'none';
+        if (viewGroups) viewGroups.style.display = 'none';
     } else if (tab === 'dashboard') {
         if (navBtnDashboard) navBtnDashboard.classList.add('active');
         if (navBtnCalculator) navBtnCalculator.classList.remove('active');
         if (navBtnFriends) navBtnFriends.classList.remove('active');
+        if (navBtnGroups) navBtnGroups.classList.remove('active');
         if (viewDashboard) viewDashboard.style.display = 'block';
         if (viewCalculator) viewCalculator.style.display = 'none';
         if (viewFriends) viewFriends.style.display = 'none';
+        if (viewGroups) viewGroups.style.display = 'none';
         loadCloudData();
     } else if (tab === 'friends') {
         if (navBtnFriends) navBtnFriends.classList.add('active');
         if (navBtnCalculator) navBtnCalculator.classList.remove('active');
         if (navBtnDashboard) navBtnDashboard.classList.remove('active');
+        if (navBtnGroups) navBtnGroups.classList.remove('active');
         if (viewFriends) viewFriends.style.display = 'block';
         if (viewCalculator) viewCalculator.style.display = 'none';
         if (viewDashboard) viewDashboard.style.display = 'none';
+        if (viewGroups) viewGroups.style.display = 'none';
         loadCloudFriends();
+    } else if (tab === 'groups') {
+        if (navBtnGroups) navBtnGroups.classList.add('active');
+        if (navBtnCalculator) navBtnCalculator.classList.remove('active');
+        if (navBtnDashboard) navBtnDashboard.classList.remove('active');
+        if (navBtnFriends) navBtnFriends.classList.remove('active');
+        if (viewGroups) viewGroups.style.display = 'block';
+        if (viewCalculator) viewCalculator.style.display = 'none';
+        if (viewDashboard) viewDashboard.style.display = 'none';
+        if (viewFriends) viewFriends.style.display = 'none';
+        loadCloudGroups();
     }
 }
 
@@ -2152,6 +2283,173 @@ if (navBtnFriends) {
     navBtnFriends.addEventListener('click', () => switchAppTab('friends'));
 }
 
+if (navBtnGroups) {
+    navBtnGroups.addEventListener('click', () => switchAppTab('groups'));
+}
+
+// -------------------------------------------------------------
+// PHONE NUMBER & PROFILE HELPERS
+// -------------------------------------------------------------
+function isValidPhone(phone) {
+    if (!phone) return false;
+    const cleaned = phone.replace(/[^0-9+]/g, '');
+    return cleaned.length >= 8 && cleaned.length <= 16;
+}
+
+function formatWaPhone(phone) {
+    if (!phone) return '';
+    let cleaned = phone.replace(/[^0-9]/g, '');
+    if (cleaned.startsWith('0')) {
+        cleaned = '60' + cleaned.substring(1);
+    }
+    return cleaned;
+}
+
+const cloudUsersCache = new Map();
+
+async function checkUserPhoneStatus(user) {
+    if (!supabaseClient || !user) return;
+    try {
+        const { data, error } = await supabaseClient
+            .from('users')
+            .select('*')
+            .eq('id', user.id)
+            .maybeSingle();
+
+        if (data) {
+            currentUserProfile = data;
+            cloudUsersCache.set(data.id, data);
+            if (data.email) cloudUsersCache.set(data.email.toLowerCase().trim(), data);
+
+            const phone = data.phone_number || (user.user_metadata && user.user_metadata.phone_number);
+            if (!phone || !phone.trim()) {
+                if (phoneMissingBanner) phoneMissingBanner.style.display = 'flex';
+            } else {
+                if (phoneMissingBanner) phoneMissingBanner.style.display = 'none';
+            }
+        } else {
+            if (phoneMissingBanner) phoneMissingBanner.style.display = 'flex';
+        }
+    } catch (e) {
+        console.warn('Check profile error:', e);
+    }
+}
+
+function openMyProfileModal() {
+    if (!currentUser) return;
+    if (myProfileEmail) myProfileEmail.textContent = currentUser.email || '';
+    const currentName = (currentUserProfile && currentUserProfile.display_name) ||
+                        (currentUser.user_metadata && currentUser.user_metadata.display_name) ||
+                        currentUser.email.split('@')[0];
+    const currentPhone = (currentUserProfile && currentUserProfile.phone_number) ||
+                         (currentUser.user_metadata && currentUser.user_metadata.phone_number) || '';
+
+    if (inputEditDisplayName) inputEditDisplayName.value = currentName;
+    if (inputEditPhone) inputEditPhone.value = currentPhone;
+    if (myProfileAvatar) myProfileAvatar.textContent = currentName.charAt(0).toUpperCase();
+
+    if (myProfileModal) myProfileModal.style.display = 'flex';
+}
+
+function closeMyProfileModal() {
+    if (myProfileModal) myProfileModal.style.display = 'none';
+}
+
+if (btnOpenProfileEdit) {
+    btnOpenProfileEdit.addEventListener('click', openMyProfileModal);
+}
+
+if (headerUserPill) {
+    headerUserPill.addEventListener('click', openMyProfileModal);
+}
+
+if (btnCloseMyProfile) {
+    btnCloseMyProfile.addEventListener('click', closeMyProfileModal);
+}
+
+if (btnCancelMyProfile) {
+    btnCancelMyProfile.addEventListener('click', closeMyProfileModal);
+}
+
+if (myProfileModal) {
+    myProfileModal.addEventListener('click', (e) => {
+        if (e.target === myProfileModal) closeMyProfileModal();
+    });
+}
+
+if (formUpdateProfile) {
+    formUpdateProfile.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        if (!currentUser || !supabaseClient) return;
+
+        const newName = inputEditDisplayName ? inputEditDisplayName.value.trim() : '';
+        const newPhone = inputEditPhone ? inputEditPhone.value.trim() : '';
+
+        if (!newName) {
+            showToast(t('toast_enter_name'), 'error');
+            return;
+        }
+
+        if (!isValidPhone(newPhone)) {
+            showToast(t('toast_invalid_phone'), 'error');
+            return;
+        }
+
+        const submitBtn = document.getElementById('btn-save-profile');
+        if (submitBtn) submitBtn.disabled = true;
+
+        try {
+            // 1. Update public.users table
+            const { error: dbErr } = await supabaseClient
+                .from('users')
+                .update({
+                    display_name: newName,
+                    phone_number: newPhone
+                })
+                .eq('id', currentUser.id);
+
+            if (dbErr) throw dbErr;
+
+            // 2. Update Supabase Auth user metadata
+            await supabaseClient.auth.updateUser({
+                data: {
+                    display_name: newName,
+                    phone_number: newPhone
+                }
+            });
+
+            // Update in-memory state
+            if (!currentUserProfile) currentUserProfile = {};
+            currentUserProfile.display_name = newName;
+            currentUserProfile.phone_number = newPhone;
+            cloudUsersCache.set(currentUser.id, currentUserProfile);
+
+            if (headerUserName) headerUserName.textContent = newName;
+            if (headerUserAvatar) headerUserAvatar.textContent = newName.charAt(0).toUpperCase();
+
+            // Hide missing phone banner now that it's added
+            if (phoneMissingBanner) phoneMissingBanner.style.display = 'none';
+
+            // Also update current user in shoppers list
+            const currentIdx = state.people.findIndex(p => p.isCurrentUser);
+            if (currentIdx !== -1) {
+                state.people[currentIdx].name = newName;
+                saveToStorage();
+                renderPeopleUI();
+                recalculateAndRender();
+            }
+
+            showToast(t('toast_profile_updated'), 'success');
+            closeMyProfileModal();
+        } catch (err) {
+            console.error('Error updating profile:', err);
+            showToast('Failed to update profile.', 'error');
+        } finally {
+            if (submitBtn) submitBtn.disabled = false;
+        }
+    });
+}
+
 // -------------------------------------------------------------
 // AUTHENTICATION LOGIC & GUEST MODE
 // -------------------------------------------------------------
@@ -2163,6 +2461,7 @@ function setupAuthEvents() {
             tabLogin.classList.add('active');
             tabSignup.classList.remove('active');
             if (fieldDisplayName) fieldDisplayName.style.display = 'none';
+            if (fieldPhoneNumber) fieldPhoneNumber.style.display = 'none';
             if (authBtnText) authBtnText.textContent = t('auth_btn_login');
             hideAuthAlert();
         });
@@ -2172,6 +2471,7 @@ function setupAuthEvents() {
             tabSignup.classList.add('active');
             tabLogin.classList.remove('active');
             if (fieldDisplayName) fieldDisplayName.style.display = 'block';
+            if (fieldPhoneNumber) fieldPhoneNumber.style.display = 'block';
             if (authBtnText) authBtnText.textContent = t('auth_btn_signup');
             hideAuthAlert();
         });
@@ -2221,8 +2521,17 @@ function setupAuthEvents() {
             const email = inputAuthEmail.value.trim();
             const password = inputAuthPassword.value;
             const displayName = inputDisplayName ? inputDisplayName.value.trim() : '';
+            const phone = inputAuthPhone ? inputAuthPhone.value.trim() : '';
 
             hideAuthAlert();
+
+            if (authMode === 'signup') {
+                if (!isValidPhone(phone)) {
+                    showAuthAlert(t('toast_invalid_phone'), 'error');
+                    return;
+                }
+            }
+
             setAuthLoading(true);
 
             try {
@@ -2232,7 +2541,8 @@ function setupAuthEvents() {
                         password: password,
                         options: {
                             data: {
-                                display_name: displayName || email.split('@')[0]
+                                display_name: displayName || email.split('@')[0],
+                                phone_number: phone
                             }
                         }
                     });
@@ -2244,7 +2554,8 @@ function setupAuthEvents() {
                         await supabaseClient.from('users').upsert({
                             id: data.user.id,
                             email: email,
-                            display_name: displayName || email.split('@')[0]
+                            display_name: displayName || email.split('@')[0],
+                            phone_number: phone
                         });
 
                         showToast(t('auth_signup_success'), 'success');
@@ -2316,22 +2627,35 @@ function handleUserSignedIn(user) {
     // Automatically ensure the logged-in user is in the shoppers list
     ensureCurrentUserInPeople(user);
 
+    // Check WhatsApp phone number status (banner prompt if missing)
+    checkUserPhoneStatus(user);
+
     // Load user's cloud debts & bills
     loadCloudData();
+
+    // Load user's groups
+    loadCloudGroups();
 }
 
 function handleUserSignedOut() {
     currentUser = null;
+    currentUserProfile = null;
     isGuestMode = false;
+    cloudGroups = [];
 
     if (userHeaderProfile) userHeaderProfile.style.display = 'none';
     if (btnHeaderLogin) btnHeaderLogin.style.display = 'none';
     if (mainAppContent) mainAppContent.style.display = 'none';
     if (authScreen) authScreen.style.display = 'flex';
     if (navDebtCount) navDebtCount.style.display = 'none';
+    if (navFriendsCount) navFriendsCount.style.display = 'none';
+    if (navGroupsCount) navGroupsCount.style.display = 'none';
+    if (phoneMissingBanner) phoneMissingBanner.style.display = 'none';
+    if (groupLoadWrap) groupLoadWrap.style.display = 'none';
 
     // Reset password field
     if (inputAuthPassword) inputAuthPassword.value = '';
+    if (inputAuthPhone) inputAuthPhone.value = '';
 }
 
 async function initAuth() {
@@ -2528,6 +2852,25 @@ async function loadCloudData() {
         if (debtsErr) throw debtsErr;
         cloudDebts = debts || [];
 
+        // Fetch users profiles for debtors and creditors
+        const userIdsToFetch = new Set();
+        (cloudDebts || []).forEach(d => {
+            if (d.creditor_id) userIdsToFetch.add(d.creditor_id);
+            if (d.debtor_id) userIdsToFetch.add(d.debtor_id);
+        });
+        if (userIdsToFetch.size > 0) {
+            const { data: usersData } = await supabaseClient
+                .from('users')
+                .select('id, email, display_name, phone_number')
+                .in('id', Array.from(userIdsToFetch));
+            if (usersData) {
+                usersData.forEach(u => {
+                    cloudUsersCache.set(u.id, u);
+                    if (u.email) cloudUsersCache.set(u.email.toLowerCase().trim(), u);
+                });
+            }
+        }
+
         // Fetch user's saved bills
         const { data: bills, error: billsErr } = await supabaseClient
             .from('bills')
@@ -2700,17 +3043,22 @@ function renderCloudDashboard() {
                         </span>
                     `;
                 } else {
+                    const creditorProfile = (debt.creditor_id && cloudUsersCache.get(debt.creditor_id)) ||
+                                            (debt.creditor_email && cloudUsersCache.get(debt.creditor_email.toLowerCase().trim()));
+                    const creditorPhone = creditorProfile && creditorProfile.phone_number ? formatWaPhone(creditorProfile.phone_number) : '';
                     const waText = encodeURIComponent(
                         (t('wa_proof_msg') || 'Hi %creditor%, I have made the payment of RM %amount% for the bill. Please confirm it in the Bill Splitter app: %url%')
                             .replace('%creditor%', debt.creditor_name)
                             .replace('%amount%', parseFloat(debt.amount).toFixed(2))
                             .replace('%url%', window.location.origin + window.location.pathname)
                     );
+                    const waHref = creditorPhone ? `https://wa.me/${creditorPhone}?text=${waText}` : `https://wa.me/?text=${waText}`;
+
                     statusActionHtml = `
                         <span class="badge-pending-debtor" title="${t('only_creditor_can_settle')}">
                             ⏳ ${t('debt_awaiting_confirm')} ${debt.creditor_name}
                         </span>
-                        <a href="https://wa.me/?text=${waText}" target="_blank" rel="noopener noreferrer" class="btn-proof-wa" title="${t('btn_send_proof_wa')}">
+                        <a href="${waHref}" target="_blank" rel="noopener noreferrer" class="btn-proof-wa" title="${t('btn_send_proof_wa')}">
                             <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>
                             <span>${t('btn_send_proof_wa')}</span>
                         </a>
@@ -2877,11 +3225,15 @@ async function loadCloudFriends() {
         if (userIds.size > 0) {
             const { data: users, error: uErr } = await supabaseClient
                 .from('users')
-                .select('id, email, display_name')
+                .select('id, email, display_name, phone_number')
                 .in('id', Array.from(userIds));
 
             if (!uErr && users) {
                 cloudFriendsUsers = users;
+                users.forEach(u => {
+                    cloudUsersCache.set(u.id, u);
+                    if (u.email) cloudUsersCache.set(u.email.toLowerCase().trim(), u);
+                });
             }
         }
 
@@ -3233,6 +3585,486 @@ if (formSendFriendRequest) {
         if (inputFriendEmail) {
             await sendFriendRequest(inputFriendEmail.value);
         }
+    });
+}
+
+// -------------------------------------------------------------
+// GROUPS MANAGEMENT (CREATE, JOIN, LEAVE, LOAD INTO BILL)
+// -------------------------------------------------------------
+async function loadCloudGroups() {
+    if (!currentUser || !supabaseClient) return;
+
+    try {
+        // 1. Get memberships for current user
+        const { data: memberships, error: mErr } = await supabaseClient
+            .from('group_members')
+            .select('group_id, role')
+            .eq('user_id', currentUser.id);
+
+        if (mErr) {
+            console.warn('Group members query note:', mErr.message);
+            cloudGroups = [];
+            renderGroupsUI();
+            renderGroupLoadDropdown();
+            return;
+        }
+
+        const groupIds = (memberships || []).map(m => m.group_id);
+        if (groupIds.length === 0) {
+            cloudGroups = [];
+            renderGroupsUI();
+            renderGroupLoadDropdown();
+            return;
+        }
+
+        // 2. Fetch groups details
+        const { data: groups, error: gErr } = await supabaseClient
+            .from('groups')
+            .select('*')
+            .in('id', groupIds)
+            .order('created_at', { ascending: false });
+
+        if (gErr) throw gErr;
+
+        // 3. Fetch all members for these groups
+        const { data: allMembers, error: memErr } = await supabaseClient
+            .from('group_members')
+            .select('group_id, user_id, role, users(id, email, display_name, phone_number)')
+            .in('group_id', groupIds);
+
+        if (memErr) throw memErr;
+
+        // Populate cloudUsersCache
+        (allMembers || []).forEach(m => {
+            if (m.users) {
+                cloudUsersCache.set(m.users.id, m.users);
+                if (m.users.email) cloudUsersCache.set(m.users.email.toLowerCase().trim(), m.users);
+            }
+        });
+
+        // 4. Combine groups with members & user's role
+        cloudGroups = (groups || []).map(g => {
+            const myMem = (memberships || []).find(m => m.group_id === g.id);
+            const members = (allMembers || []).filter(m => m.group_id === g.id).map(m => ({
+                userId: m.user_id,
+                role: m.role,
+                name: (m.users && (m.users.display_name || (m.users.email ? m.users.email.split('@')[0] : 'Member'))) || 'Member',
+                email: (m.users && m.users.email) || '',
+                phone: (m.users && m.users.phone_number) || ''
+            }));
+
+            return {
+                ...g,
+                myRole: (myMem && myMem.role) || (g.created_by === currentUser.id ? 'admin' : 'member'),
+                members: members
+            };
+        });
+
+        renderGroupsUI();
+        renderGroupLoadDropdown();
+    } catch (err) {
+        console.error('Error loading groups:', err);
+    }
+}
+
+function renderGroupsUI() {
+    if (!listMyGroups) return;
+    if (myGroupsCount) myGroupsCount.textContent = `${cloudGroups.length} groups`;
+    if (navGroupsCount) {
+        if (cloudGroups.length > 0) {
+            navGroupsCount.textContent = cloudGroups.length;
+            navGroupsCount.style.display = 'inline-flex';
+        } else {
+            navGroupsCount.style.display = 'none';
+        }
+    }
+
+    listMyGroups.innerHTML = '';
+    if (cloudGroups.length === 0) {
+        listMyGroups.innerHTML = `<p class="empty-state">${t('no_groups_yet')}</p>`;
+        return;
+    }
+
+    cloudGroups.forEach(g => {
+        const isAdmin = g.myRole === 'admin' || g.created_by === currentUser.id;
+        const card = document.createElement('div');
+        card.className = 'group-card-item';
+
+        // Generate member rows HTML
+        let membersHtml = '';
+        g.members.forEach(m => {
+            const initial = m.name.charAt(0).toUpperCase();
+            const cleanPhone = formatWaPhone(m.phone);
+            const waButtonHtml = cleanPhone
+                ? `<a href="https://wa.me/${cleanPhone}" target="_blank" rel="noopener noreferrer" class="btn-member-wa" title="WhatsApp ${m.name}">💬 WhatsApp</a>`
+                : '';
+            const removeBtnHtml = (isAdmin && m.userId !== currentUser.id)
+                ? `<button type="button" class="btn-member-remove btn-rm-member" data-group-id="${g.id}" data-user-id="${m.userId}" title="Remove member">&times;</button>`
+                : '';
+
+            membersHtml += `
+                <div class="group-member-row">
+                    <div class="member-main-info">
+                        <span class="badge-avatar">${initial}</span>
+                        <div class="member-text-meta">
+                            <span class="member-name">${m.name} ${m.userId === currentUser.id ? `(${t('badge_you')})` : ''}</span>
+                            <span class="member-sub-info">
+                                ${m.email ? `<span>✉️ ${m.email}</span>` : ''}
+                                ${m.phone ? `<span>📞 ${m.phone}</span>` : ''}
+                            </span>
+                        </div>
+                    </div>
+                    <div class="member-actions-cluster">
+                        <span class="${m.role === 'admin' ? 'badge-role-admin' : 'badge-role-member'}">
+                            ${m.role === 'admin' ? t('badge_admin') : t('badge_member')}
+                        </span>
+                        ${waButtonHtml}
+                        ${removeBtnHtml}
+                    </div>
+                </div>
+            `;
+        });
+
+        card.innerHTML = `
+            <div class="group-header-row">
+                <div class="group-title-area">
+                    <div class="group-card-name">
+                        <span>👥 ${g.name}</span>
+                        <span class="${isAdmin ? 'badge-role-admin' : 'badge-role-member'}">
+                            ${isAdmin ? t('badge_admin') : t('badge_member')}
+                        </span>
+                    </div>
+                    ${g.description ? `<p class="group-card-desc">${g.description}</p>` : ''}
+                </div>
+                <button type="button" class="glass-btn mini-btn btn-load-to-bill" title="Add all members to bill calculator">
+                    <span>⚡ ${t('btn_load_group_members')}</span>
+                </button>
+            </div>
+
+            <div class="group-invite-row">
+                <div>
+                    <span style="font-size: 11px; color: var(--text-muted); display: block;">${t('group_code_label')}:</span>
+                    <span class="invite-code-tag">${g.invite_code}</span>
+                </div>
+                <button type="button" class="btn-copy-code btn-copy-invite-code" data-code="${g.invite_code}">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                    <span>${t('btn_copy_invite')}</span>
+                </button>
+            </div>
+
+            <div class="group-members-section">
+                <span class="quick-friends-label" style="margin-bottom: 8px;">👥 ${g.members.length} Members:</span>
+                <div class="group-members-list">
+                    ${membersHtml}
+                </div>
+            </div>
+
+            <div class="group-footer-actions">
+                <span style="font-size: 11px; color: var(--text-muted);">
+                    Created ${new Date(g.created_at).toLocaleDateString()}
+                </span>
+                <div style="display: flex; gap: 8px;">
+                    ${isAdmin ? `
+                        <button type="button" class="glass-btn glass-btn-danger-soft mini-btn btn-delete-group" data-group-id="${g.id}">
+                            🗑️ ${t('btn_delete')}
+                        </button>
+                    ` : `
+                        <button type="button" class="glass-btn glass-btn-danger-soft mini-btn btn-leave-group" data-group-id="${g.id}">
+                            🚪 ${t('btn_leave')}
+                        </button>
+                    `}
+                </div>
+            </div>
+        `;
+
+        // Event: Copy invite code
+        const copyBtn = card.querySelector('.btn-copy-invite-code');
+        if (copyBtn) {
+            copyBtn.addEventListener('click', () => {
+                navigator.clipboard.writeText(g.invite_code).then(() => {
+                    showToast(`${t('group_code_label')} ${g.invite_code} copied!`, 'success');
+                });
+            });
+        }
+
+        // Event: Load members into bill
+        const loadBtn = card.querySelector('.btn-load-to-bill');
+        if (loadBtn) {
+            loadBtn.addEventListener('click', () => {
+                loadGroupIntoBill(g.id);
+                switchAppTab('calculator');
+            });
+        }
+
+        // Event: Delete Group (Admin)
+        const delBtn = card.querySelector('.btn-delete-group');
+        if (delBtn) {
+            delBtn.addEventListener('click', () => deleteGroup(g.id));
+        }
+
+        // Event: Leave Group (Member)
+        const leaveBtn = card.querySelector('.btn-leave-group');
+        if (leaveBtn) {
+            leaveBtn.addEventListener('click', () => leaveGroup(g.id));
+        }
+
+        // Event: Remove Member (Admin)
+        card.querySelectorAll('.btn-rm-member').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const targetGroupId = btn.getAttribute('data-group-id');
+                const targetUserId = btn.getAttribute('data-user-id');
+                removeMemberFromGroup(targetGroupId, targetUserId);
+            });
+        });
+
+        listMyGroups.appendChild(card);
+    });
+}
+
+function renderGroupLoadDropdown() {
+    if (!groupLoadWrap || !selectGroupLoad) return;
+    if (!currentUser || cloudGroups.length === 0) {
+        groupLoadWrap.style.display = 'none';
+        return;
+    }
+
+    groupLoadWrap.style.display = 'block';
+    const currentSelected = selectGroupLoad.value;
+
+    selectGroupLoad.innerHTML = `<option value="">-- ${t('select_group_default')} --</option>`;
+    cloudGroups.forEach(g => {
+        const opt = document.createElement('option');
+        opt.value = g.id;
+        opt.textContent = `${g.name} (${g.members.length} members)`;
+        if (g.id === currentSelected) opt.selected = true;
+        selectGroupLoad.appendChild(opt);
+    });
+}
+
+function loadGroupIntoBill(groupId) {
+    const group = cloudGroups.find(g => g.id === groupId);
+    if (!group) return;
+
+    let addedCount = 0;
+    group.members.forEach(member => {
+        const isAlreadyAdded = state.people.some(p =>
+            (member.email && p.email && p.email.toLowerCase() === member.email.toLowerCase()) ||
+            (member.userId && p.userId && p.userId === member.userId) ||
+            (p.name && p.name.toLowerCase() === member.name.toLowerCase())
+        );
+
+        if (!isAlreadyAdded) {
+            state.people.push({
+                id: state.personIdCounter++,
+                name: member.name,
+                email: member.email,
+                phone: member.phone || '',
+                userId: member.userId,
+                isCurrentUser: currentUser && member.userId === currentUser.id,
+                debt: 0,
+                subtotal: 0,
+                amountPaid: 0,
+                balance: 0
+            });
+            addedCount++;
+        }
+    });
+
+    saveToStorage();
+    renderPeopleUI();
+    recalculateAndRender();
+    showToast(`${group.name}: ${addedCount} ${t('toast_group_members_added')}`, 'success');
+}
+
+async function createGroup(name, description) {
+    if (!currentUser || !supabaseClient) return;
+    const cleanName = (name || '').trim();
+    if (!cleanName) {
+        showToast('Please enter a group name.', 'error');
+        return;
+    }
+
+    if (btnCreateGroup) btnCreateGroup.disabled = true;
+
+    try {
+        // Generate random 6-character alphanumeric code
+        const inviteCode = Math.random().toString(36).substring(2, 8).toUpperCase();
+
+        // 1. Insert into public.groups
+        const { data: newGroup, error: gErr } = await supabaseClient
+            .from('groups')
+            .insert([{
+                name: cleanName,
+                description: (description || '').trim() || null,
+                invite_code: inviteCode,
+                created_by: currentUser.id
+            }])
+            .select()
+            .single();
+
+        if (gErr) throw gErr;
+
+        // 2. Insert creator as admin into public.group_members
+        const { error: mErr } = await supabaseClient
+            .from('group_members')
+            .insert([{
+                group_id: newGroup.id,
+                user_id: currentUser.id,
+                role: 'admin'
+            }]);
+
+        if (mErr) throw mErr;
+
+        if (inputGroupName) inputGroupName.value = '';
+        if (inputGroupDesc) inputGroupDesc.value = '';
+
+        showToast(t('toast_group_created'), 'success');
+        await loadCloudGroups();
+    } catch (err) {
+        console.error('Error creating group:', err);
+        showToast('Failed to create group. Please try again.', 'error');
+    } finally {
+        if (btnCreateGroup) btnCreateGroup.disabled = false;
+    }
+}
+
+async function joinGroup(inviteCode) {
+    if (!currentUser || !supabaseClient) return;
+    const cleanCode = (inviteCode || '').trim().toUpperCase();
+    if (!cleanCode) {
+        showToast('Please enter an invite code.', 'error');
+        return;
+    }
+
+    if (btnJoinGroup) btnJoinGroup.disabled = true;
+
+    try {
+        // 1. Query group by invite code
+        const { data: group, error: gErr } = await supabaseClient
+            .from('groups')
+            .select('id, name')
+            .eq('invite_code', cleanCode)
+            .maybeSingle();
+
+        if (gErr || !group) {
+            showToast(t('toast_invalid_code'), 'error');
+            return;
+        }
+
+        // 2. Check if already member
+        const alreadyMember = cloudGroups.some(g => g.id === group.id);
+        if (alreadyMember) {
+            showToast(t('toast_already_in_group'), 'info');
+            return;
+        }
+
+        // 3. Insert into public.group_members
+        const { error: mErr } = await supabaseClient
+            .from('group_members')
+            .insert([{
+                group_id: group.id,
+                user_id: currentUser.id,
+                role: 'member'
+            }]);
+
+        if (mErr) throw mErr;
+
+        if (inputJoinCode) inputJoinCode.value = '';
+        showToast(t('toast_group_joined'), 'success');
+        await loadCloudGroups();
+    } catch (err) {
+        console.error('Error joining group:', err);
+        showToast('Failed to join group.', 'error');
+    } finally {
+        if (btnJoinGroup) btnJoinGroup.disabled = false;
+    }
+}
+
+async function leaveGroup(groupId) {
+    if (!currentUser || !supabaseClient) return;
+    if (!confirm(t('toast_confirm_leave_group'))) return;
+
+    try {
+        const { error } = await supabaseClient
+            .from('group_members')
+            .delete()
+            .eq('group_id', groupId)
+            .eq('user_id', currentUser.id);
+
+        if (error) throw error;
+        showToast(t('toast_group_left'), 'info');
+        await loadCloudGroups();
+    } catch (err) {
+        console.error('Error leaving group:', err);
+        showToast('Failed to leave group.', 'error');
+    }
+}
+
+async function deleteGroup(groupId) {
+    if (!currentUser || !supabaseClient) return;
+    if (!confirm(t('toast_confirm_delete_group'))) return;
+
+    try {
+        const { error } = await supabaseClient
+            .from('groups')
+            .delete()
+            .eq('id', groupId);
+
+        if (error) throw error;
+        showToast(t('toast_group_deleted'), 'info');
+        await loadCloudGroups();
+    } catch (err) {
+        console.error('Error deleting group:', err);
+        showToast('Failed to delete group.', 'error');
+    }
+}
+
+async function removeMemberFromGroup(groupId, memberUserId) {
+    if (!currentUser || !supabaseClient) return;
+    if (!confirm('Remove this member from the group?')) return;
+
+    try {
+        const { error } = await supabaseClient
+            .from('group_members')
+            .delete()
+            .eq('group_id', groupId)
+            .eq('user_id', memberUserId);
+
+        if (error) throw error;
+        showToast('Member removed from group.', 'info');
+        await loadCloudGroups();
+    } catch (err) {
+        console.error('Error removing member:', err);
+        showToast('Failed to remove member.', 'error');
+    }
+}
+
+// Group Form Submissions & Listeners
+if (formCreateGroup) {
+    formCreateGroup.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const name = inputGroupName ? inputGroupName.value : '';
+        const desc = inputGroupDesc ? inputGroupDesc.value : '';
+        createGroup(name, desc);
+    });
+}
+
+if (formJoinGroup) {
+    formJoinGroup.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const code = inputJoinCode ? inputJoinCode.value : '';
+        joinGroup(code);
+    });
+}
+
+if (btnApplyGroupLoad && selectGroupLoad) {
+    btnApplyGroupLoad.addEventListener('click', () => {
+        const selectedId = selectGroupLoad.value;
+        if (!selectedId) {
+            showToast('Please select a group first.', 'error');
+            return;
+        }
+        loadGroupIntoBill(selectedId);
     });
 }
 
