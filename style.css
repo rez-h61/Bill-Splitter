@@ -2521,3 +2521,57 @@ body:not(.dark-mode) ::-webkit-scrollbar-thumb {
     color: var(--accent-primary);
     transform: scale(1.1);
 }
+
+
+/* -------------------------------------------------------------
+   LOGGED-IN USER HIGHLIGHT & QUICK ADD ME STYLES
+   ------------------------------------------------------------- */
+.badge.badge-self {
+    border-color: rgba(99, 102, 241, 0.6);
+    background: rgba(99, 102, 241, 0.12);
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.15);
+}
+
+.badge-you-tag {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--accent-primary);
+    background: rgba(99, 102, 241, 0.2);
+    padding: 1px 6px;
+    border-radius: 6px;
+    margin-left: 2px;
+}
+
+.user-quick-add-wrap {
+    margin: 8px 0 12px 0;
+}
+
+.quick-add-me-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    background: var(--glass-card);
+    border: 1px dashed var(--accent-primary);
+    color: var(--accent-primary);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.quick-add-me-btn:hover {
+    background: var(--accent-glow);
+    transform: translateY(-1px);
+}
+
+.text-info {
+    color: #38bdf8 !important;
+}
+
+.transfer-badge-direction {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+}
