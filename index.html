@@ -792,6 +792,130 @@
         </div>
     </div>
 
+    <!-- VIEW BILL DETAILS MODAL (Saved Cloud Bill Receipt Breakdown) -->
+    <div id="cloud-bill-detail-modal" class="glass-modal-backdrop" style="display: none;">
+        <div class="glass-modal profile-modal-card">
+            <div class="modal-header">
+                <div class="modal-user-info">
+                    <div class="user-avatar" id="cloud-bill-modal-avatar">🧾</div>
+                    <div>
+                        <h3 id="cloud-bill-modal-title" class="modal-title">Bill Breakdown</h3>
+                        <p class="modal-sub" id="cloud-bill-modal-meta">Date • Items</p>
+                    </div>
+                </div>
+                <button type="button" id="btn-close-cloud-bill-modal" class="icon-close-btn" title="Close">&times;</button>
+            </div>
+
+            <div class="modal-body profile-modal-body">
+                <!-- Banner: Grand Total & Payer -->
+                <div class="profile-balance-banner" style="background: rgba(99, 102, 241, 0.1); border-color: rgba(99, 102, 241, 0.3);">
+                    <div class="banner-stat">
+                        <span class="stat-label">Total Bill:</span>
+                        <strong id="cloud-bill-modal-total" class="stat-value text-primary" style="font-size: 18px;">RM 0.00</strong>
+                    </div>
+                    <div class="banner-stat">
+                        <span class="stat-label" data-i18n="paid_at_counter_by">Paid at cashier by:</span>
+                        <strong id="cloud-bill-modal-payer" class="stat-value" style="color: var(--accent-primary);">--</strong>
+                    </div>
+                </div>
+
+                <!-- Section 1: Purchased Items -->
+                <div class="profile-section">
+                    <div class="profile-section-header">
+                        <span class="profile-section-badge">1</span>
+                        <h4 class="profile-section-title" data-i18n="bill_items_list">Purchased Items</h4>
+                    </div>
+                    <ul id="cloud-bill-modal-items" class="profile-items-list"></ul>
+                </div>
+
+                <!-- Section 2: Buyer Shares -->
+                <div class="profile-section">
+                    <div class="profile-section-header">
+                        <span class="profile-section-badge recipient">2</span>
+                        <h4 class="profile-section-title" data-i18n="buyer_shares">Buyer Shares</h4>
+                    </div>
+                    <div id="cloud-bill-modal-people" class="profile-settlement-list"></div>
+                </div>
+
+                <!-- Section 3: Settlement Transfers -->
+                <div class="profile-section">
+                    <div class="profile-section-header">
+                        <span class="profile-section-badge" style="background: var(--color-success); color: white;">3</span>
+                        <h4 class="profile-section-title" data-i18n="settlement_transfers">Settlement Transfers</h4>
+                    </div>
+                    <div id="cloud-bill-modal-settlements" class="profile-settlement-list"></div>
+                </div>
+            </div>
+
+            <div class="modal-footer profile-modal-footer">
+                <button type="button" id="btn-cloud-bill-modal-copy" class="glass-btn-social copy-btn mini-btn">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                    <span data-i18n="copy_bill_summary">Copy Summary</span>
+                </button>
+                <button type="button" id="btn-cloud-bill-modal-load" class="glass-btn-primary mini-btn">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+                    <span data-i18n="btn_load_calculator">Load into Splitter</span>
+                </button>
+                <button type="button" id="btn-dismiss-cloud-bill-modal" class="glass-btn" data-i18n="close">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- DEBT BREAKDOWN MODAL (What Items Make Up A Debt) -->
+    <div id="debt-detail-modal" class="glass-modal-backdrop" style="display: none;">
+        <div class="glass-modal profile-modal-card" style="max-width: 480px;">
+            <div class="modal-header">
+                <div class="modal-user-info">
+                    <div class="user-avatar" id="debt-modal-avatar">💸</div>
+                    <div>
+                        <h3 id="debt-modal-title" class="modal-title" data-i18n="debt_detail_title">Debt Breakdown</h3>
+                        <p class="modal-sub" id="debt-modal-bill-name">Bill Reference</p>
+                    </div>
+                </div>
+                <button type="button" id="btn-close-debt-modal" class="icon-close-btn" title="Close">&times;</button>
+            </div>
+
+            <div class="modal-body profile-modal-body">
+                <!-- Debt Summary Card -->
+                <div class="modal-summary-card">
+                    <div class="modal-total-line">
+                        <span data-i18n="debtor_person">Debtor (Owes):</span>
+                        <strong id="debt-modal-debtor">--</strong>
+                    </div>
+                    <div class="modal-total-line">
+                        <span data-i18n="creditor_person">Creditor (Paid for):</span>
+                        <strong id="debt-modal-creditor" style="color: var(--accent-primary);">--</strong>
+                    </div>
+                    <div class="modal-total-line highlight">
+                        <span data-i18n="amount_to_pay">Amount to Settle:</span>
+                        <strong id="debt-modal-amount" class="text-danger" style="font-size: 18px;">RM 0.00</strong>
+                    </div>
+                </div>
+
+                <!-- Consumed Items Breakdown -->
+                <div class="profile-section">
+                    <div class="profile-section-header">
+                        <span class="profile-section-badge">📋</span>
+                        <h4 class="profile-section-title" data-i18n="debt_items_label">Items Causing This Debt</h4>
+                    </div>
+                    <ul id="debt-modal-items-list" class="profile-items-list"></ul>
+                </div>
+
+                <!-- Cashier Info -->
+                <div class="debt-payer-info-card" id="debt-modal-payer-box" style="padding: 12px; background: var(--glass-input); border-radius: 12px; font-size: 13px; color: var(--text-muted); border: 1px solid var(--glass-border-subtle);">
+                    💳 <span data-i18n="paid_at_counter_by">Paid at cashier by</span> <strong id="debt-modal-payer-name" style="color: var(--text-primary);">--</strong>
+                </div>
+            </div>
+
+            <div class="modal-footer profile-modal-footer">
+                <button type="button" id="btn-debt-modal-view-full-bill" class="glass-btn mini-btn">
+                    <span data-i18n="view_full_bill">View Full Receipt</span>
+                </button>
+                <button type="button" id="btn-dismiss-debt-modal" class="glass-btn" data-i18n="close">Close</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Edit User Profile Modal (WhatsApp phone number & display name) -->
     <div id="my-profile-modal" class="glass-modal-backdrop" style="display: none;">
         <div class="glass-modal profile-modal-card">

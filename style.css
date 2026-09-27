@@ -2123,28 +2123,107 @@ body:not(.dark-mode) ::-webkit-scrollbar-thumb {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 13px 16px;
+    padding: 14px 18px;
     background: var(--glass-input);
     border: 1px solid var(--glass-border-subtle);
-    border-radius: 14px;
+    border-radius: 16px;
     transition: all 0.2s ease;
+    gap: 14px;
 }
 
 .cloud-debt-item:hover {
     border-color: var(--glass-highlight);
     background: var(--glass-card-hover);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
 }
 
 .debt-col-main {
+    flex: 1;
+    min-width: 0;
     display: flex;
     flex-direction: column;
-    gap: 3px;
+    gap: 6px;
+}
+
+.debt-item-user {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.debt-user-title-row {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
 }
 
 .debt-col-name {
     font-size: 14px;
     font-weight: 700;
     color: var(--text-primary);
+}
+
+.debt-bill-tag {
+    display: inline-flex;
+    align-items: center;
+    font-size: 11px;
+    font-weight: 600;
+    padding: 2px 7px;
+    border-radius: 6px;
+    background: rgba(99, 102, 241, 0.15);
+    color: var(--accent-primary);
+    border: 1px solid rgba(99, 102, 241, 0.25);
+}
+
+.debt-items-tag-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    margin-top: 4px;
+    font-size: 12px;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 6px 10px;
+    border-radius: 8px;
+    border: 1px dashed var(--glass-border-subtle);
+}
+
+.debt-tag-label {
+    font-weight: 700;
+    color: var(--text-secondary);
+    white-space: nowrap;
+}
+
+.debt-tag-content {
+    color: var(--text-primary);
+    line-height: 1.4;
+    word-break: break-word;
+}
+
+.debt-item-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 6px;
+    min-width: 140px;
+}
+
+.debt-buttons-wrap {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+}
+
+.btn-view-debt {
+    font-size: 11px;
+    padding: 4px 8px;
+    border-radius: 8px;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
 }
 
 .debt-col-detail {
@@ -2223,32 +2302,56 @@ body:not(.dark-mode) ::-webkit-scrollbar-thumb {
 /* Cloud Bills History */
 .cloud-bills-list {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 12px;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 14px;
     margin-top: 14px;
 }
 
 .cloud-bill-card {
     display: flex;
+    flex-direction: column;
     justify-content: space-between;
-    align-items: center;
-    padding: 14px 18px;
+    padding: 16px 18px;
     background: var(--glass-input);
     border: 1px solid var(--glass-border-subtle);
-    border-radius: 14px;
+    border-radius: 16px;
     transition: all 0.2s ease;
+    gap: 12px;
 }
 
 .cloud-bill-card:hover {
     border-color: var(--glass-highlight);
     background: var(--glass-card-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
 }
 
-.cloud-bill-info h4 {
-    font-size: 14px;
+.cloud-bill-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.cloud-bill-title-wrap {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.bill-icon {
+    font-size: 20px;
+    padding: 6px 8px;
+    background: rgba(99, 102, 241, 0.12);
+    border-radius: 10px;
+    border: 1px solid rgba(99, 102, 241, 0.25);
+}
+
+.cloud-bill-title {
+    font-size: 15px;
     font-weight: 700;
     color: var(--text-primary);
-    margin-bottom: 3px;
+    margin: 0 0 2px 0;
 }
 
 .cloud-bill-meta {
@@ -2256,11 +2359,69 @@ body:not(.dark-mode) ::-webkit-scrollbar-thumb {
     color: var(--text-muted);
 }
 
+.cloud-bill-header-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
 .cloud-bill-total {
-    font-size: 15px;
+    font-size: 16px;
     font-weight: 800;
     color: var(--accent-primary);
     font-variant-numeric: tabular-nums;
+}
+
+.cloud-bill-preview-box {
+    background: rgba(0, 0, 0, 0.18);
+    border: 1px solid var(--glass-border-subtle);
+    border-radius: 10px;
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.cloud-bill-payer-tag {
+    font-size: 12px;
+    color: var(--text-secondary);
+}
+
+.payer-highlight {
+    color: var(--color-success);
+    font-weight: 700;
+}
+
+.cloud-bill-items-preview {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 2px;
+}
+
+.bill-item-pill {
+    font-size: 11px;
+    padding: 2px 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--glass-border-subtle);
+    border-radius: 6px;
+    color: var(--text-secondary);
+}
+
+.bill-item-pill.more {
+    color: var(--accent-primary);
+    border-color: rgba(99, 102, 241, 0.3);
+    background: rgba(99, 102, 241, 0.08);
+    font-weight: 600;
+}
+
+.cloud-bill-footer {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 8px;
+    padding-top: 4px;
+    border-top: 1px solid var(--glass-border-subtle);
 }
 
 .btn-del-cloud-bill {
@@ -2268,8 +2429,9 @@ body:not(.dark-mode) ::-webkit-scrollbar-thumb {
     border: none;
     color: var(--text-muted);
     cursor: pointer;
-    font-size: 16px;
-    padding: 4px;
+    font-size: 18px;
+    line-height: 1;
+    padding: 4px 6px;
     border-radius: 6px;
     transition: all 0.15s ease;
 }

@@ -259,7 +259,28 @@ const i18n = {
         toast_pass_min_chars: "New password must be at least 6 characters.",
         toast_pass_mismatch: "Passwords do not match.",
         toast_pass_updated: "Password updated successfully!",
-        toast_recovery_detected: "Password recovery mode detected. Please set your new password below."
+        toast_recovery_detected: "Password recovery mode detected. Please set your new password below.",
+        view_bill_detail: "View Receipt & Details",
+        bill_detail_title: "Bill Receipt Breakdown",
+        paid_by: "Paid upfront by",
+        bill_items_list: "Purchased Items",
+        buyer_shares: "Buyer Shares",
+        settlement_transfers: "Settlement Transfers",
+        btn_load_calculator: "Load into Splitter",
+        toast_bill_loaded: "Bill loaded into calculator!",
+        debt_items_label: "Items",
+        debt_bill_label: "Bill",
+        btn_view_debt_breakdown: "Details",
+        debt_detail_title: "Debt Breakdown",
+        shared_bill_items: "General expense / shared items",
+        paid_at_counter_by: "Paid at cashier by",
+        debt_source_bill: "Source Bill",
+        debtor_person: "Debtor",
+        creditor_person: "Creditor",
+        amount_to_pay: "Amount to Settle",
+        view_full_bill: "View Full Receipt",
+        copy_bill_summary: "Copy Summary",
+        toast_receipt_copied: "Receipt summary copied!"
     },
     ms: {
         title: "Split Bil",
@@ -499,7 +520,28 @@ const i18n = {
         toast_pass_min_chars: "Kata laluan mestilah sekurang-kurangnya 6 aksara.",
         toast_pass_mismatch: "Kata laluan tidak sepadan.",
         toast_pass_updated: "Kata laluan berjaya dikemaskini!",
-        toast_recovery_detected: "Mod pemulihan kata laluan dikesan. Sila tetapkan kata laluan baru anda di bawah."
+        toast_recovery_detected: "Mod pemulihan kata laluan dikesan. Sila tetapkan kata laluan baru anda di bawah.",
+        view_bill_detail: "Lihat Resit & Perincian",
+        bill_detail_title: "Perincian Resit Bil",
+        paid_by: "Dibayar dahulu oleh",
+        bill_items_list: "Senarai Barang",
+        buyer_shares: "Pecahan Pembeli",
+        settlement_transfers: "Penyelesaian Bayaran",
+        btn_load_calculator: "Muat ke Kalkulator",
+        toast_bill_loaded: "Bil berjaya dimuatkan ke kalkulator!",
+        debt_items_label: "Barang",
+        debt_bill_label: "Bil",
+        btn_view_debt_breakdown: "Perincian",
+        debt_detail_title: "Perincian Hutang",
+        shared_bill_items: "Belanja umum / perkongsian bil",
+        paid_at_counter_by: "Dibayar di kaunter oleh",
+        debt_source_bill: "Dari Bil",
+        debtor_person: "Penghutang",
+        creditor_person: "Pemberi Duit / Pemiutang",
+        amount_to_pay: "Jumlah Perlu Dibayar",
+        view_full_bill: "Lihat Resit Penuh",
+        copy_bill_summary: "Salin Ringkasan",
+        toast_receipt_copied: "Ringkasan resit berjaya disalin!"
     }
 };
 
@@ -724,6 +766,35 @@ const profileSettlementList = document.getElementById('profile-settlement-list')
 const btnProfileWa = document.getElementById('btn-profile-wa');
 const btnProfileCopy = document.getElementById('btn-profile-copy');
 let activeProfilePersonId = null;
+
+// Cloud Bill Receipt Detail Modal Elements
+const cloudBillDetailModal = document.getElementById('cloud-bill-detail-modal');
+const cloudBillModalAvatar = document.getElementById('cloud-bill-modal-avatar');
+const cloudBillModalTitle = document.getElementById('cloud-bill-modal-title');
+const cloudBillModalMeta = document.getElementById('cloud-bill-modal-meta');
+const btnCloseCloudBillModal = document.getElementById('btn-close-cloud-bill-modal');
+const btnDismissCloudBillModal = document.getElementById('btn-dismiss-cloud-bill-modal');
+const cloudBillModalTotal = document.getElementById('cloud-bill-modal-total');
+const cloudBillModalPayer = document.getElementById('cloud-bill-modal-payer');
+const cloudBillModalItems = document.getElementById('cloud-bill-modal-items');
+const cloudBillModalPeople = document.getElementById('cloud-bill-modal-people');
+const cloudBillModalSettlements = document.getElementById('cloud-bill-modal-settlements');
+const btnCloudBillModalCopy = document.getElementById('btn-cloud-bill-modal-copy');
+const btnCloudBillModalLoad = document.getElementById('btn-cloud-bill-modal-load');
+
+// Debt Breakdown Detail Modal Elements
+const debtDetailModal = document.getElementById('debt-detail-modal');
+const debtModalAvatar = document.getElementById('debt-modal-avatar');
+const debtModalTitle = document.getElementById('debt-modal-title');
+const debtModalBillName = document.getElementById('debt-modal-bill-name');
+const btnCloseDebtModal = document.getElementById('btn-close-debt-modal');
+const btnDismissDebtModal = document.getElementById('btn-dismiss-debt-modal');
+const debtModalDebtor = document.getElementById('debt-modal-debtor');
+const debtModalCreditor = document.getElementById('debt-modal-creditor');
+const debtModalAmount = document.getElementById('debt-modal-amount');
+const debtModalItemsList = document.getElementById('debt-modal-items-list');
+const debtModalPayerName = document.getElementById('debt-modal-payer-name');
+const btnDebtModalViewFullBill = document.getElementById('btn-debt-modal-view-full-bill');
 
 // Legacy Breakdown Modal Elements (Fallbacks)
 const modalBreakdown = document.getElementById('modal-breakdown');
@@ -2814,18 +2885,67 @@ async function saveBillToCloud() {
         const currentUserName = (currentUser.user_metadata && currentUser.user_metadata.display_name)
             || currentUser.email.split('@')[0];
 
-        // 1. Insert into public.bills
-        const { data: billData, error: billError } = await supabaseClient
+        const payers = state.people.filter(p => (p.amountPaid || 0) > 0);
+        const payerSummary = payers.length > 0 
+            ? payers.map(p => `${p.name} (RM ${parseFloat(p.amountPaid).toFixed(2)})`).join(', ')
+            : `${currentUserName} (RM ${grandTotal.toFixed(2)})`;
+
+        const transactions = calculateSettlements(grandTotal);
+
+        const billSnapshot = {
+            subtotal: subtotal,
+            taxPercent: state.extras.taxPercent,
+            servicePercent: state.extras.servicePercent,
+            discountAmount: state.extras.discountAmount,
+            grandTotal: grandTotal,
+            payerSummary: payerSummary,
+            payers: payers.map(p => ({ name: p.name, amountPaid: p.amountPaid })),
+            people: state.people.map(p => ({
+                id: p.id,
+                name: p.name,
+                email: p.email || null,
+                subtotal: p.subtotal || 0,
+                debt: p.debt || 0,
+                amountPaid: p.amountPaid || 0,
+                balance: p.balance || 0
+            })),
+            settlements: transactions.map(tr => ({
+                from: tr.from,
+                to: tr.to,
+                amount: tr.amount
+            }))
+        };
+
+        // 1. Insert into public.bills (Try with rich columns, fallback if columns not added yet)
+        let billData = null;
+        const richInsert = await supabaseClient
             .from('bills')
             .insert([{
                 created_by: currentUser.id,
                 title: `Bill ${new Date().toLocaleDateString()}`,
-                total_amount: grandTotal
+                total_amount: grandTotal,
+                payer_summary: payerSummary,
+                bill_data: billSnapshot
             }])
             .select()
             .single();
 
-        if (billError) throw billError;
+        if (richInsert.error) {
+            console.warn('Columns payer_summary/bill_data not found in bills. Retrying with basic columns:', richInsert.error.message);
+            const basicInsert = await supabaseClient
+                .from('bills')
+                .insert([{
+                    created_by: currentUser.id,
+                    title: `Bill ${new Date().toLocaleDateString()}`,
+                    total_amount: grandTotal
+                }])
+                .select()
+                .single();
+            if (basicInsert.error) throw basicInsert.error;
+            billData = basicInsert.data;
+        } else {
+            billData = richInsert.data;
+        }
 
         // 2. Insert into public.bill_items
         if (state.items.length > 0) {
@@ -2850,7 +2970,6 @@ async function saveBillToCloud() {
         }
 
         // 3. Insert Settlement Transfers into public.debts
-        const transactions = calculateSettlements(grandTotal);
         if (transactions.length > 0) {
             const currentUserEmail = (currentUser.email || '').toLowerCase().trim();
 
@@ -2869,6 +2988,17 @@ async function saveBillToCloud() {
                 const debtorId = isDebtorMe ? currentUser.id : (debtorPerson?.userId || null);
                 const creditorId = isCreditorMe ? currentUser.id : (creditorPerson?.userId || null);
 
+                // Compute debtor items summary
+                let debtorItemsText = '';
+                if (debtorPerson) {
+                    const debtorItems = state.items.filter(i => i.sharedBy.includes(debtorPerson.id));
+                    debtorItemsText = debtorItems.map(i => {
+                        const count = i.sharedBy.length || 1;
+                        const perShare = i.price / count;
+                        return `${i.name} (RM ${perShare.toFixed(2)}${count > 1 ? ` - 1/${count}` : ''})`;
+                    }).join(', ');
+                }
+
                 return {
                     bill_id: billData.id,
                     debtor_id: debtorId,
@@ -2878,7 +3008,8 @@ async function saveBillToCloud() {
                     creditor_name: tr.to,
                     creditor_email: creditorEmail,
                     amount: tr.amount,
-                    status: 'pending'
+                    status: 'pending',
+                    items_summary: debtorItemsText || null
                 };
             });
 
@@ -2887,25 +3018,21 @@ async function saveBillToCloud() {
                 .insert(debtsToInsert);
 
             if (debtsError) {
-                // If columns debtor_email or creditor_email do not exist yet in Supabase (before ALTER TABLE)
-                if (debtsError.message && (debtsError.message.includes('debtor_email') || debtsError.message.includes('creditor_email') || debtsError.code === 'PGRST204' || debtsError.code === '42703')) {
-                    console.warn('Columns debtor_email/creditor_email not found in debts table. Retrying with basic columns.');
-                    const fallbackDebts = debtsToInsert.map(d => ({
-                        bill_id: d.bill_id,
-                        debtor_id: d.debtor_id,
-                        debtor_name: d.debtor_name,
-                        creditor_id: d.creditor_id,
-                        creditor_name: d.creditor_name,
-                        amount: d.amount,
-                        status: d.status
-                    }));
-                    const { error: fallbackErr } = await supabaseClient
-                        .from('debts')
-                        .insert(fallbackDebts);
-                    if (fallbackErr) throw fallbackErr;
-                } else {
-                    throw debtsError;
-                }
+                // If columns items_summary or emails do not exist yet in Supabase (before ALTER TABLE)
+                console.warn('Columns items_summary/emails not found in debts table. Retrying with basic columns:', debtsError.message);
+                const fallbackDebts = debtsToInsert.map(d => ({
+                    bill_id: d.bill_id,
+                    debtor_id: d.debtor_id,
+                    debtor_name: d.debtor_name,
+                    creditor_id: d.creditor_id,
+                    creditor_name: d.creditor_name,
+                    amount: d.amount,
+                    status: d.status
+                }));
+                const { error: fallbackErr } = await supabaseClient
+                    .from('debts')
+                    .insert(fallbackDebts);
+                if (fallbackErr) throw fallbackErr;
             }
         }
 
@@ -2924,6 +3051,470 @@ if (btnSaveCloud) {
     btnSaveCloud.addEventListener('click', saveBillToCloud);
 }
 
+// Helper: Extract or Compute Items Breakdown for a Debt
+function getDebtItemBreakdown(debt) {
+    // 1. If items_summary column is populated directly on debt, use it
+    if (debt.items_summary && debt.items_summary.trim().length > 0) {
+        let parentBill = null;
+        if (debt.bill_id) {
+            parentBill = cloudBills.find(b => b.id === debt.bill_id);
+        }
+        return {
+            itemsText: debt.items_summary,
+            items: [],
+            billTitle: parentBill ? (parentBill.title || `Bill ${new Date(parentBill.created_at).toLocaleDateString()}`) : null,
+            payerName: parentBill ? (parentBill.payer_summary || (parentBill.bill_data && parentBill.bill_data.payerSummary) || debt.creditor_name) : debt.creditor_name
+        };
+    }
+
+    // 2. Compute from parent bill items
+    if (debt.bill_id) {
+        const bill = cloudBills.find(b => b.id === debt.bill_id);
+        if (bill) {
+            const billTitle = bill.title || `Bill ${new Date(bill.created_at).toLocaleDateString()}`;
+            let payerName = bill.payer_summary || (bill.bill_data && bill.bill_data.payerSummary);
+            if (!payerName) {
+                payerName = debt.creditor_name;
+            }
+
+            if (bill.bill_items && bill.bill_items.length > 0) {
+                const matchedItems = [];
+                const debtorNameClean = (debt.debtor_name || '').toLowerCase().trim();
+
+                bill.bill_items.forEach(item => {
+                    let sharedList = item.shared_by;
+                    if (typeof sharedList === 'string') {
+                        try { sharedList = JSON.parse(sharedList); } catch (e) { sharedList = [sharedList]; }
+                    }
+                    if (!Array.isArray(sharedList)) sharedList = [];
+
+                    const isShared = sharedList.some(name => String(name).toLowerCase().trim() === debtorNameClean);
+                    if (isShared) {
+                        const count = sharedList.length || 1;
+                        const shareAmount = parseFloat(item.price) / count;
+                        matchedItems.push({
+                            name: item.name,
+                            price: parseFloat(item.price),
+                            count: count,
+                            shareAmount: shareAmount
+                        });
+                    }
+                });
+
+                if (matchedItems.length > 0) {
+                    const text = matchedItems.map(i => {
+                        return `${i.name} (RM ${i.shareAmount.toFixed(2)}${i.count > 1 ? ` - 1/${i.count}` : ''})`;
+                    }).join(', ');
+
+                    return {
+                        itemsText: text,
+                        items: matchedItems,
+                        billTitle: billTitle,
+                        payerName: payerName
+                    };
+                }
+            }
+
+            return {
+                itemsText: t('shared_bill_items') || 'Shared bill expense',
+                items: [],
+                billTitle: billTitle,
+                payerName: payerName
+            };
+        }
+    }
+
+    return {
+        itemsText: t('shared_bill_items') || 'Shared bill expense',
+        items: [],
+        billTitle: null,
+        payerName: debt.creditor_name
+    };
+}
+
+// Open Debt Breakdown Modal
+function openDebtModal(debt) {
+    if (!debt || !debtDetailModal) return;
+
+    const breakdown = getDebtItemBreakdown(debt);
+    const parentBill = cloudBills.find(b => b.id === debt.bill_id);
+
+    if (debtModalTitle) debtModalTitle.textContent = t('debt_detail_title') || 'Debt Breakdown';
+    if (debtModalBillName) {
+        debtModalBillName.textContent = breakdown.billTitle 
+            ? `🧾 ${breakdown.billTitle} • ${new Date(debt.created_at).toLocaleDateString()}` 
+            : `Bill Reference • ${new Date(debt.created_at).toLocaleDateString()}`;
+    }
+    if (debtModalDebtor) debtModalDebtor.textContent = debt.debtor_name + (debt.debtor_email ? ` (${debt.debtor_email})` : '');
+    if (debtModalCreditor) debtModalCreditor.textContent = debt.creditor_name + (debt.creditor_email ? ` (${debt.creditor_email})` : '');
+    if (debtModalAmount) debtModalAmount.textContent = `RM ${parseFloat(debt.amount).toFixed(2)}`;
+
+    // Payer Box
+    if (debtModalPayerName) {
+        debtModalPayerName.textContent = breakdown.payerName || debt.creditor_name;
+    }
+
+    // Items list
+    if (debtModalItemsList) {
+        debtModalItemsList.innerHTML = '';
+        if (breakdown.items && breakdown.items.length > 0) {
+            breakdown.items.forEach(item => {
+                const li = document.createElement('li');
+                li.className = 'profile-item-row';
+                li.innerHTML = `
+                    <div class="profile-item-details">
+                        <strong class="profile-item-name">${item.name}</strong>
+                        <span class="profile-item-fraction">
+                            ${item.count > 1 ? `1/${item.count} share of RM ${item.price.toFixed(2)}` : 'Full item'}
+                        </span>
+                    </div>
+                    <strong class="profile-item-cost">RM ${item.shareAmount.toFixed(2)}</strong>
+                `;
+                debtModalItemsList.appendChild(li);
+            });
+        } else {
+            debtModalItemsList.innerHTML = `
+                <li class="profile-item-row">
+                    <div class="profile-item-details">
+                        <strong class="profile-item-name">${breakdown.itemsText || t('shared_bill_items') || 'Shared bill expense'}</strong>
+                        <span class="profile-item-fraction">Recorded settlement share</span>
+                    </div>
+                    <strong class="profile-item-cost">RM ${parseFloat(debt.amount).toFixed(2)}</strong>
+                </li>
+            `;
+        }
+    }
+
+    // Action button: View Full Bill
+    if (btnDebtModalViewFullBill) {
+        if (parentBill) {
+            btnDebtModalViewFullBill.style.display = 'inline-flex';
+            btnDebtModalViewFullBill.onclick = () => {
+                debtDetailModal.style.display = 'none';
+                openCloudBillModal(parentBill);
+            };
+        } else {
+            btnDebtModalViewFullBill.style.display = 'none';
+        }
+    }
+
+    debtDetailModal.style.display = 'flex';
+}
+
+// Generate Receipt Text for Copying
+function generateBillCopyText(bill, payerText, billDebts) {
+    const title = bill.title || 'Bill Receipt';
+    const date = new Date(bill.created_at).toLocaleString();
+    const total = parseFloat(bill.total_amount).toFixed(2);
+
+    let text = `🧾 *${title}*\n📅 ${date}\n💰 *Total: RM ${total}*\n💳 *Paid by:* ${payerText}\n\n`;
+    text += `📋 *Items:*\n`;
+
+    (bill.bill_items || []).forEach((item, idx) => {
+        let shared = item.shared_by;
+        if (typeof shared === 'string') {
+            try { shared = JSON.parse(shared); } catch(e) { shared = [shared]; }
+        }
+        if (!Array.isArray(shared)) shared = [];
+        const sharedText = shared.length > 0 ? ` (${shared.join(', ')})` : '';
+        text += `${idx + 1}. ${item.name} - RM ${parseFloat(item.price).toFixed(2)}${sharedText}\n`;
+    });
+
+    if (billDebts && billDebts.length > 0) {
+        text += `\n🔄 *Settlement:*\n`;
+        billDebts.forEach(d => {
+            const st = d.status === 'paid' ? '✓ Paid' : '⏳ Pending';
+            text += `• ${d.debtor_name} 👉 ${d.creditor_name}: RM ${parseFloat(d.amount).toFixed(2)} (${st})\n`;
+        });
+    }
+
+    text += `\n_Generated by Bill Splitter_`;
+    return text;
+}
+
+// Open Cloud Bill Receipt Modal
+function openCloudBillModal(bill) {
+    if (!bill || !cloudBillDetailModal) return;
+
+    if (cloudBillModalTitle) cloudBillModalTitle.textContent = bill.title || 'Bill Breakdown';
+    const itemsCount = (bill.bill_items && bill.bill_items.length) || 0;
+    if (cloudBillModalMeta) cloudBillModalMeta.textContent = `${new Date(bill.created_at).toLocaleString()} • ${itemsCount} items`;
+    if (cloudBillModalTotal) cloudBillModalTotal.textContent = `RM ${parseFloat(bill.total_amount).toFixed(2)}`;
+
+    // Payer upfront
+    let payerText = bill.payer_summary || (bill.bill_data && bill.bill_data.payerSummary);
+    const billDebts = cloudDebts.filter(d => d.bill_id === bill.id);
+    if (!payerText) {
+        if (billDebts.length > 0) {
+            const creditors = Array.from(new Set(billDebts.map(d => d.creditor_name)));
+            payerText = creditors.join(', ');
+        } else {
+            payerText = 'Cashier Checkout';
+        }
+    }
+    if (cloudBillModalPayer) cloudBillModalPayer.textContent = payerText;
+
+    // 1. Purchased Items
+    if (cloudBillModalItems) {
+        cloudBillModalItems.innerHTML = '';
+        if (!bill.bill_items || bill.bill_items.length === 0) {
+            cloudBillModalItems.innerHTML = `<li class="empty-state" style="padding:10px;">No items recorded</li>`;
+        } else {
+            bill.bill_items.forEach(item => {
+                let shared = item.shared_by;
+                if (typeof shared === 'string') {
+                    try { shared = JSON.parse(shared); } catch(e) { shared = [shared]; }
+                }
+                if (!Array.isArray(shared)) shared = [];
+                const shareCount = shared.length || 1;
+                const perShare = (parseFloat(item.price) / shareCount).toFixed(2);
+
+                const li = document.createElement('li');
+                li.className = 'profile-item-row';
+                li.innerHTML = `
+                    <div class="profile-item-details">
+                        <strong class="profile-item-name">${item.name}</strong>
+                        <span class="profile-item-fraction">
+                            👤 ${shared.length > 0 ? shared.join(', ') : 'Everyone'} 
+                            ${shareCount > 1 ? `(RM ${perShare} / pax)` : ''}
+                        </span>
+                    </div>
+                    <strong class="profile-item-cost">RM ${parseFloat(item.price).toFixed(2)}</strong>
+                `;
+                cloudBillModalItems.appendChild(li);
+            });
+        }
+    }
+
+    // 2. Buyer Shares
+    if (cloudBillModalPeople) {
+        cloudBillModalPeople.innerHTML = '';
+        const personShareMap = new Map();
+
+        (bill.bill_items || []).forEach(item => {
+            let shared = item.shared_by;
+            if (typeof shared === 'string') {
+                try { shared = JSON.parse(shared); } catch(e) { shared = [shared]; }
+            }
+            if (!Array.isArray(shared)) shared = [];
+            const shareCount = shared.length || 1;
+            const perShare = parseFloat(item.price) / shareCount;
+
+            shared.forEach(pName => {
+                const cur = personShareMap.get(pName) || { subtotal: 0, items: [] };
+                cur.subtotal += perShare;
+                cur.items.push(item.name);
+                personShareMap.set(pName, cur);
+            });
+        });
+
+        if (personShareMap.size === 0 && bill.bill_data && bill.bill_data.people) {
+            bill.bill_data.people.forEach(p => {
+                personShareMap.set(p.name, { subtotal: p.subtotal || p.debt || 0, items: [] });
+            });
+        }
+
+        if (personShareMap.size === 0) {
+            cloudBillModalPeople.innerHTML = `<p class="empty-state" style="padding:10px;">No buyer shares data</p>`;
+        } else {
+            personShareMap.forEach((data, pName) => {
+                const row = document.createElement('div');
+                row.className = 'modal-total-line';
+                row.style.padding = '8px 0';
+                row.style.borderBottom = '1px solid var(--glass-border-subtle)';
+                row.innerHTML = `
+                    <div style="display:flex; flex-direction:column; gap:2px;">
+                        <strong>👤 ${pName}</strong>
+                        ${data.items.length > 0 ? `<span style="font-size:11px; color:var(--text-muted);">${data.items.join(', ')}</span>` : ''}
+                    </div>
+                    <strong style="color:var(--text-primary); font-size:14px;">RM ${data.subtotal.toFixed(2)}</strong>
+                `;
+                cloudBillModalPeople.appendChild(row);
+            });
+        }
+    }
+
+    // 3. Settlement Transfers
+    if (cloudBillModalSettlements) {
+        cloudBillModalSettlements.innerHTML = '';
+        if (billDebts.length === 0) {
+            cloudBillModalSettlements.innerHTML = `<p class="empty-state" style="padding:10px;">${t('receipt_all_settled') || 'No debt transfers for this bill'}</p>`;
+        } else {
+            billDebts.forEach(d => {
+                const isPaid = d.status === 'paid';
+                const row = document.createElement('div');
+                row.className = 'profile-settlement-item';
+                row.innerHTML = `
+                    <div class="settle-text">
+                        <strong>${d.debtor_name}</strong>
+                        <span>👉 ${t('transfers_pays_to')}</span>
+                        <strong style="color:var(--accent-primary);">${d.creditor_name}</strong>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <strong class="settle-amount">RM ${parseFloat(d.amount).toFixed(2)}</strong>
+                        <span class="debt-status-badge ${isPaid ? 'badge-paid' : 'badge-pending'}">
+                            ${isPaid ? t('status_paid') : t('status_pending')}
+                        </span>
+                    </div>
+                `;
+                cloudBillModalSettlements.appendChild(row);
+            });
+        }
+    }
+
+    // Action buttons
+    if (btnCloudBillModalLoad) {
+        btnCloudBillModalLoad.onclick = () => {
+            cloudBillDetailModal.style.display = 'none';
+            loadBillIntoCalculator(bill);
+        };
+    }
+
+    if (btnCloudBillModalCopy) {
+        btnCloudBillModalCopy.onclick = () => {
+            const summary = generateBillCopyText(bill, payerText, billDebts);
+            navigator.clipboard.writeText(summary).then(() => {
+                showToast(t('toast_receipt_copied') || 'Receipt summary copied!', 'success');
+            }).catch(() => {
+                showToast('Failed to copy text', 'error');
+            });
+        };
+    }
+
+    cloudBillDetailModal.style.display = 'flex';
+}
+
+// Load Saved Bill into Live Calculator (Step 1-4)
+function loadBillIntoCalculator(bill) {
+    if (!bill) return;
+
+    const nameMap = new Map();
+
+    if (bill.bill_data && Array.isArray(bill.bill_data.people)) {
+        bill.bill_data.people.forEach(p => {
+            nameMap.set(p.name.toLowerCase().trim(), {
+                name: p.name,
+                email: p.email || null,
+                amountPaid: p.amountPaid || 0
+            });
+        });
+    } else {
+        (bill.bill_items || []).forEach(item => {
+            let shared = item.shared_by;
+            if (typeof shared === 'string') {
+                try { shared = JSON.parse(shared); } catch(e) { shared = [shared]; }
+            }
+            if (Array.isArray(shared)) {
+                shared.forEach(n => {
+                    const key = String(n).toLowerCase().trim();
+                    if (!nameMap.has(key)) {
+                        nameMap.set(key, { name: String(n), email: null, amountPaid: 0 });
+                    }
+                });
+            }
+        });
+
+        const billDebts = cloudDebts.filter(d => d.bill_id === bill.id);
+        billDebts.forEach(d => {
+            if (d.debtor_name) {
+                const k = d.debtor_name.toLowerCase().trim();
+                if (!nameMap.has(k)) nameMap.set(k, { name: d.debtor_name, email: d.debtor_email || null, amountPaid: 0 });
+            }
+            if (d.creditor_name) {
+                const k = d.creditor_name.toLowerCase().trim();
+                const existing = nameMap.get(k);
+                if (existing) {
+                    existing.amountPaid = parseFloat(bill.total_amount) || 0;
+                } else {
+                    nameMap.set(k, { name: d.creditor_name, email: d.creditor_email || null, amountPaid: parseFloat(bill.total_amount) || 0 });
+                }
+            }
+        });
+    }
+
+    if (nameMap.size === 0) {
+        showToast('No people details found in this bill.', 'error');
+        return;
+    }
+
+    const currentUserName = getCurrentUserName();
+
+    // Set state.people
+    state.people = Array.from(nameMap.values()).map(p => {
+        const id = generateId();
+        const isCurrent = currentUser && (
+            (currentUserName && currentUserName.toLowerCase() === p.name.toLowerCase()) ||
+            (currentUser.email && p.email && currentUser.email.toLowerCase() === p.email.toLowerCase())
+        );
+        return {
+            id: id,
+            name: p.name,
+            email: p.email,
+            isCurrentUser: !!isCurrent,
+            userId: isCurrent ? currentUser.id : null,
+            amountPaid: p.amountPaid || 0,
+            subtotal: 0,
+            debt: 0,
+            balance: 0
+        };
+    });
+
+    // Set state.items
+    state.items = (bill.bill_items || []).map(item => {
+        let shared = item.shared_by;
+        if (typeof shared === 'string') {
+            try { shared = JSON.parse(shared); } catch(e) { shared = [shared]; }
+        }
+        if (!Array.isArray(shared)) shared = [];
+
+        const sharedIds = shared.map(name => {
+            const found = state.people.find(p => p.name.toLowerCase().trim() === String(name).toLowerCase().trim());
+            return found ? found.id : null;
+        }).filter(Boolean);
+
+        return {
+            id: generateId(),
+            name: item.name,
+            price: parseFloat(item.price) || 0,
+            sharedBy: sharedIds.length > 0 ? sharedIds : state.people.map(p => p.id)
+        };
+    });
+
+    // Extras
+    if (bill.bill_data) {
+        state.extras.taxPercent = bill.bill_data.taxPercent || 0;
+        state.extras.servicePercent = bill.bill_data.servicePercent || 0;
+        state.extras.discountAmount = bill.bill_data.discountAmount || 0;
+        if (inputTax) inputTax.value = state.extras.taxPercent || '';
+        if (inputService) inputService.value = state.extras.servicePercent || '';
+        if (inputDiscount) inputDiscount.value = state.extras.discountAmount || '';
+    }
+
+    recalculateAndRender();
+
+    // Switch to calculator tab
+    switchAppTab('calculator');
+
+    showToast(t('toast_bill_loaded') || 'Bill loaded into calculator!', 'success');
+}
+
+// Modal Listeners
+if (btnCloseCloudBillModal) btnCloseCloudBillModal.addEventListener('click', () => { cloudBillDetailModal.style.display = 'none'; });
+if (btnDismissCloudBillModal) btnDismissCloudBillModal.addEventListener('click', () => { cloudBillDetailModal.style.display = 'none'; });
+if (cloudBillDetailModal) {
+    cloudBillDetailModal.addEventListener('click', (e) => {
+        if (e.target === cloudBillDetailModal) cloudBillDetailModal.style.display = 'none';
+    });
+}
+
+if (btnCloseDebtModal) btnCloseDebtModal.addEventListener('click', () => { debtDetailModal.style.display = 'none'; });
+if (btnDismissDebtModal) btnDismissDebtModal.addEventListener('click', () => { debtDetailModal.style.display = 'none'; });
+if (debtDetailModal) {
+    debtDetailModal.addEventListener('click', (e) => {
+        if (e.target === debtDetailModal) debtDetailModal.style.display = 'none';
+    });
+}
+
 async function loadCloudData() {
     if (!currentUser || !supabaseClient) return;
 
@@ -2931,7 +3522,7 @@ async function loadCloudData() {
         const currentUserName = (currentUser.user_metadata && currentUser.user_metadata.display_name)
             || currentUser.email.split('@')[0];
 
-        // Fetch all debts where user is involved
+        // 1. Fetch debts
         const { data: debts, error: debtsErr } = await supabaseClient
             .from('debts')
             .select('*')
@@ -2940,7 +3531,7 @@ async function loadCloudData() {
         if (debtsErr) throw debtsErr;
         cloudDebts = debts || [];
 
-        // Fetch users profiles for debtors and creditors
+        // 2. Fetch users profiles
         const userIdsToFetch = new Set();
         (cloudDebts || []).forEach(d => {
             if (d.creditor_id) userIdsToFetch.add(d.creditor_id);
@@ -2959,14 +3550,37 @@ async function loadCloudData() {
             }
         }
 
-        // Fetch user's saved bills
-        const { data: bills, error: billsErr } = await supabaseClient
+        // 3. Fetch user's saved bills (including bill_items with shared_by)
+        let { data: bills, error: billsErr } = await supabaseClient
             .from('bills')
-            .select('*, bill_items(id, name, price)')
-            .eq('created_by', currentUser.id)
+            .select('*, bill_items(id, name, price, shared_by)')
             .order('created_at', { ascending: false });
 
-        if (billsErr) throw billsErr;
+        if (billsErr) {
+            console.warn('Error fetching bills:', billsErr);
+            bills = [];
+        }
+
+        // Also fetch any missing bills linked to debts
+        const loadedBillIds = new Set((bills || []).map(b => b.id));
+        const missingBillIds = Array.from(new Set(
+            cloudDebts.map(d => d.bill_id).filter(id => id && !loadedBillIds.has(id))
+        ));
+
+        if (missingBillIds.length > 0) {
+            try {
+                const { data: extraBills } = await supabaseClient
+                    .from('bills')
+                    .select('*, bill_items(id, name, price, shared_by)')
+                    .in('id', missingBillIds);
+                if (extraBills && extraBills.length > 0) {
+                    bills = [...(bills || []), ...extraBills];
+                }
+            } catch (err) {
+                console.warn('Could not fetch extra linked bills:', err);
+            }
+        }
+
         cloudBills = bills || [];
 
         renderCloudDashboard();
@@ -3081,13 +3695,25 @@ function renderCloudDashboard() {
                 const isPaid = debt.status === 'paid';
                 const debtorEmailText = debt.debtor_email ? `<span class="badge-email-tag">✉️ ${debt.debtor_email}</span>` : '';
 
+                const breakdown = getDebtItemBreakdown(debt);
+                const billTitleTag = breakdown.billTitle ? `<span class="debt-bill-tag">🧾 ${breakdown.billTitle}</span>` : '';
+                const itemsSummaryText = breakdown.itemsText || t('shared_bill_items') || 'Shared bill expense';
+
                 item.innerHTML = `
-                    <div class="debt-item-user">
-                        <span class="badge-avatar">${initial}</span>
-                        <div>
-                            <strong>${debt.debtor_name}</strong>
-                            ${debtorEmailText}
-                            <div class="debt-item-date">${new Date(debt.created_at).toLocaleDateString()}</div>
+                    <div class="debt-col-main">
+                        <div class="debt-item-user">
+                            <span class="badge-avatar">${initial}</span>
+                            <div>
+                                <div class="debt-user-title-row">
+                                    <strong class="debt-col-name">${debt.debtor_name}</strong>
+                                    ${debtorEmailText}
+                                </div>
+                                <div class="debt-col-detail">${new Date(debt.created_at).toLocaleDateString()} ${billTitleTag}</div>
+                            </div>
+                        </div>
+                        <div class="debt-items-tag-row">
+                            <span class="debt-tag-label">🍲 ${t('debt_items_label') || 'Items'}:</span>
+                            <span class="debt-tag-content">${itemsSummaryText}</span>
                         </div>
                     </div>
                     <div class="debt-item-actions">
@@ -3095,11 +3721,20 @@ function renderCloudDashboard() {
                         <span class="debt-status-badge ${isPaid ? 'badge-paid' : 'badge-pending'}">
                             ${isPaid ? t('status_paid') : t('status_pending')}
                         </span>
-                        <button type="button" class="glass-btn mini-btn btn-toggle-debt">
-                            ${isPaid ? t('mark_pending') : t('mark_paid')}
-                        </button>
+                        <div class="debt-buttons-wrap">
+                            <button type="button" class="glass-btn mini-btn btn-view-debt" title="View Breakdown">
+                                🔍 <span>${t('btn_view_debt_breakdown') || 'Details'}</span>
+                            </button>
+                            <button type="button" class="glass-btn mini-btn btn-toggle-debt">
+                                ${isPaid ? t('mark_pending') : t('mark_paid')}
+                            </button>
+                        </div>
                     </div>
                 `;
+
+                item.querySelector('.btn-view-debt').addEventListener('click', () => {
+                    openDebtModal(debt);
+                });
 
                 item.querySelector('.btn-toggle-debt').addEventListener('click', async () => {
                     await toggleDebtStatus(debt.id, isPaid ? 'pending' : 'paid');
@@ -3122,6 +3757,10 @@ function renderCloudDashboard() {
                 const initial = debt.creditor_name.charAt(0).toUpperCase();
                 const isPaid = debt.status === 'paid';
                 const creditorEmailText = debt.creditor_email ? `<span class="badge-email-tag">✉️ ${debt.creditor_email}</span>` : '';
+
+                const breakdown = getDebtItemBreakdown(debt);
+                const billTitleTag = breakdown.billTitle ? `<span class="debt-bill-tag">🧾 ${breakdown.billTitle}</span>` : '';
+                const itemsSummaryText = breakdown.itemsText || t('shared_bill_items') || 'Shared bill expense';
 
                 let statusActionHtml = '';
                 if (isPaid) {
@@ -3154,19 +3793,37 @@ function renderCloudDashboard() {
                 }
 
                 item.innerHTML = `
-                    <div class="debt-item-user">
-                        <span class="badge-avatar recipient">${initial}</span>
-                        <div>
-                            <strong>${debt.creditor_name}</strong>
-                            ${creditorEmailText}
-                            <div class="debt-item-date">${new Date(debt.created_at).toLocaleDateString()}</div>
+                    <div class="debt-col-main">
+                        <div class="debt-item-user">
+                            <span class="badge-avatar recipient">${initial}</span>
+                            <div>
+                                <div class="debt-user-title-row">
+                                    <strong class="debt-col-name">${debt.creditor_name}</strong>
+                                    ${creditorEmailText}
+                                </div>
+                                <div class="debt-col-detail">${new Date(debt.created_at).toLocaleDateString()} ${billTitleTag}</div>
+                            </div>
+                        </div>
+                        <div class="debt-items-tag-row">
+                            <span class="debt-tag-label">🍲 ${t('debt_items_label') || 'Items'}:</span>
+                            <span class="debt-tag-content">${itemsSummaryText}</span>
                         </div>
                     </div>
                     <div class="debt-item-actions">
                         <span class="debt-item-amount text-danger">RM ${parseFloat(debt.amount).toFixed(2)}</span>
+                        <div class="debt-buttons-wrap">
+                            <button type="button" class="glass-btn mini-btn btn-view-debt" title="View Breakdown">
+                                🔍 <span>${t('btn_view_debt_breakdown') || 'Details'}</span>
+                            </button>
+                        </div>
                         ${statusActionHtml}
                     </div>
                 `;
+
+                item.querySelector('.btn-view-debt').addEventListener('click', () => {
+                    openDebtModal(debt);
+                });
+
                 listIOwe.appendChild(item);
             });
         }
@@ -3186,15 +3843,19 @@ function renderCloudDashboard() {
                 const isPaid = debt.status === 'paid';
 
                 item.innerHTML = `
-                    <div class="debt-item-user">
-                        <span class="badge-avatar">${fromInitial}</span>
-                        <div>
-                            <strong>${debt.debtor_name}</strong>
-                            ${debt.debtor_email ? `<span class="badge-email-tag">✉️ ${debt.debtor_email}</span>` : ''}
-                            <span class="transfer-badge-direction">👉 ${t('transfers_pays_to')}</span>
-                            <strong style="color:var(--accent-primary);">${debt.creditor_name}</strong>
-                            ${debt.creditor_email ? `<span class="badge-email-tag">✉️ ${debt.creditor_email}</span>` : ''}
-                            <div class="debt-item-date">${new Date(debt.created_at).toLocaleDateString()}</div>
+                    <div class="debt-col-main">
+                        <div class="debt-item-user">
+                            <span class="badge-avatar">${fromInitial}</span>
+                            <div>
+                                <div class="debt-user-title-row">
+                                    <strong class="debt-col-name">${debt.debtor_name}</strong>
+                                    ${debt.debtor_email ? `<span class="badge-email-tag">✉️ ${debt.debtor_email}</span>` : ''}
+                                    <span class="transfer-badge-direction">👉 ${t('transfers_pays_to')}</span>
+                                    <strong style="color:var(--accent-primary);">${debt.creditor_name}</strong>
+                                    ${debt.creditor_email ? `<span class="badge-email-tag">✉️ ${debt.creditor_email}</span>` : ''}
+                                </div>
+                                <div class="debt-col-detail">${new Date(debt.created_at).toLocaleDateString()}</div>
+                            </div>
                         </div>
                     </div>
                     <div class="debt-item-actions">
@@ -3212,7 +3873,7 @@ function renderCloudDashboard() {
         }
     }
 
-    // 8. Render Saved Cloud Bills History
+    // 8. Render Saved Cloud Bills History (Modern Card with Receipt Inspection & Load to Splitter)
     if (listCloudBills) {
         listCloudBills.innerHTML = '';
         if (cloudBillsCount) cloudBillsCount.textContent = `${cloudBills.length} bills`;
@@ -3222,21 +3883,69 @@ function renderCloudDashboard() {
         } else {
             cloudBills.forEach(bill => {
                 const item = document.createElement('div');
-                item.className = 'cloud-bill-row';
+                item.className = 'cloud-bill-card';
                 const itemsCount = (bill.bill_items && bill.bill_items.length) || 0;
 
+                // Determine payer upfront
+                let payerText = bill.payer_summary || (bill.bill_data && bill.bill_data.payerSummary);
+                if (!payerText) {
+                    const billDebts = cloudDebts.filter(d => d.bill_id === bill.id);
+                    if (billDebts.length > 0) {
+                        const creditors = Array.from(new Set(billDebts.map(d => d.creditor_name)));
+                        payerText = creditors.join(', ');
+                    } else {
+                        payerText = 'Cashier Checkout';
+                    }
+                }
+
+                // Sample item names pills
+                const itemNames = (bill.bill_items || []).map(i => i.name).slice(0, 3);
+                const moreItemsCount = itemsCount > 3 ? itemsCount - 3 : 0;
+                const itemsPills = itemNames.map(name => `<span class="bill-item-pill">${name}</span>`).join('') +
+                    (moreItemsCount > 0 ? `<span class="bill-item-pill more">+${moreItemsCount} more</span>` : '');
+
                 item.innerHTML = `
-                    <div class="bill-row-info">
-                        <strong>${bill.title || 'Bill Split'}</strong>
-                        <span class="bill-row-meta">${new Date(bill.created_at).toLocaleString()} • ${itemsCount} items</span>
+                    <div class="cloud-bill-header">
+                        <div class="cloud-bill-title-wrap">
+                            <span class="bill-icon">🧾</span>
+                            <div>
+                                <h4 class="cloud-bill-title">${bill.title || 'Bill Split'}</h4>
+                                <span class="cloud-bill-meta">${new Date(bill.created_at).toLocaleString()} • ${itemsCount} items</span>
+                            </div>
+                        </div>
+                        <div class="cloud-bill-header-right">
+                            <strong class="cloud-bill-total">RM ${parseFloat(bill.total_amount).toFixed(2)}</strong>
+                            <button type="button" class="btn-del-cloud-bill" title="Delete bill">&times;</button>
+                        </div>
                     </div>
-                    <div class="bill-row-actions">
-                        <strong class="bill-row-total">RM ${parseFloat(bill.total_amount).toFixed(2)}</strong>
-                        <button type="button" class="icon-delete-btn btn-delete-cloud-bill" title="Delete bill">&times;</button>
+                    <div class="cloud-bill-preview-box">
+                        <div class="cloud-bill-payer-tag">
+                            💳 <strong>${t('paid_by') || 'Paid upfront by'}:</strong> <span class="payer-highlight">${payerText}</span>
+                        </div>
+                        ${itemsPills ? `<div class="cloud-bill-items-preview">${itemsPills}</div>` : ''}
+                    </div>
+                    <div class="cloud-bill-footer">
+                        <button type="button" class="glass-btn mini-btn btn-view-bill-detail">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                            <span>${t('view_bill_detail') || 'View Receipt & Details'}</span>
+                        </button>
+                        <button type="button" class="glass-btn mini-btn btn-load-bill-calc" title="${t('btn_load_calculator') || 'Load into Splitter'}">
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="1 4 1 10 7 10"/><path d="M3.51 15a9 9 0 1 0 2.13-9.36L1 10"/></svg>
+                            <span>${t('btn_load_calculator') || 'Load into Splitter'}</span>
+                        </button>
                     </div>
                 `;
 
-                item.querySelector('.btn-delete-cloud-bill').addEventListener('click', async () => {
+                item.querySelector('.btn-view-bill-detail').addEventListener('click', () => {
+                    openCloudBillModal(bill);
+                });
+
+                item.querySelector('.btn-load-bill-calc').addEventListener('click', () => {
+                    loadBillIntoCalculator(bill);
+                });
+
+                item.querySelector('.btn-del-cloud-bill').addEventListener('click', async (e) => {
+                    e.stopPropagation();
                     if (confirm(t('toast_confirm_delete_bill'))) {
                         await deleteCloudBill(bill.id);
                     }
