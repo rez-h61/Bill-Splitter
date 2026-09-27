@@ -171,7 +171,14 @@ const i18n = {
         toast_debt_marked_paid: "Debt marked as Paid!",
         toast_debt_marked_pending: "Debt marked as Pending.",
         toast_confirm_delete_bill: "Are you sure you want to delete this bill from the database?",
-        toast_bill_deleted: "Bill deleted from database."
+        toast_bill_deleted: "Bill deleted from database.",
+        badge_you: "You",
+        btn_add_me: "+ Add Me",
+        toast_all_reset: "All bill data has been reset.",
+        dash_other_transfers_title: "Other Group Transfers in this Bill",
+        dash_other_transfers_desc: "Settlements between other friends in bills you recorded",
+        no_other_transfers: "No other group transfers in this bill.",
+        transfers_pays_to: "needs to pay"
     },
     ms: {
         title: "Split Bil",
@@ -323,7 +330,14 @@ const i18n = {
         toast_debt_marked_paid: "Hutang ditandakan sebagai Selesai!",
         toast_debt_marked_pending: "Hutang ditandakan sebagai Belum Selesai.",
         toast_confirm_delete_bill: "Adakah anda pasti mahu memadam bil ini dari database?",
-        toast_bill_deleted: "Bil dipadam dari database."
+        toast_bill_deleted: "Bil dipadam dari database.",
+        badge_you: "Anda",
+        btn_add_me: "+ Tambah Saya",
+        toast_all_reset: "Semua data bil telah dipadam.",
+        dash_other_transfers_title: "Pindahan Antara Rakan Lain Dalam Bil Ini",
+        dash_other_transfers_desc: "Pindahan antara rakan di mana anda bukan penghutang dan bukan penerima",
+        no_other_transfers: "Tiada pindahan antara rakan lain dalam bil ini.",
+        transfers_pays_to: "perlu bayar kepada"
     }
 };
 
@@ -393,6 +407,9 @@ const viewDashboard = document.getElementById('view-dashboard');
 // Step 1: People
 const inputPerson = document.getElementById('input-person');
 const btnAddPerson = document.getElementById('btn-add-person');
+const userQuickAddWrap = document.getElementById('user-quick-add-wrap');
+const btnQuickAddMe = document.getElementById('btn-quick-add-me');
+const quickAddMeLabel = document.getElementById('quick-add-me-label');
 const peopleBadges = document.getElementById('people-badges');
 const emptyPeopleHint = document.getElementById('empty-people-hint');
 const peopleCountEl = document.getElementById('people-count');
@@ -463,6 +480,9 @@ const listWhoOwesMe = document.getElementById('list-who-owes-me');
 const listIOwe = document.getElementById('list-i-owe');
 const listCloudBills = document.getElementById('list-cloud-bills');
 const cloudBillsCount = document.getElementById('cloud-bills-count');
+const cardOtherTransfers = document.getElementById('card-other-transfers');
+const listOtherTransfers = document.getElementById('list-other-transfers');
+const otherTransfersCount = document.getElementById('other-transfers-count');
 
 // Detailed User Profile Modal Elements
 const profileModal = document.getElementById('profile-modal');
@@ -656,6 +676,38 @@ if (inputDiscount) {
 // -------------------------------------------------------------
 // SHOPPER MANAGEMENT (STEP 1)
 // -------------------------------------------------------------
+function getCurrentUserName() {
+    if (!currentUser) return null;
+    return (((currentUser.user_metadata && currentUser.user_metadata.display_name) || currentUser.email.split('@')[0]) || '').trim();
+}
+
+function ensureCurrentUserInPeople(user) {
+    if (!user) return;
+    const name = ((user.user_metadata && user.user_metadata.display_name) || user.email.split('@')[0] || '').trim();
+    if (!name) return;
+
+    const existingIndex = state.people.findIndex(p => p.name.toLowerCase() === name.toLowerCase() || p.isCurrentUser);
+    if (existingIndex === -1) {
+        state.people.unshift({
+            id: state.personIdCounter++,
+            name: name,
+            isCurrentUser: true,
+            debt: 0,
+            subtotal: 0,
+            amountPaid: 0,
+            balance: 0
+        });
+        saveToStorage();
+        renderPeopleUI();
+        recalculateAndRender();
+    } else {
+        state.people[existingIndex].isCurrentUser = true;
+        state.people[existingIndex].name = name;
+        saveToStorage();
+        renderPeopleUI();
+    }
+}
+
 function addPerson() {
     const name = inputPerson.value.trim();
     if (!name) {
@@ -669,9 +721,13 @@ function addPerson() {
         return;
     }
 
+    const currentUserName = getCurrentUserName();
+    const isMe = currentUserName && name.toLowerCase() === currentUserName.toLowerCase();
+
     state.people.push({
         id: state.personIdCounter++,
         name: name,
+        isCurrentUser: !!isMe,
         debt: 0,
         subtotal: 0,
         amountPaid: 0,
@@ -695,6 +751,15 @@ if (inputPerson) {
     });
 }
 
+if (btnQuickAddMe) {
+    btnQuickAddMe.addEventListener('click', () => {
+        if (currentUser) {
+            ensureCurrentUserInPeople(currentUser);
+            showToast(t('toast_person_added'), 'success');
+        }
+    });
+}
+
 function deletePerson(id) {
     const isSharing = state.items.some(item => item.sharedBy.includes(id));
     if (isSharing) {
@@ -714,18 +779,23 @@ function renderPeopleUI() {
     peopleBadges.innerHTML = '';
     if (peopleCountEl) peopleCountEl.textContent = state.people.length;
 
+    const currentUserName = getCurrentUserName();
+
     if (state.people.length === 0) {
         if (emptyPeopleHint) emptyPeopleHint.style.display = 'block';
     } else {
         if (emptyPeopleHint) emptyPeopleHint.style.display = 'none';
         state.people.forEach(p => {
+            const isMe = p.isCurrentUser || (currentUserName && p.name.toLowerCase() === currentUserName.toLowerCase());
             const badge = document.createElement('div');
-            badge.className = 'badge';
+            badge.className = `badge ${isMe ? 'badge-self' : ''}`;
             const firstLetter = p.name.charAt(0).toUpperCase();
 
+            const youTag = isMe ? `<span class="badge-you-tag">(${t('badge_you')})</span>` : '';
+
             badge.innerHTML = `
-                <span class="badge-avatar">${firstLetter}</span>
-                <span class="badge-name">${p.name}</span>
+                <span class="badge-avatar ${isMe ? 'self-avatar' : ''}">${firstLetter}</span>
+                <span class="badge-name">${p.name} ${youTag}</span>
                 <button type="button" class="badge-view-btn" title="${t('profile_btn')} ${p.name}">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                 </button>
@@ -754,6 +824,16 @@ function renderPeopleUI() {
 
             peopleBadges.appendChild(badge);
         });
+    }
+
+    // Toggle quick add me button if current user is not in list
+    if (userQuickAddWrap) {
+        if (currentUser && currentUserName && !state.people.some(p => p.isCurrentUser || p.name.toLowerCase() === currentUserName.toLowerCase())) {
+            userQuickAddWrap.style.display = 'block';
+            if (quickAddMeLabel) quickAddMeLabel.textContent = `${t('btn_add_me')} (${currentUserName})`;
+        } else {
+            userQuickAddWrap.style.display = 'none';
+        }
     }
 
     renderDynamicCheckboxes();
@@ -1832,11 +1912,25 @@ if (btnCloseQr && qrContainer) {
 if (btnReset) {
     btnReset.addEventListener('click', () => {
         if (confirm(t('toast_reset_confirm'))) {
-            state.people = [];
             state.items = [];
             state.extras = { taxPercent: 0, servicePercent: 0, discountAmount: 0 };
             state.personIdCounter = 1;
             state.itemIdCounter = 1;
+
+            if (currentUser) {
+                const name = getCurrentUserName() || 'User';
+                state.people = [{
+                    id: state.personIdCounter++,
+                    name: name,
+                    isCurrentUser: true,
+                    debt: 0,
+                    subtotal: 0,
+                    amountPaid: 0,
+                    balance: 0
+                }];
+            } else {
+                state.people = [];
+            }
 
             if (inputTax) inputTax.value = '0';
             if (inputService) inputService.value = '0';
@@ -1846,7 +1940,7 @@ if (btnReset) {
             saveToStorage();
             renderPeopleUI();
             recalculateAndRender();
-            showToast('All data has been reset.', 'info');
+            showToast(t('toast_all_reset'), 'info');
         }
     });
 }
@@ -2057,20 +2151,8 @@ function handleUserSignedIn(user) {
     if (authScreen) authScreen.style.display = 'none';
     if (mainAppContent) mainAppContent.style.display = 'block';
 
-    // If shoppers list is empty, default user as first shopper
-    if (state.people.length === 0) {
-        state.people.push({
-            id: state.personIdCounter++,
-            name: name,
-            debt: 0,
-            subtotal: 0,
-            amountPaid: 0,
-            balance: 0
-        });
-        saveToStorage();
-        renderPeopleUI();
-        recalculateAndRender();
-    }
+    // Automatically ensure the logged-in user is in the shoppers list
+    ensureCurrentUserInPeople(user);
 
     // Load user's cloud debts & bills
     loadCloudData();
@@ -2197,14 +2279,14 @@ async function saveBillToCloud() {
         const transactions = calculateSettlements(grandTotal);
         if (transactions.length > 0) {
             const debtsToInsert = transactions.map(tr => {
-                const isDebtorMe = tr.from.toLowerCase() === currentUserName.toLowerCase();
-                const isCreditorMe = tr.to.toLowerCase() === currentUserName.toLowerCase();
+                const isDebtorMe = tr.from.toLowerCase().trim() === currentUserName.toLowerCase().trim();
+                const isCreditorMe = tr.to.toLowerCase().trim() === currentUserName.toLowerCase().trim();
 
                 return {
                     bill_id: billData.id,
                     debtor_id: isDebtorMe ? currentUser.id : null,
                     debtor_name: tr.from,
-                    creditor_id: isCreditorMe ? currentUser.id : (isDebtorMe ? null : currentUser.id),
+                    creditor_id: isCreditorMe ? currentUser.id : null,
                     creditor_name: tr.to,
                     amount: tr.amount,
                     status: 'pending'
@@ -2275,24 +2357,44 @@ if (btnRefreshDebts) {
 function renderCloudDashboard() {
     if (!currentUser) return;
 
-    const currentUserName = ((currentUser.user_metadata && currentUser.user_metadata.display_name)
-        || currentUser.email.split('@')[0]).toLowerCase();
+    const currentUserName = (getCurrentUserName() || '').toLowerCase();
 
     // 1. Filter: Debts where user is CREDITOR (People owe me)
+    // Creditor name MUST be me, and Debtor name must NOT be me.
     const whoOwesMe = cloudDebts.filter(d => {
-        const isCreditorId = d.creditor_id === currentUser.id;
-        const isCreditorName = d.creditor_name && d.creditor_name.toLowerCase() === currentUserName;
-        return (isCreditorId || isCreditorName) && d.debtor_id !== currentUser.id;
+        const credName = (d.creditor_name || '').toLowerCase().trim();
+        const debName = (d.debtor_name || '').toLowerCase().trim();
+
+        const isCreditorMe = (credName === currentUserName) || (d.creditor_id === currentUser.id && credName === currentUserName);
+        const isDebtorMe = (debName === currentUserName) || (d.debtor_id === currentUser.id);
+
+        return isCreditorMe && !isDebtorMe;
     });
 
     // 2. Filter: Debts where user is DEBTOR (I owe others)
+    // Debtor name MUST be me, and Creditor name must NOT be me.
     const iOwe = cloudDebts.filter(d => {
-        const isDebtorId = d.debtor_id === currentUser.id;
-        const isDebtorName = d.debtor_name && d.debtor_name.toLowerCase() === currentUserName;
-        return (isDebtorId || isDebtorName) && d.creditor_id !== currentUser.id;
+        const credName = (d.creditor_name || '').toLowerCase().trim();
+        const debName = (d.debtor_name || '').toLowerCase().trim();
+
+        const isDebtorMe = (debName === currentUserName) || (d.debtor_id === currentUser.id);
+        const isCreditorMe = (credName === currentUserName) || (d.creditor_id === currentUser.id && credName === currentUserName);
+
+        return isDebtorMe && !isCreditorMe;
     });
 
-    // 3. Calculate Totals (Pending only)
+    // 3. Filter: Other group transfers in bills created by me (neither debtor nor creditor is me, e.g. Adam -> Amin)
+    const otherTransfers = cloudDebts.filter(d => {
+        const credName = (d.creditor_name || '').toLowerCase().trim();
+        const debName = (d.debtor_name || '').toLowerCase().trim();
+
+        const isDebtorMe = (debName === currentUserName) || (d.debtor_id === currentUser.id);
+        const isCreditorMe = (credName === currentUserName) || (d.creditor_id === currentUser.id && credName === currentUserName);
+
+        return !isDebtorMe && !isCreditorMe;
+    });
+
+    // 4. Calculate Totals (Pending only for me)
     const totalOwedToMe = whoOwesMe
         .filter(d => d.status === 'pending')
         .reduce((sum, d) => sum + parseFloat(d.amount || 0), 0);
@@ -2309,27 +2411,29 @@ function renderCloudDashboard() {
     if (statNetPosition) {
         const sign = netPosition >= 0 ? '+RM ' : '-RM ';
         statNetPosition.textContent = `${sign}${Math.abs(netPosition).toFixed(2)}`;
-        if (netPosition >= 0) {
+        if (netPosition > 0.005) {
             statNetPosition.className = 'stat-number text-success';
-        } else {
+        } else if (netPosition < -0.005) {
             statNetPosition.className = 'stat-number text-danger';
+        } else {
+            statNetPosition.className = 'stat-number';
         }
     }
 
-    // Update Nav Badge
-    const pendingTotalCount = whoOwesMe.filter(d => d.status === 'pending').length
+    // Update Nav Badge (only my pending debts to pay or collect)
+    const pendingMyCount = whoOwesMe.filter(d => d.status === 'pending').length
         + iOwe.filter(d => d.status === 'pending').length;
 
     if (navDebtCount) {
-        if (pendingTotalCount > 0) {
-            navDebtCount.textContent = pendingTotalCount;
+        if (pendingMyCount > 0) {
+            navDebtCount.textContent = pendingMyCount;
             navDebtCount.style.display = 'inline-block';
         } else {
             navDebtCount.style.display = 'none';
         }
     }
 
-    // 4. Render "People Who Owe Me" List
+    // 5. Render "People Who Owe Me" List
     if (listWhoOwesMe) {
         listWhoOwesMe.innerHTML = '';
         if (whoOwesMe.length === 0) {
@@ -2369,7 +2473,7 @@ function renderCloudDashboard() {
         }
     }
 
-    // 5. Render "Debts I Owe to Others" List
+    // 6. Render "Debts I Owe to Others" List
     if (listIOwe) {
         listIOwe.innerHTML = '';
         if (iOwe.length === 0) {
@@ -2401,7 +2505,52 @@ function renderCloudDashboard() {
         }
     }
 
-    // 6. Render Saved Cloud Bills History
+    // 7. Render "Other Group Transfers" (e.g. Adam -> Amin)
+    if (cardOtherTransfers && listOtherTransfers) {
+        if (otherTransfers.length > 0) {
+            cardOtherTransfers.style.display = 'block';
+            if (otherTransfersCount) otherTransfersCount.textContent = `${otherTransfers.length} transfers`;
+            listOtherTransfers.innerHTML = '';
+
+            otherTransfers.forEach(debt => {
+                const item = document.createElement('div');
+                item.className = `cloud-debt-item ${debt.status === 'paid' ? 'paid-item' : ''}`;
+                const fromInitial = debt.debtor_name.charAt(0).toUpperCase();
+                const isPaid = debt.status === 'paid';
+
+                item.innerHTML = `
+                    <div class="debt-item-user">
+                        <span class="badge-avatar">${fromInitial}</span>
+                        <div>
+                            <strong>${debt.debtor_name}</strong>
+                            <span class="transfer-badge-direction">👉 ${t('transfers_pays_to')}</span>
+                            <strong style="color:var(--accent-primary);">${debt.creditor_name}</strong>
+                            <div class="debt-item-date">${new Date(debt.created_at).toLocaleDateString()}</div>
+                        </div>
+                    </div>
+                    <div class="debt-item-actions">
+                        <span class="debt-item-amount">RM ${parseFloat(debt.amount).toFixed(2)}</span>
+                        <span class="debt-status-badge ${isPaid ? 'badge-paid' : 'badge-pending'}">
+                            ${isPaid ? t('status_paid') : t('status_pending')}
+                        </span>
+                        <button type="button" class="glass-btn mini-btn btn-toggle-debt">
+                            ${isPaid ? t('mark_pending') : t('mark_paid')}
+                        </button>
+                    </div>
+                `;
+
+                item.querySelector('.btn-toggle-debt').addEventListener('click', async () => {
+                    await toggleDebtStatus(debt.id, isPaid ? 'pending' : 'paid');
+                });
+
+                listOtherTransfers.appendChild(item);
+            });
+        } else {
+            cardOtherTransfers.style.display = 'none';
+        }
+    }
+
+    // 8. Render Saved Cloud Bills History
     if (listCloudBills) {
         listCloudBills.innerHTML = '';
         if (cloudBillsCount) cloudBillsCount.textContent = `${cloudBills.length} bills`;
