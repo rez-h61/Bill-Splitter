@@ -3135,3 +3135,28 @@ body:not(.dark-mode) ::-webkit-scrollbar-thumb {
 .user-pill:hover {
     opacity: 0.85;
 }
+
+/* Auth Forgot Password Link */
+.auth-forgot-row {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 6px;
+    margin-bottom: 6px;
+}
+
+.link-btn-text {
+    background: none;
+    border: none;
+    color: var(--accent-primary);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 0;
+    text-decoration: underline;
+    transition: opacity 0.2s;
+    font-family: inherit;
+}
+
+.link-btn-text:hover {
+    opacity: 0.8;
+}
