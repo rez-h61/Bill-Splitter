@@ -843,6 +843,7 @@ function loadFromStorage() {
                         p.userId = null;
                     }
                 });
+                deduplicatePeople();
             }
         }
     } catch (e) {
@@ -980,19 +981,125 @@ function getCurrentUserName() {
     return (((currentUser.user_metadata && currentUser.user_metadata.display_name) || currentUser.email.split('@')[0]) || '').trim();
 }
 
+function deduplicatePeople() {
+    if (!state.people || !Array.isArray(state.people) || state.people.length <= 1) {
+        return;
+    }
+
+    const currentUserName = (getCurrentUserName() || '').toLowerCase().trim();
+    const currentUserEmail = (currentUser && currentUser.email) ? currentUser.email.toLowerCase().trim() : '';
+
+    let changed = false;
+    let i = 0;
+    while (i < state.people.length) {
+        const p1 = state.people[i];
+        if (!p1) { i++; continue; }
+
+        const p1Name = (p1.name || '').toLowerCase().trim();
+        const p1Email = (p1.email || '').toLowerCase().trim();
+
+        let j = i + 1;
+        while (j < state.people.length) {
+            const p2 = state.people[j];
+            if (!p2) { j++; continue; }
+
+            const p2Name = (p2.name || '').toLowerCase().trim();
+            const p2Email = (p2.email || '').toLowerCase().trim();
+
+            const isSameEmail = p1Email && p2Email && (p1Email === p2Email);
+            const isSameUserId = p1.userId && p2.userId && (p1.userId === p2.userId);
+            const isSameName = p1Name && p2Name && (p1Name === p2Name);
+
+            if (isSameEmail || isSameUserId || isSameName) {
+                changed = true;
+                const keepId = p1.id;
+                const removeId = p2.id;
+
+                // Merge metadata
+                if (!p1.email && p2.email) p1.email = p2.email;
+                if (!p1.userId && p2.userId) p1.userId = p2.userId;
+                if (!p1.phone && p2.phone) p1.phone = p2.phone;
+                if (p2.isCurrentUser) p1.isCurrentUser = true;
+
+                // Merge payments
+                p1.amountPaid = (Number(p1.amountPaid) || 0) + (Number(p2.amountPaid) || 0);
+
+                // Remap items sharing removeId to keepId
+                if (state.items && Array.isArray(state.items)) {
+                    state.items.forEach(item => {
+                        if (item.sharedBy && Array.isArray(item.sharedBy)) {
+                            if (item.sharedBy.includes(removeId)) {
+                                item.sharedBy = Array.from(new Set(
+                                    item.sharedBy.map(id => id === removeId ? keepId : id)
+                                ));
+                            }
+                        }
+                    });
+                }
+
+                // Remove p2
+                state.people.splice(j, 1);
+            } else {
+                j++;
+            }
+        }
+        i++;
+    }
+
+    // Ensure ONLY ONE person has isCurrentUser = true
+    if (currentUser) {
+        let currentAssigned = false;
+        state.people.forEach(p => {
+            const isMe = (currentUser.id && p.userId === currentUser.id) ||
+                         (currentUserEmail && p.email && p.email.toLowerCase() === currentUserEmail) ||
+                         (currentUserName && p.name && p.name.toLowerCase() === currentUserName);
+            if (isMe && !currentAssigned) {
+                p.isCurrentUser = true;
+                p.userId = currentUser.id;
+                if (currentUserEmail && !p.email) p.email = currentUserEmail;
+                currentAssigned = true;
+            } else {
+                p.isCurrentUser = false;
+            }
+        });
+    }
+
+    if (changed) {
+        saveToStorage();
+    }
+}
+
 function ensureCurrentUserInPeople(user) {
     if (!user) return;
     const name = ((user.user_metadata && user.user_metadata.display_name) || user.email.split('@')[0] || '').trim();
     if (!name) return;
     const userEmail = (user.email || '').toLowerCase().trim();
 
-    const existingIndex = state.people.findIndex(p =>
+    deduplicatePeople();
+
+    // 1. Find if current user already exists in state.people
+    let existingIndex = state.people.findIndex(p =>
+        (user.id && p.userId === user.id) ||
         (userEmail && p.email && p.email.toLowerCase() === userEmail) ||
-        (p.name && p.name.toLowerCase() === name.toLowerCase()) ||
-        p.isCurrentUser
+        (p.name && p.name.toLowerCase() === name.toLowerCase())
     );
 
+    // 2. If not found, check if there's a guest placeholder (e.g. name is 'User' or 'You', or has no email)
     if (existingIndex === -1) {
+        const placeholderIndex = state.people.findIndex(p =>
+            p.isCurrentUser &&
+            (!p.email || p.email === userEmail) &&
+            (!p.userId || p.userId === user.id) &&
+            (!p.name || p.name.toLowerCase() === 'user' || p.name.toLowerCase() === 'you')
+        );
+        if (placeholderIndex !== -1) {
+            existingIndex = placeholderIndex;
+        }
+    }
+
+    if (existingIndex === -1) {
+        // Ensure others are unflagged
+        state.people.forEach(p => { p.isCurrentUser = false; });
         state.people.unshift({
             id: state.personIdCounter++,
             name: name,
@@ -1004,17 +1111,19 @@ function ensureCurrentUserInPeople(user) {
             amountPaid: 0,
             balance: 0
         });
-        saveToStorage();
-        renderPeopleUI();
-        recalculateAndRender();
     } else {
-        state.people[existingIndex].isCurrentUser = true;
+        state.people.forEach((p, idx) => {
+            p.isCurrentUser = (idx === existingIndex);
+        });
         state.people[existingIndex].name = name;
         state.people[existingIndex].email = userEmail;
         state.people[existingIndex].userId = user.id;
-        saveToStorage();
-        renderPeopleUI();
     }
+
+    deduplicatePeople();
+    saveToStorage();
+    renderPeopleUI();
+    recalculateAndRender();
 }
 
 async function addPerson() {
@@ -1122,6 +1231,7 @@ function deletePerson(id) {
 
 function renderPeopleUI() {
     if (!peopleBadges) return;
+    deduplicatePeople();
     peopleBadges.innerHTML = '';
     if (peopleCountEl) peopleCountEl.textContent = state.people.length;
 
