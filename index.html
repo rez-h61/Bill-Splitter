@@ -96,6 +96,14 @@
                         </div>
                     </div>
 
+                    <div class="auth-field" id="field-phone-number" style="display: none;">
+                        <label for="input-auth-phone" data-i18n="auth_phone_label">WhatsApp Phone Number</label>
+                        <div class="input-with-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="field-icon"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                            <input type="tel" id="input-auth-phone" class="glass-input" placeholder="e.g. 0123456789" autocomplete="tel">
+                        </div>
+                    </div>
+
                     <div class="auth-field">
                         <label for="input-auth-email" data-i18n="auth_email_label">Email Address</label>
                         <div class="input-with-icon">
@@ -130,6 +138,18 @@
 
         <!-- AUTHENTICATED APP CONTENT (Hidden until logged in) -->
         <div id="main-app-content" style="display: none;">
+            <!-- Missing WhatsApp Phone Alert Banner (Shown if user has no phone number) -->
+            <div id="phone-missing-banner" class="alert-banner-warning" style="display: none;">
+                <div class="banner-content">
+                    <span class="banner-icon">💬</span>
+                    <div>
+                        <strong data-i18n="phone_missing_title">Action Required: Add WhatsApp Number</strong>
+                        <p data-i18n="phone_missing_desc">Please update your WhatsApp number so friends can send payment proof directly!</p>
+                    </div>
+                </div>
+                <button type="button" id="btn-open-profile-edit" class="glass-btn mini-btn" data-i18n="btn_update_profile">Update Profile</button>
+            </div>
+
             <!-- Top App Navigation Tabs -->
             <nav class="app-nav-bar">
                 <button type="button" id="nav-btn-calculator" class="nav-tab active">
@@ -145,6 +165,11 @@
                     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
                     <span data-i18n="nav_friends">Friends</span>
                     <span class="nav-badge" id="nav-friends-count" style="display: none;">0</span>
+                </button>
+                <button type="button" id="nav-btn-groups" class="nav-tab">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    <span data-i18n="nav_groups">Groups</span>
+                    <span class="nav-badge" id="nav-groups-count" style="display: none;">0</span>
                 </button>
             </nav>
 
@@ -192,6 +217,18 @@
                     <div id="quick-friends-wrap" class="quick-friends-wrap" style="display: none;">
                         <span class="quick-friends-label" data-i18n="quick_friends_label">⚡ Quick Add Friends:</span>
                         <div id="quick-friends-chips" class="quick-friends-chips"></div>
+                    </div>
+
+                    <div id="group-load-wrap" class="group-load-wrap" style="display: none;">
+                        <span class="quick-friends-label" data-i18n="quick_group_label">👥 Load from Group:</span>
+                        <div class="group-load-row">
+                            <select id="select-group-load" class="glass-select flex-1">
+                                <option value="" data-i18n="select_group_default">-- Select a Group --</option>
+                            </select>
+                            <button type="button" id="btn-apply-group-load" class="glass-btn mini-btn">
+                                <span data-i18n="btn_load_group_members">+ Add All Members</span>
+                            </button>
+                        </div>
                     </div>
 
                     <div class="badges-wrapper">
@@ -600,6 +637,78 @@
             </div>
         </div>
     </section>
+    
+    <!-- VIEW 4: Groups & Communities -->
+    <section id="view-groups" class="cloud-groups-view" style="display: none;">
+        <div class="groups-layout-grid">
+            <!-- Create Group Card -->
+            <div class="card glass-panel">
+                <div class="card-header">
+                    <div>
+                        <h3 class="card-title text-primary" data-i18n="group_create_title">Create a Group</h3>
+                        <p class="card-desc" data-i18n="group_create_desc">Create a group for housemates, trips, or dining buddies (You will be Admin)</p>
+                    </div>
+                </div>
+                <form id="form-create-group" class="group-action-form">
+                    <div class="form-field">
+                        <label for="input-group-name" data-i18n="group_name_label">Group Name</label>
+                        <div class="input-with-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="field-icon"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                            <input type="text" id="input-group-name" class="glass-input" placeholder="e.g. Rumah Sewa Seksyen 7, Percutian Krabi" required maxlength="40" autocomplete="off">
+                        </div>
+                    </div>
+                    <div class="form-field" style="margin-top: 14px;">
+                        <label for="input-group-desc" data-i18n="group_desc_label">Description (Optional)</label>
+                        <div class="input-with-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="field-icon"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+                            <input type="text" id="input-group-desc" class="glass-input" placeholder="e.g. Bil api, air, sewa & barang dapur" maxlength="80" autocomplete="off">
+                        </div>
+                    </div>
+                    <button type="submit" id="btn-create-group" class="glass-btn-primary" style="margin-top: 16px;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+                        <span data-i18n="btn_create_group">Create Group</span>
+                    </button>
+                </form>
+            </div>
+
+            <!-- Join Group Card -->
+            <div class="card glass-panel">
+                <div class="card-header">
+                    <div>
+                        <h3 class="card-title text-success" data-i18n="group_join_title">Join with Invite Code</h3>
+                        <p class="card-desc" data-i18n="group_join_desc">Enter the 6-character code shared by your group admin</p>
+                    </div>
+                </div>
+                <form id="form-join-group" class="group-action-form">
+                    <div class="form-field">
+                        <label for="input-join-code" data-i18n="group_code_label">Invite Code</label>
+                        <div class="input-with-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="field-icon"><rect width="18" height="18" x="3" y="3" rx="2"/><path d="M7 7h.01"/><path d="M17 7h.01"/><path d="M7 17h.01"/><path d="M17 17h.01"/></svg>
+                            <input type="text" id="input-join-code" class="glass-input text-uppercase" placeholder="e.g. AB12CD" required maxlength="10" autocomplete="off">
+                        </div>
+                    </div>
+                    <button type="submit" id="btn-join-group" class="glass-btn-primary" style="margin-top: 16px;">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"/><polyline points="10 17 15 12 10 7"/><line x1="15" x2="3" y1="12" y2="12"/></svg>
+                        <span data-i18n="btn_join_group">Join Group</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- My Groups Section -->
+        <div class="card glass-panel" style="margin-top: 24px;">
+            <div class="card-header">
+                <div>
+                    <h3 class="card-title" data-i18n="group_my_groups_title">My Groups</h3>
+                    <p class="card-desc" data-i18n="group_my_groups_desc">Groups you have joined or created</p>
+                </div>
+                <span class="count-pill" id="my-groups-count">0 groups</span>
+            </div>
+            <div id="list-my-groups" class="my-groups-container">
+                <p class="empty-state" data-i18n="no_groups_yet">You haven't joined any groups yet. Create or join one above!</p>
+            </div>
+        </div>
+    </section>
 </div><!-- /#main-app-content -->
 </div><!-- /.app-wrapper -->
 
@@ -677,6 +786,48 @@
                 </button>
                 <button type="button" id="btn-dismiss-profile-modal" class="glass-btn" data-i18n="close">Close</button>
             </div>
+        </div>
+    </div>
+
+    <!-- Edit User Profile Modal (WhatsApp phone number & display name) -->
+    <div id="my-profile-modal" class="glass-modal-backdrop" style="display: none;">
+        <div class="glass-modal profile-modal-card">
+            <div class="modal-header">
+                <div class="modal-user-info">
+                    <div class="user-avatar" id="my-profile-avatar">👤</div>
+                    <div>
+                        <h3 class="modal-title" data-i18n="modal_my_profile_title">My Profile</h3>
+                        <p class="modal-sub" id="my-profile-email">user@example.com</p>
+                    </div>
+                </div>
+                <button type="button" id="btn-close-my-profile" class="icon-close-btn" title="Close">&times;</button>
+            </div>
+
+            <form id="form-update-profile">
+                <div class="modal-body profile-modal-body">
+                    <div class="form-field">
+                        <label for="input-edit-display-name" data-i18n="auth_name_label">Your Name</label>
+                        <div class="input-with-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="field-icon"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                            <input type="text" id="input-edit-display-name" class="glass-input" placeholder="e.g. Ali" required maxlength="40" autocomplete="name">
+                        </div>
+                    </div>
+
+                    <div class="form-field" style="margin-top: 16px;">
+                        <label for="input-edit-phone" data-i18n="auth_phone_label">WhatsApp Phone Number</label>
+                        <div class="input-with-icon">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="field-icon"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                            <input type="tel" id="input-edit-phone" class="glass-input" placeholder="e.g. 0123456789" required autocomplete="tel">
+                        </div>
+                        <p class="field-hint" style="font-size: 12px; color: var(--text-muted); margin-top: 6px;" data-i18n="phone_profile_hint">Friends will be able to send payment proof straight to your WhatsApp.</p>
+                    </div>
+                </div>
+
+                <div class="modal-footer" style="display: flex; justify-content: flex-end; gap: 10px;">
+                    <button type="button" id="btn-cancel-my-profile" class="glass-btn" data-i18n="close">Cancel</button>
+                    <button type="submit" id="btn-save-profile" class="glass-btn-primary" data-i18n="btn_save_profile">Save Changes</button>
+                </div>
+            </form>
         </div>
     </div>
 
