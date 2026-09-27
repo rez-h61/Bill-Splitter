@@ -2837,3 +2837,301 @@ body:not(.dark-mode) ::-webkit-scrollbar-thumb {
     pointer-events: none;
     text-decoration: line-through;
 }
+
+/* WhatsApp Missing Phone Banner */
+.alert-banner-warning {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px 20px;
+    background: rgba(245, 158, 11, 0.12);
+    border: 1px solid rgba(245, 158, 11, 0.35);
+    border-radius: 16px;
+    margin-bottom: 20px;
+    backdrop-filter: var(--glass-blur);
+    animation: fadeIn 0.3s ease;
+}
+
+.banner-content {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.banner-icon {
+    font-size: 24px;
+}
+
+.banner-content strong {
+    font-size: 14px;
+    color: #f59e0b;
+    display: block;
+    margin-bottom: 2px;
+}
+
+.banner-content p {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin: 0;
+}
+
+/* Group Load Controls in Step 1 */
+.group-load-wrap {
+    margin-top: 10px;
+    padding: 10px 14px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px dashed var(--glass-border);
+    border-radius: 12px;
+}
+
+.group-load-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.glass-select {
+    background: var(--glass-input);
+    border: 1px solid var(--glass-border);
+    border-radius: 10px;
+    color: var(--text-primary);
+    padding: 8px 12px;
+    font-size: 13px;
+    outline: none;
+    font-family: inherit;
+    cursor: pointer;
+    transition: border-color 0.2s;
+}
+
+.glass-select:focus {
+    border-color: var(--accent-primary);
+}
+
+.glass-select option {
+    background: #1e1b4b;
+    color: #fff;
+}
+
+/* Groups View Layout */
+.cloud-groups-view {
+    animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.groups-layout-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 24px;
+}
+
+.group-action-form {
+    display: flex;
+    flex-direction: column;
+}
+
+.my-groups-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+    gap: 16px;
+    margin-top: 10px;
+}
+
+.group-card-item {
+    background: var(--glass-bg-subtle, rgba(255, 255, 255, 0.04));
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+    transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.group-card-item:hover {
+    border-color: var(--glass-border-hover, rgba(255, 255, 255, 0.2));
+    transform: translateY(-2px);
+}
+
+.group-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.group-title-area {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.group-card-name {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.group-card-desc {
+    font-size: 12px;
+    color: var(--text-muted);
+}
+
+.badge-role-admin {
+    background: rgba(236, 72, 153, 0.15);
+    color: #f472b6;
+    border: 1px solid rgba(236, 72, 153, 0.3);
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.badge-role-member {
+    background: rgba(99, 102, 241, 0.15);
+    color: #818cf8;
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.group-invite-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px dashed var(--glass-border);
+    border-radius: 10px;
+}
+
+.invite-code-tag {
+    font-family: monospace;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--accent-primary);
+    letter-spacing: 1.5px;
+}
+
+.btn-copy-code {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: color 0.15s ease;
+}
+
+.btn-copy-code:hover {
+    color: var(--text-primary);
+}
+
+.group-members-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.group-member-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background: var(--glass-input);
+    border-radius: 10px;
+}
+
+.member-main-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.member-text-meta {
+    display: flex;
+    flex-direction: column;
+}
+
+.member-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-primary);
+}
+
+.member-sub-info {
+    font-size: 11px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.member-actions-cluster {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-member-wa {
+    background: rgba(34, 197, 94, 0.15);
+    color: #22c55e;
+    border: 1px solid rgba(34, 197, 94, 0.3);
+    padding: 4px 8px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: background 0.15s ease;
+}
+
+.btn-member-wa:hover {
+    background: rgba(34, 197, 94, 0.3);
+}
+
+.btn-member-remove {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 16px;
+    line-height: 1;
+    cursor: pointer;
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.btn-member-remove:hover {
+    color: #ef4444;
+}
+
+.group-footer-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-top: 10px;
+    border-top: 1px solid var(--glass-border-subtle);
+}
+
+/* Clickable user pill in header to open own profile */
+.user-pill {
+    cursor: pointer;
+    transition: opacity 0.15s;
+}
+.user-pill:hover {
+    opacity: 0.85;
+}
