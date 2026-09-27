@@ -177,8 +177,13 @@ const i18n = {
         toast_all_reset: "All bill data has been reset.",
         dash_other_transfers_title: "Other Group Transfers in this Bill",
         dash_other_transfers_desc: "Settlements between other friends in bills you recorded",
-        no_other_transfers: "No other group transfers in this bill.",
-        transfers_pays_to: "needs to pay"
+        transfers_pays_to: "needs to pay",
+        person_email_ph: "Email (optional, e.g. amin@gmail.com)",
+        debt_awaiting_confirm: "Awaiting confirmation from",
+        debt_confirmed_by: "Confirmed by",
+        btn_send_proof_wa: "WhatsApp Proof",
+        only_creditor_can_settle: "Only the creditor can mark this debt as settled.",
+        wa_proof_msg: "Hi %creditor%, I have made the payment of RM %amount% for the bill. Please confirm it in the Bill Splitter app: %url%"
     },
     ms: {
         title: "Split Bil",
@@ -336,8 +341,13 @@ const i18n = {
         toast_all_reset: "Semua data bil telah dipadam.",
         dash_other_transfers_title: "Pindahan Antara Rakan Lain Dalam Bil Ini",
         dash_other_transfers_desc: "Pindahan antara rakan di mana anda bukan penghutang dan bukan penerima",
-        no_other_transfers: "Tiada pindahan antara rakan lain dalam bil ini.",
-        transfers_pays_to: "perlu bayar kepada"
+        transfers_pays_to: "perlu bayar kepada",
+        person_email_ph: "Emel (pilihan, cth: amin@gmail.com)",
+        debt_awaiting_confirm: "Menunggu pengesahan",
+        debt_confirmed_by: "Disahkan selesai oleh",
+        btn_send_proof_wa: "WhatsApp Bukti",
+        only_creditor_can_settle: "Hanya pemiutang boleh tandakan hutang ini sebagai selesai.",
+        wa_proof_msg: "Hai %creditor%, saya dah buat bayaran RM %amount% untuk bil. Boleh tolong sahkan di aplikasi Split Bil: %url%"
     }
 };
 
@@ -406,6 +416,7 @@ const viewDashboard = document.getElementById('view-dashboard');
 
 // Step 1: People
 const inputPerson = document.getElementById('input-person');
+const inputPersonEmail = document.getElementById('input-person-email');
 const btnAddPerson = document.getElementById('btn-add-person');
 const userQuickAddWrap = document.getElementById('user-quick-add-wrap');
 const btnQuickAddMe = document.getElementById('btn-quick-add-me');
@@ -542,6 +553,12 @@ function loadFromStorage() {
                     }
                     if (typeof p.balance !== 'number' || isNaN(p.balance)) {
                         p.balance = 0;
+                    }
+                    if (typeof p.email !== 'string') {
+                        p.email = '';
+                    }
+                    if (p.userId === undefined) {
+                        p.userId = null;
                     }
                 });
             }
@@ -685,12 +702,20 @@ function ensureCurrentUserInPeople(user) {
     if (!user) return;
     const name = ((user.user_metadata && user.user_metadata.display_name) || user.email.split('@')[0] || '').trim();
     if (!name) return;
+    const userEmail = (user.email || '').toLowerCase().trim();
 
-    const existingIndex = state.people.findIndex(p => p.name.toLowerCase() === name.toLowerCase() || p.isCurrentUser);
+    const existingIndex = state.people.findIndex(p =>
+        (userEmail && p.email && p.email.toLowerCase() === userEmail) ||
+        (p.name && p.name.toLowerCase() === name.toLowerCase()) ||
+        p.isCurrentUser
+    );
+
     if (existingIndex === -1) {
         state.people.unshift({
             id: state.personIdCounter++,
             name: name,
+            email: userEmail,
+            userId: user.id,
             isCurrentUser: true,
             debt: 0,
             subtotal: 0,
@@ -703,13 +728,17 @@ function ensureCurrentUserInPeople(user) {
     } else {
         state.people[existingIndex].isCurrentUser = true;
         state.people[existingIndex].name = name;
+        state.people[existingIndex].email = userEmail;
+        state.people[existingIndex].userId = user.id;
         saveToStorage();
         renderPeopleUI();
     }
 }
 
-function addPerson() {
+async function addPerson() {
     const name = inputPerson.value.trim();
+    const email = inputPersonEmail ? inputPersonEmail.value.trim().toLowerCase() : '';
+
     if (!name) {
         showToast(t('toast_enter_name'), 'error');
         return;
@@ -721,12 +750,38 @@ function addPerson() {
         return;
     }
 
+    if (email && state.people.some(p => p.email && p.email.toLowerCase() === email)) {
+        showToast('Email already added for another person!', 'error');
+        return;
+    }
+
     const currentUserName = getCurrentUserName();
-    const isMe = currentUserName && name.toLowerCase() === currentUserName.toLowerCase();
+    const currentUserEmail = (currentUser && currentUser.email) ? currentUser.email.toLowerCase().trim() : '';
+    const isMe = (currentUserName && name.toLowerCase() === currentUserName.toLowerCase()) ||
+                 (currentUserEmail && email && email === currentUserEmail);
+
+    let linkedUserId = isMe && currentUser ? currentUser.id : null;
+
+    if (!linkedUserId && supabaseClient && email) {
+        try {
+            const { data: foundUser } = await supabaseClient
+                .from('users')
+                .select('id, email, display_name')
+                .eq('email', email)
+                .maybeSingle();
+            if (foundUser && foundUser.id) {
+                linkedUserId = foundUser.id;
+            }
+        } catch (e) {
+            // Ignore lookup error
+        }
+    }
 
     state.people.push({
         id: state.personIdCounter++,
         name: name,
+        email: email || (isMe && currentUserEmail ? currentUserEmail : ''),
+        userId: linkedUserId,
         isCurrentUser: !!isMe,
         debt: 0,
         subtotal: 0,
@@ -735,6 +790,7 @@ function addPerson() {
     });
 
     inputPerson.value = '';
+    if (inputPersonEmail) inputPersonEmail.value = '';
     saveToStorage();
     renderPeopleUI();
     recalculateAndRender();
@@ -744,6 +800,14 @@ function addPerson() {
 if (btnAddPerson) btnAddPerson.addEventListener('click', addPerson);
 if (inputPerson) {
     inputPerson.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            addPerson();
+        }
+    });
+}
+if (inputPersonEmail) {
+    inputPersonEmail.addEventListener('keypress', (e) => {
         if (e.key === 'Enter') {
             e.preventDefault();
             addPerson();
@@ -780,22 +844,26 @@ function renderPeopleUI() {
     if (peopleCountEl) peopleCountEl.textContent = state.people.length;
 
     const currentUserName = getCurrentUserName();
+    const currentUserEmail = (currentUser && currentUser.email) ? currentUser.email.toLowerCase().trim() : '';
 
     if (state.people.length === 0) {
         if (emptyPeopleHint) emptyPeopleHint.style.display = 'block';
     } else {
         if (emptyPeopleHint) emptyPeopleHint.style.display = 'none';
         state.people.forEach(p => {
-            const isMe = p.isCurrentUser || (currentUserName && p.name.toLowerCase() === currentUserName.toLowerCase());
+            const isMe = p.isCurrentUser ||
+                (currentUserName && p.name.toLowerCase() === currentUserName.toLowerCase()) ||
+                (currentUserEmail && p.email && p.email.toLowerCase() === currentUserEmail);
             const badge = document.createElement('div');
             badge.className = `badge ${isMe ? 'badge-self' : ''}`;
             const firstLetter = p.name.charAt(0).toUpperCase();
 
             const youTag = isMe ? `<span class="badge-you-tag">(${t('badge_you')})</span>` : '';
+            const emailTag = p.email ? `<span class="badge-email-tag">✉️ ${p.email}</span>` : '';
 
             badge.innerHTML = `
                 <span class="badge-avatar ${isMe ? 'self-avatar' : ''}">${firstLetter}</span>
-                <span class="badge-name">${p.name} ${youTag}</span>
+                <span class="badge-name">${p.name} ${youTag}${emailTag}</span>
                 <button type="button" class="badge-view-btn" title="${t('profile_btn')} ${p.name}">
                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                 </button>
@@ -828,7 +896,12 @@ function renderPeopleUI() {
 
     // Toggle quick add me button if current user is not in list
     if (userQuickAddWrap) {
-        if (currentUser && currentUserName && !state.people.some(p => p.isCurrentUser || p.name.toLowerCase() === currentUserName.toLowerCase())) {
+        const isInList = state.people.some(p =>
+            p.isCurrentUser ||
+            (currentUserName && p.name.toLowerCase() === currentUserName.toLowerCase()) ||
+            (currentUserEmail && p.email && p.email.toLowerCase() === currentUserEmail)
+        );
+        if (currentUser && currentUserName && !isInList) {
             userQuickAddWrap.style.display = 'block';
             if (quickAddMeLabel) quickAddMeLabel.textContent = `${t('btn_add_me')} (${currentUserName})`;
         } else {
@@ -2278,16 +2351,31 @@ async function saveBillToCloud() {
         // 3. Insert Settlement Transfers into public.debts
         const transactions = calculateSettlements(grandTotal);
         if (transactions.length > 0) {
+            const currentUserEmail = (currentUser.email || '').toLowerCase().trim();
+
             const debtsToInsert = transactions.map(tr => {
-                const isDebtorMe = tr.from.toLowerCase().trim() === currentUserName.toLowerCase().trim();
-                const isCreditorMe = tr.to.toLowerCase().trim() === currentUserName.toLowerCase().trim();
+                const debtorPerson = state.people.find(p => p.id === tr.fromId) ||
+                                     state.people.find(p => p.name.toLowerCase().trim() === tr.from.toLowerCase().trim());
+                const creditorPerson = state.people.find(p => p.id === tr.toId) ||
+                                       state.people.find(p => p.name.toLowerCase().trim() === tr.to.toLowerCase().trim());
+
+                const isDebtorMe = debtorPerson ? (debtorPerson.isCurrentUser || debtorPerson.userId === currentUser.id) : (tr.from.toLowerCase().trim() === currentUserName.toLowerCase().trim());
+                const isCreditorMe = creditorPerson ? (creditorPerson.isCurrentUser || creditorPerson.userId === currentUser.id) : (tr.to.toLowerCase().trim() === currentUserName.toLowerCase().trim());
+
+                const debtorEmail = (debtorPerson && debtorPerson.email) ? debtorPerson.email.toLowerCase().trim() : (isDebtorMe ? currentUserEmail : null);
+                const creditorEmail = (creditorPerson && creditorPerson.email) ? creditorPerson.email.toLowerCase().trim() : (isCreditorMe ? currentUserEmail : null);
+
+                const debtorId = isDebtorMe ? currentUser.id : (debtorPerson?.userId || null);
+                const creditorId = isCreditorMe ? currentUser.id : (creditorPerson?.userId || null);
 
                 return {
                     bill_id: billData.id,
-                    debtor_id: isDebtorMe ? currentUser.id : null,
+                    debtor_id: debtorId,
                     debtor_name: tr.from,
-                    creditor_id: isCreditorMe ? currentUser.id : null,
+                    debtor_email: debtorEmail,
+                    creditor_id: creditorId,
                     creditor_name: tr.to,
+                    creditor_email: creditorEmail,
                     amount: tr.amount,
                     status: 'pending'
                 };
@@ -2297,7 +2385,27 @@ async function saveBillToCloud() {
                 .from('debts')
                 .insert(debtsToInsert);
 
-            if (debtsError) throw debtsError;
+            if (debtsError) {
+                // If columns debtor_email or creditor_email do not exist yet in Supabase (before ALTER TABLE)
+                if (debtsError.message && (debtsError.message.includes('debtor_email') || debtsError.message.includes('creditor_email') || debtsError.code === 'PGRST204' || debtsError.code === '42703')) {
+                    console.warn('Columns debtor_email/creditor_email not found in debts table. Retrying with basic columns.');
+                    const fallbackDebts = debtsToInsert.map(d => ({
+                        bill_id: d.bill_id,
+                        debtor_id: d.debtor_id,
+                        debtor_name: d.debtor_name,
+                        creditor_id: d.creditor_id,
+                        creditor_name: d.creditor_name,
+                        amount: d.amount,
+                        status: d.status
+                    }));
+                    const { error: fallbackErr } = await supabaseClient
+                        .from('debts')
+                        .insert(fallbackDebts);
+                    if (fallbackErr) throw fallbackErr;
+                } else {
+                    throw debtsError;
+                }
+            }
         }
 
         showToast(t('toast_bill_saved_cloud'), 'success');
@@ -2357,41 +2465,47 @@ if (btnRefreshDebts) {
 function renderCloudDashboard() {
     if (!currentUser) return;
 
-    const currentUserName = (getCurrentUserName() || '').toLowerCase();
+    const currentUserId = currentUser.id;
+    const currentUserEmail = (currentUser.email || '').toLowerCase().trim();
+    const currentUserName = (getCurrentUserName() || '').toLowerCase().trim();
+
+    function isCreditorMe(d) {
+        if (d.creditor_id && d.creditor_id === currentUserId) return true;
+        if (currentUserEmail && d.creditor_email && d.creditor_email.toLowerCase().trim() === currentUserEmail) return true;
+        if (!d.creditor_id && !d.creditor_email && currentUserName && d.creditor_name) {
+            return d.creditor_name.toLowerCase().trim() === currentUserName;
+        }
+        return false;
+    }
+
+    function isDebtorMe(d) {
+        if (d.debtor_id && d.debtor_id === currentUserId) return true;
+        if (currentUserEmail && d.debtor_email && d.debtor_email.toLowerCase().trim() === currentUserEmail) return true;
+        if (!d.debtor_id && !d.debtor_email && currentUserName && d.debtor_name) {
+            return d.debtor_name.toLowerCase().trim() === currentUserName;
+        }
+        return false;
+    }
 
     // 1. Filter: Debts where user is CREDITOR (People owe me)
-    // Creditor name MUST be me, and Debtor name must NOT be me.
     const whoOwesMe = cloudDebts.filter(d => {
-        const credName = (d.creditor_name || '').toLowerCase().trim();
-        const debName = (d.debtor_name || '').toLowerCase().trim();
-
-        const isCreditorMe = (credName === currentUserName) || (d.creditor_id === currentUser.id && credName === currentUserName);
-        const isDebtorMe = (debName === currentUserName) || (d.debtor_id === currentUser.id);
-
-        return isCreditorMe && !isDebtorMe;
+        const isCred = isCreditorMe(d);
+        const isDeb = isDebtorMe(d);
+        return isCred && !isDeb;
     });
 
     // 2. Filter: Debts where user is DEBTOR (I owe others)
-    // Debtor name MUST be me, and Creditor name must NOT be me.
     const iOwe = cloudDebts.filter(d => {
-        const credName = (d.creditor_name || '').toLowerCase().trim();
-        const debName = (d.debtor_name || '').toLowerCase().trim();
-
-        const isDebtorMe = (debName === currentUserName) || (d.debtor_id === currentUser.id);
-        const isCreditorMe = (credName === currentUserName) || (d.creditor_id === currentUser.id && credName === currentUserName);
-
-        return isDebtorMe && !isCreditorMe;
+        const isCred = isCreditorMe(d);
+        const isDeb = isDebtorMe(d);
+        return isDeb && !isCred;
     });
 
-    // 3. Filter: Other group transfers in bills created by me (neither debtor nor creditor is me, e.g. Adam -> Amin)
+    // 3. Filter: Other group transfers in bills created by me or recorded
     const otherTransfers = cloudDebts.filter(d => {
-        const credName = (d.creditor_name || '').toLowerCase().trim();
-        const debName = (d.debtor_name || '').toLowerCase().trim();
-
-        const isDebtorMe = (debName === currentUserName) || (d.debtor_id === currentUser.id);
-        const isCreditorMe = (credName === currentUserName) || (d.creditor_id === currentUser.id && credName === currentUserName);
-
-        return !isDebtorMe && !isCreditorMe;
+        const isCred = isCreditorMe(d);
+        const isDeb = isDebtorMe(d);
+        return !isCred && !isDeb;
     });
 
     // 4. Calculate Totals (Pending only for me)
@@ -2433,7 +2547,7 @@ function renderCloudDashboard() {
         }
     }
 
-    // 5. Render "People Who Owe Me" List
+    // 5. Render "People Who Owe Me" List (ONLY Creditor can mark as paid!)
     if (listWhoOwesMe) {
         listWhoOwesMe.innerHTML = '';
         if (whoOwesMe.length === 0) {
@@ -2444,12 +2558,14 @@ function renderCloudDashboard() {
                 item.className = `cloud-debt-item ${debt.status === 'paid' ? 'paid-item' : ''}`;
                 const initial = debt.debtor_name.charAt(0).toUpperCase();
                 const isPaid = debt.status === 'paid';
+                const debtorEmailText = debt.debtor_email ? `<span class="badge-email-tag">✉️ ${debt.debtor_email}</span>` : '';
 
                 item.innerHTML = `
                     <div class="debt-item-user">
                         <span class="badge-avatar">${initial}</span>
                         <div>
                             <strong>${debt.debtor_name}</strong>
+                            ${debtorEmailText}
                             <div class="debt-item-date">${new Date(debt.created_at).toLocaleDateString()}</div>
                         </div>
                     </div>
@@ -2473,7 +2589,7 @@ function renderCloudDashboard() {
         }
     }
 
-    // 6. Render "Debts I Owe to Others" List
+    // 6. Render "Debts I Owe to Others" List (Debtor CANNOT mark paid, only await & send proof)
     if (listIOwe) {
         listIOwe.innerHTML = '';
         if (iOwe.length === 0) {
@@ -2484,20 +2600,45 @@ function renderCloudDashboard() {
                 item.className = `cloud-debt-item ${debt.status === 'paid' ? 'paid-item' : ''}`;
                 const initial = debt.creditor_name.charAt(0).toUpperCase();
                 const isPaid = debt.status === 'paid';
+                const creditorEmailText = debt.creditor_email ? `<span class="badge-email-tag">✉️ ${debt.creditor_email}</span>` : '';
+
+                let statusActionHtml = '';
+                if (isPaid) {
+                    statusActionHtml = `
+                        <span class="badge-paid-confirmed">
+                            ✓ ${t('debt_confirmed_by')} ${debt.creditor_name}
+                        </span>
+                    `;
+                } else {
+                    const waText = encodeURIComponent(
+                        (t('wa_proof_msg') || 'Hi %creditor%, I have made the payment of RM %amount% for the bill. Please confirm it in the Bill Splitter app: %url%')
+                            .replace('%creditor%', debt.creditor_name)
+                            .replace('%amount%', parseFloat(debt.amount).toFixed(2))
+                            .replace('%url%', window.location.origin + window.location.pathname)
+                    );
+                    statusActionHtml = `
+                        <span class="badge-pending-debtor" title="${t('only_creditor_can_settle')}">
+                            ⏳ ${t('debt_awaiting_confirm')} ${debt.creditor_name}
+                        </span>
+                        <a href="https://wa.me/?text=${waText}" target="_blank" rel="noopener noreferrer" class="btn-proof-wa" title="${t('btn_send_proof_wa')}">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.245 2.248 3.481 5.236 3.48 8.414-.003 6.557-5.338 11.892-11.893 11.892-1.99-.001-3.951-.5-5.688-1.448l-6.305 1.654zm6.597-3.807c1.676.995 3.276 1.591 5.392 1.592 5.448 0 9.886-4.434 9.889-9.885.002-5.462-4.415-9.89-9.881-9.892-5.452 0-9.887 4.434-9.889 9.884-.001 2.225.651 3.891 1.746 5.634l-.999 3.648 3.742-.981z"/></svg>
+                            <span>${t('btn_send_proof_wa')}</span>
+                        </a>
+                    `;
+                }
 
                 item.innerHTML = `
                     <div class="debt-item-user">
                         <span class="badge-avatar recipient">${initial}</span>
                         <div>
                             <strong>${debt.creditor_name}</strong>
+                            ${creditorEmailText}
                             <div class="debt-item-date">${new Date(debt.created_at).toLocaleDateString()}</div>
                         </div>
                     </div>
                     <div class="debt-item-actions">
                         <span class="debt-item-amount text-danger">RM ${parseFloat(debt.amount).toFixed(2)}</span>
-                        <span class="debt-status-badge ${isPaid ? 'badge-paid' : 'badge-pending'}">
-                            ${isPaid ? t('status_paid') : t('status_pending')}
-                        </span>
+                        ${statusActionHtml}
                     </div>
                 `;
                 listIOwe.appendChild(item);
@@ -2505,7 +2646,7 @@ function renderCloudDashboard() {
         }
     }
 
-    // 7. Render "Other Group Transfers" (e.g. Adam -> Amin)
+    // 7. Render "Other Group Transfers" (Transfers between other friends)
     if (cardOtherTransfers && listOtherTransfers) {
         if (otherTransfers.length > 0) {
             cardOtherTransfers.style.display = 'block';
@@ -2523,8 +2664,10 @@ function renderCloudDashboard() {
                         <span class="badge-avatar">${fromInitial}</span>
                         <div>
                             <strong>${debt.debtor_name}</strong>
+                            ${debt.debtor_email ? `<span class="badge-email-tag">✉️ ${debt.debtor_email}</span>` : ''}
                             <span class="transfer-badge-direction">👉 ${t('transfers_pays_to')}</span>
                             <strong style="color:var(--accent-primary);">${debt.creditor_name}</strong>
+                            ${debt.creditor_email ? `<span class="badge-email-tag">✉️ ${debt.creditor_email}</span>` : ''}
                             <div class="debt-item-date">${new Date(debt.created_at).toLocaleDateString()}</div>
                         </div>
                     </div>
@@ -2533,15 +2676,8 @@ function renderCloudDashboard() {
                         <span class="debt-status-badge ${isPaid ? 'badge-paid' : 'badge-pending'}">
                             ${isPaid ? t('status_paid') : t('status_pending')}
                         </span>
-                        <button type="button" class="glass-btn mini-btn btn-toggle-debt">
-                            ${isPaid ? t('mark_pending') : t('mark_paid')}
-                        </button>
                     </div>
                 `;
-
-                item.querySelector('.btn-toggle-debt').addEventListener('click', async () => {
-                    await toggleDebtStatus(debt.id, isPaid ? 'pending' : 'paid');
-                });
 
                 listOtherTransfers.appendChild(item);
             });
@@ -2599,7 +2735,7 @@ async function toggleDebtStatus(debtId, newStatus) {
         await loadCloudData();
     } catch (e) {
         console.error('Error toggling debt status:', e);
-        showToast('Failed to update debt status.', 'error');
+        showToast(t('only_creditor_can_settle') || 'Only the person who is owed money can mark this as paid.', 'error');
     }
 }
 
