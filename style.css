@@ -83,8 +83,9 @@ body:not(.dark-mode) {
 }
 
 html {
-    scroll-behavior: smooth;
     -webkit-text-size-adjust: 100%;
+    overflow-x: hidden;
+    scroll-behavior: auto !important;
 }
 
 body {
@@ -92,12 +93,13 @@ body {
     background-color: var(--bg-page);
     color: var(--text-primary);
     min-height: 100vh;
+    min-height: 100dvh;
     padding: 24px 16px;
     position: relative;
     overflow-x: hidden;
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
-    -webkit-overflow-scrolling: touch;
+    -webkit-tap-highlight-color: transparent;
     transition: background-color 0.4s ease, color 0.4s ease;
 }
 
@@ -4589,5 +4591,90 @@ body:not(.dark-mode) ::-webkit-scrollbar-thumb {
         box-sizing: border-box !important;
         padding: 6px 10px !important;
         font-size: 11px !important;
+    }
+
+    .cloud-debt-list {
+        max-height: none !important;
+        overflow-y: visible !important;
+    }
+}
+
+/* ==========================================================================
+   MOBILE & TOUCH ANTI-JITTER / ANTI-SHAKE OPTIMIZATION
+   Fixes: Screen vibrating/shaking ("benda-benda dalam page tu bergoncang")
+   when user scrolls on touch devices over hoverable cards and buttons.
+   ========================================================================== */
+@media (hover: none), (max-width: 768px) {
+    /* 1. Eliminate all hover/active transforms and micro-translations on touch screens */
+    .glass-btn:hover,
+    .glass-btn:active,
+    .glass-btn-primary:hover,
+    .glass-btn-primary:active,
+    .glass-panel:hover,
+    .badge:hover,
+    .buyer-mini-btn:hover,
+    .receipt-items li:hover,
+    .debt-card:hover,
+    .settlement-card:hover,
+    .btn-paid-full:hover,
+    .wa-btn:hover,
+    .copy-btn:hover,
+    .qr-btn:hover,
+    .stat-glass-card:hover,
+    .cloud-bill-card:hover,
+    .badge-view-btn:hover,
+    .debt-view-btn:hover,
+    .quick-add-me-btn:hover,
+    .btn-proof-wa:hover,
+    .btn-friend-accept:hover,
+    .btn-friend-reject:hover,
+    .btn-quick-friend-chip:hover,
+    .group-card-item:hover,
+    .qr-thumb-card:hover,
+    .qr-thumb-img-wrapper:hover img,
+    .profile-qr-card:hover,
+    .glass-btn-install:hover,
+    .icon-only-btn:hover svg,
+    .cloud-debt-item:hover,
+    .card:hover,
+    .action-btn:hover,
+    .dropdown-btn:hover,
+    .preset-chip:hover,
+    .split-toggle-btn:hover {
+        transform: none !important;
+        -webkit-transform: none !important;
+    }
+
+    /* 2. Prevent transform transitions from causing subpixel layout thrashing during touch scroll */
+    .glass-panel,
+    .glass-btn,
+    .glass-btn-primary,
+    .receipt-items li,
+    .debt-card,
+    .settlement-card,
+    .stat-glass-card,
+    .cloud-bill-card,
+    .group-card-item,
+    .cloud-debt-item {
+        transition-property: background-color, border-color, box-shadow, opacity, color !important;
+    }
+
+    /* 3. Let nested lists flow naturally on mobile to avoid scroll-chaining conflicts */
+    .cloud-debt-list {
+        max-height: none !important;
+        overflow-y: visible !important;
+    }
+
+    /* 4. Eliminate touch tap delay and pan gesture jitter */
+    button,
+    a,
+    input,
+    select,
+    .glass-btn,
+    .buyer-card,
+    .debt-card,
+    .cloud-debt-item,
+    .user-pill {
+        touch-action: manipulation;
     }
 }
