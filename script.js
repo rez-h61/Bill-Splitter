@@ -315,7 +315,22 @@ const i18n = {
         pwa_ios_step1_sub: "in Safari's navigation bar.",
         pwa_ios_step2: "Scroll down and tap 'Add to Home Screen'",
         pwa_ios_step3: "Tap Add in the top right corner. Enjoy instant offline access!",
-        pwa_got_it: "Got It!"
+        pwa_got_it: "Got It!",
+        settings_title: "Settings",
+        settings_sub: "Preferences & Account",
+        settings_account: "Account",
+        settings_preferences: "Preferences",
+        settings_language: "Language",
+        settings_lang_hint: "Choose your preferred language",
+        settings_theme: "Theme Mode",
+        settings_theme_hint: "Switch Dark or Light theme",
+        settings_app: "App & Offline",
+        settings_install_title: "Install Bill Splitter",
+        settings_install_sub: "Add to home screen for native offline experience",
+        settings_data: "Data Management",
+        settings_reset_label: "Reset Calculator",
+        settings_reset_hint: "Clear current shoppers and receipt items",
+        pwa_installed: "Installed"
     },
     ms: {
         title: "Split Bil",
@@ -611,7 +626,22 @@ const i18n = {
         pwa_ios_step1_sub: "pada bar navigasi Safari.",
         pwa_ios_step2: "Tatal ke bawah dan tekan 'Tambah ke Skrin Utama'",
         pwa_ios_step3: "Tekan Tambah (Add) di bahagian atas kanan. Boleh digunakan secara luar talian!",
-        pwa_got_it: "Faham!"
+        pwa_got_it: "Faham!",
+        settings_title: "Tetapan",
+        settings_sub: "Keutamaan & Akaun",
+        settings_account: "Akaun",
+        settings_preferences: "Keutamaan",
+        settings_language: "Bahasa",
+        settings_lang_hint: "Pilih bahasa paparan",
+        settings_theme: "Tema",
+        settings_theme_hint: "Tukar Mod Gelap atau Cerah",
+        settings_app: "Aplikasi & Luar Talian",
+        settings_install_title: "Pasang Bill Splitter",
+        settings_install_sub: "Tambah ke skrin utama untuk akses pantas tanpa internet",
+        settings_data: "Pengurusan Data",
+        settings_reset_label: "Padam Kiraan Bil",
+        settings_reset_hint: "Kosongkan senarai rakan dan resit semasa",
+        pwa_installed: "Telah Dipasang"
     }
 };
 
@@ -2880,6 +2910,8 @@ if (btnCloseQr && qrContainer) {
 if (btnReset) {
     btnReset.addEventListener('click', () => {
         if (confirm(t('toast_reset_confirm'))) {
+            const settingsModal = document.getElementById('settings-modal');
+            if (settingsModal) settingsModal.style.display = 'none';
             state.items = [];
             state.extras = { taxPercent: 0, servicePercent: 0, discountAmount: 0 };
             state.personIdCounter = 1;
@@ -3311,6 +3343,8 @@ function setupAuthEvents() {
     // Log Out
     if (btnLogout) {
         btnLogout.addEventListener('click', async () => {
+            const settingsModal = document.getElementById('settings-modal');
+            if (settingsModal) settingsModal.style.display = 'none';
             if (supabaseClient) {
                 await supabaseClient.auth.signOut();
             }
@@ -5599,12 +5633,21 @@ function initPWA() {
         });
     }
 
+    const settingsPwaDot = document.getElementById('settings-pwa-dot');
+    const pwaInstalledBadge = document.getElementById('pwa-installed-badge');
+
     // 3. Native App Install Prompt (Chrome / Edge / Android)
     window.addEventListener('beforeinstallprompt', (e) => {
         e.preventDefault();
         deferredInstallPrompt = e;
         if (btnInstallPwa) {
             btnInstallPwa.style.display = 'inline-flex';
+        }
+        if (settingsPwaDot) {
+            settingsPwaDot.style.display = 'block';
+        }
+        if (pwaInstalledBadge) {
+            pwaInstalledBadge.style.display = 'none';
         }
     });
 
@@ -5613,7 +5656,11 @@ function initPWA() {
     const isIos = /iphone|ipad|ipod/.test(userAgent);
     const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
 
-    if (isIos && !isStandalone) {
+    if (isStandalone) {
+        if (btnInstallPwa) btnInstallPwa.style.display = 'none';
+        if (settingsPwaDot) settingsPwaDot.style.display = 'none';
+        if (pwaInstalledBadge) pwaInstalledBadge.style.display = 'inline-flex';
+    } else if (isIos) {
         if (btnInstallPwa) {
             btnInstallPwa.style.display = 'inline-flex';
         }
@@ -5627,6 +5674,8 @@ function initPWA() {
                 const { outcome } = await deferredInstallPrompt.userChoice;
                 if (outcome === 'accepted') {
                     btnInstallPwa.style.display = 'none';
+                    if (settingsPwaDot) settingsPwaDot.style.display = 'none';
+                    if (pwaInstalledBadge) pwaInstalledBadge.style.display = 'inline-flex';
                 }
                 deferredInstallPrompt = null;
             } else if (isIos) {
@@ -5640,6 +5689,8 @@ function initPWA() {
     // 6. Handle App Installed Event
     window.addEventListener('appinstalled', () => {
         if (btnInstallPwa) btnInstallPwa.style.display = 'none';
+        if (settingsPwaDot) settingsPwaDot.style.display = 'none';
+        if (pwaInstalledBadge) pwaInstalledBadge.style.display = 'inline-flex';
         deferredInstallPrompt = null;
         showToast(t('pwa_install_success'), 'success');
     });
@@ -5698,6 +5749,59 @@ function initPWA() {
 }
 
 // -------------------------------------------------------------
+// SETTINGS MODAL INITIALIZATION
+// -------------------------------------------------------------
+function initSettingsModal() {
+    const btnOpenSettings = document.getElementById('btn-open-settings');
+    const settingsModal = document.getElementById('settings-modal');
+    const btnCloseSettings = document.getElementById('btn-close-settings');
+    const btnDismissSettings = document.getElementById('btn-dismiss-settings');
+    const settingsUserSection = document.getElementById('settings-user-section');
+    const settingsUserName = document.getElementById('settings-user-name');
+    const settingsUserEmail = document.getElementById('settings-user-email');
+    const settingsUserAvatar = document.getElementById('settings-user-avatar');
+    const btnSettingsProfile = document.getElementById('btn-settings-profile');
+
+    function openSettings() {
+        if (!settingsModal) return;
+        if (currentUser) {
+            if (settingsUserSection) settingsUserSection.style.display = 'block';
+            const name = (currentUserProfile && currentUserProfile.display_name) ||
+                         (currentUser.user_metadata && currentUser.user_metadata.display_name) ||
+                         currentUser.email.split('@')[0];
+            if (settingsUserName) settingsUserName.textContent = name;
+            if (settingsUserEmail) settingsUserEmail.textContent = currentUser.email;
+            if (settingsUserAvatar) settingsUserAvatar.textContent = name.charAt(0).toUpperCase();
+        } else {
+            if (settingsUserSection) settingsUserSection.style.display = 'none';
+        }
+        settingsModal.style.display = 'flex';
+    }
+
+    function closeSettings() {
+        if (settingsModal) settingsModal.style.display = 'none';
+    }
+
+    if (btnOpenSettings) btnOpenSettings.addEventListener('click', openSettings);
+    if (btnCloseSettings) btnCloseSettings.addEventListener('click', closeSettings);
+    if (btnDismissSettings) btnDismissSettings.addEventListener('click', closeSettings);
+    if (settingsModal) {
+        settingsModal.addEventListener('click', (e) => {
+            if (e.target === settingsModal) closeSettings();
+        });
+    }
+
+    if (btnSettingsProfile) {
+        btnSettingsProfile.addEventListener('click', () => {
+            closeSettings();
+            if (typeof openMyProfileModal === 'function') {
+                openMyProfileModal();
+            }
+        });
+    }
+}
+
+// -------------------------------------------------------------
 // APP INITIALIZATION
 // -------------------------------------------------------------
 async function initApp() {
@@ -5715,7 +5819,8 @@ async function initApp() {
     renderPeopleUI();
     recalculateAndRender();
 
-    // Initialize PWA Service Worker & Install Support
+    // Initialize Settings Modal & PWA Controller
+    initSettingsModal();
     initPWA();
 
     // Initialize Supabase Full-Stack Authentication & Sync
