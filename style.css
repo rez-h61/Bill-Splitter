@@ -3609,3 +3609,420 @@ body:not(.dark-mode) ::-webkit-scrollbar-thumb {
 .link-btn-text:hover {
     opacity: 0.8;
 }
+
+/* =============================================================
+   LANGUAGE SWITCHER BUTTONS (BM / EN)
+   ============================================================= */
+.lang-switch-group {
+    display: inline-flex;
+    align-items: center;
+    background: var(--glass-input);
+    border: 1px solid var(--glass-border);
+    border-radius: 9999px;
+    padding: 3px;
+    gap: 3px;
+}
+
+.lang-pill-btn {
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--text-muted);
+    font-size: 11px;
+    font-weight: 700;
+    font-family: inherit;
+    letter-spacing: 0.5px;
+    padding: 5px 10px;
+    border-radius: 9999px;
+    cursor: pointer;
+    transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+    line-height: 1;
+}
+
+.lang-pill-btn:hover {
+    color: var(--text-primary);
+}
+
+.lang-pill-btn.active {
+    background: var(--accent-gradient, linear-gradient(135deg, #6366f1 0%, #a855f7 100%));
+    color: #ffffff;
+    box-shadow: 0 2px 8px rgba(99, 102, 241, 0.35);
+}
+
+/* =============================================================
+   PAYMENT METHODS & BANK / QR MANAGEMENT
+   ============================================================= */
+.payment-cards-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.payment-card-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background: var(--glass-input);
+    border: 1px solid var(--glass-border-subtle);
+    border-radius: 12px;
+    transition: border-color 0.2s, transform 0.15s;
+}
+
+.payment-card-item:hover {
+    border-color: var(--glass-border);
+}
+
+.payment-card-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.payment-bank-tag {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--accent-primary);
+    letter-spacing: 0.5px;
+}
+
+.payment-acc-num {
+    font-size: 14px;
+    font-weight: 600;
+    font-family: monospace, monospace;
+    letter-spacing: 0.5px;
+    color: var(--text-primary);
+}
+
+.payment-holder {
+    font-size: 11px;
+    color: var(--text-muted);
+}
+
+.payment-card-actions {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-payment-action {
+    background: transparent;
+    border: 1px solid var(--glass-border-subtle);
+    border-radius: 8px;
+    padding: 6px 8px;
+    color: var(--text-muted);
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    font-size: 12px;
+    line-height: 1;
+}
+
+.btn-payment-action:hover {
+    color: var(--text-primary);
+    border-color: var(--glass-border);
+    background: var(--glass-hover);
+}
+
+.btn-payment-action.danger:hover {
+    color: #ef4444;
+    border-color: rgba(239, 68, 68, 0.4);
+    background: rgba(239, 68, 68, 0.1);
+}
+
+.payment-add-box {
+    padding: 12px;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px dashed var(--glass-border);
+    border-radius: 12px;
+}
+
+.payment-input-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+.file-pick-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    padding: 9px 12px;
+    font-size: 12px;
+    flex-shrink: 0;
+}
+
+.qr-upload-preview {
+    position: relative;
+    display: inline-block;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--glass-border);
+    width: 80px;
+    height: 80px;
+    background: #ffffff;
+}
+
+.qr-upload-preview img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.remove-preview-btn {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: rgba(0, 0, 0, 0.7);
+    color: #fff;
+    border: none;
+    font-size: 14px;
+    line-height: 18px;
+    text-align: center;
+    cursor: pointer;
+    padding: 0;
+}
+
+/* Payment QRs Grid */
+.payment-qrs-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.qr-thumb-card {
+    position: relative;
+    padding: 8px;
+    background: var(--glass-input);
+    border: 1px solid var(--glass-border-subtle);
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    text-align: center;
+    transition: transform 0.2s, border-color 0.2s;
+}
+
+.qr-thumb-card:hover {
+    border-color: var(--glass-border);
+    transform: translateY(-2px);
+}
+
+.qr-thumb-img-wrapper {
+    width: 100%;
+    aspect-ratio: 1;
+    background: #ffffff;
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.qr-thumb-img-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    transition: transform 0.2s;
+}
+
+.qr-thumb-img-wrapper:hover img {
+    transform: scale(1.05);
+}
+
+.qr-thumb-label {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 100%;
+}
+
+.qr-thumb-delete {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: rgba(239, 68, 68, 0.85);
+    color: #fff;
+    border: none;
+    font-size: 13px;
+    line-height: 20px;
+    text-align: center;
+    cursor: pointer;
+    padding: 0;
+    transition: background 0.15s;
+}
+
+.qr-thumb-delete:hover {
+    background: #dc2626;
+}
+
+/* SECTION C IN PROFILE MODAL (Viewing someone else's payment methods) */
+.profile-bank-details {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.profile-bank-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 14px;
+    background: var(--glass-input);
+    border: 1px solid var(--glass-border-subtle);
+    border-radius: 12px;
+}
+
+.profile-bank-badge {
+    display: inline-block;
+    padding: 3px 8px;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    border-radius: 6px;
+    background: rgba(99, 102, 241, 0.15);
+    color: var(--accent-primary);
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    margin-bottom: 3px;
+}
+
+.profile-bank-acc-text {
+    font-family: monospace, monospace;
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--text-primary);
+    letter-spacing: 0.5px;
+}
+
+.btn-copy-acc {
+    background: var(--glass-hover);
+    border: 1px solid var(--glass-border);
+    color: var(--text-primary);
+    padding: 6px 10px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    transition: all 0.2s;
+}
+
+.btn-copy-acc:hover {
+    background: var(--accent-primary);
+    color: #ffffff;
+    border-color: var(--accent-primary);
+}
+
+.profile-qr-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+    gap: 10px;
+}
+
+.profile-qr-card {
+    background: var(--glass-input);
+    border: 1px solid var(--glass-border-subtle);
+    border-radius: 12px;
+    padding: 8px;
+    text-align: center;
+    cursor: pointer;
+    transition: transform 0.2s, border-color 0.2s;
+}
+
+.profile-qr-card:hover {
+    border-color: var(--accent-primary);
+    transform: translateY(-2px);
+}
+
+.profile-qr-thumb {
+    width: 100%;
+    aspect-ratio: 1;
+    background: #ffffff;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 6px;
+}
+
+.profile-qr-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.profile-qr-caption {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.profile-qr-hint {
+    font-size: 9px;
+    color: var(--text-muted);
+}
+
+/* QR LIGHTBOX MODAL */
+.qr-lightbox-card {
+    max-width: 360px;
+    width: 90%;
+    text-align: center;
+}
+
+.qr-lightbox-body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 16px;
+}
+
+.qr-lightbox-frame {
+    background: #ffffff;
+    padding: 14px;
+    border-radius: 16px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    max-width: 280px;
+    width: 100%;
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.qr-lightbox-frame img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+@media (max-width: 480px) {
+    .payment-input-row {
+        flex-direction: column;
+        align-items: stretch;
+    }
+    .payment-qrs-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}

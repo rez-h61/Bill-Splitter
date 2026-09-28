@@ -7,7 +7,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css?v=2.1">
+    <link rel="stylesheet" href="style.css?v=2.2">
 </head>
 <body class="dark-mode">
     <!-- Ambient Animated Glass Glow Orbs -->
@@ -54,10 +54,10 @@
                         <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
                         <span data-i18n="btn_reset">Reset</span>
                     </button>
-                    <button id="btn-lang" class="glass-btn" title="Change Language">
-                        <span id="lang-flag">🇲🇾</span>
-                        <span id="lang-text">Tukar BM</span>
-                    </button>
+                    <div class="lang-switch-group" id="lang-switch-group">
+                        <button type="button" id="btn-lang-bm" class="lang-pill-btn" title="Bahasa Melayu">BM</button>
+                        <button type="button" id="btn-lang-en" class="lang-pill-btn" title="English">EN</button>
+                    </div>
                     <button id="btn-theme" class="glass-btn" title="Toggle Theme">
                         <span id="theme-icon">☀️</span>
                         <span id="theme-text" data-i18n="theme_light">Light</span>
@@ -778,6 +778,16 @@
                     <!-- Settlement Instructions for this person -->
                     <div id="profile-settlement-list" class="profile-settlement-list"></div>
                 </div>
+
+                <!-- SECTION C: Payment Methods (Bank Accounts & QR) -->
+                <div class="profile-section" id="profile-payment-methods-section" style="display: none;">
+                    <div class="profile-section-header">
+                        <span class="profile-section-badge" style="background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);">C</span>
+                        <h4 class="profile-section-title" data-i18n="profile_sec_c_title">Bank Details & QR Codes</h4>
+                    </div>
+                    <div id="profile-bank-accounts-container" class="profile-bank-details"></div>
+                    <div id="profile-bank-qrs-container" class="profile-qr-details"></div>
+                </div>
             </div>
 
             <div class="modal-footer profile-modal-footer">
@@ -951,6 +961,67 @@
                         <p class="field-hint" style="font-size: 12px; color: var(--text-muted); margin-top: 6px;" data-i18n="phone_profile_hint">Friends will be able to send payment proof straight to your WhatsApp.</p>
                     </div>
 
+                    <!-- Payment Methods: Bank Accounts -->
+                    <div class="profile-section" style="margin-top: 20px;">
+                        <div class="profile-section-header">
+                            <span class="profile-section-badge" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">💳</span>
+                            <div>
+                                <h4 class="profile-section-title" data-i18n="bank_accounts_title">Bank Account Numbers</h4>
+                                <p style="font-size: 11px; color: var(--text-muted);" data-i18n="bank_accounts_desc">Add multiple accounts so friends can transfer directly.</p>
+                            </div>
+                        </div>
+
+                        <!-- List of added bank accounts -->
+                        <div id="my-bank-accounts-list" class="payment-cards-list"></div>
+
+                        <!-- Add Bank Account Input Row -->
+                        <div class="payment-add-box">
+                            <div class="payment-input-row">
+                                <input type="text" id="input-new-bank-name" class="glass-input" placeholder="Bank (e.g. Maybank, CIMB)" maxlength="30">
+                                <input type="text" id="input-new-bank-acc" class="glass-input" placeholder="Account Number" maxlength="30">
+                            </div>
+                            <div class="payment-input-row" style="margin-top: 8px;">
+                                <input type="text" id="input-new-bank-holder" class="glass-input" placeholder="Holder Name (e.g. Fares)" maxlength="40">
+                                <button type="button" id="btn-add-bank-account" class="glass-btn mini-btn" style="white-space: nowrap;">
+                                    <span data-i18n="btn_add_bank_acc">+ Add Account</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Payment Methods: Bank QR Codes -->
+                    <div class="profile-section" style="margin-top: 16px;">
+                        <div class="profile-section-header">
+                            <span class="profile-section-badge" style="background: linear-gradient(135deg, #8b5cf6 0%, #6366f1 100%);">📱</span>
+                            <div>
+                                <h4 class="profile-section-title" data-i18n="bank_qrs_title">Bank QR Codes (DuitNow / eWallet)</h4>
+                                <p style="font-size: 11px; color: var(--text-muted);" data-i18n="bank_qrs_desc">Upload QR images (JPG, PNG, WEBP) with bank label.</p>
+                            </div>
+                        </div>
+
+                        <!-- List of added bank QRs -->
+                        <div id="my-bank-qrs-list" class="payment-qrs-grid"></div>
+
+                        <!-- Add Bank QR Input Row -->
+                        <div class="payment-add-box">
+                            <div class="payment-input-row">
+                                <input type="text" id="input-new-qr-bank" class="glass-input" placeholder="Bank Label (e.g. Maybank QR, TNG)" maxlength="30">
+                                <label for="input-new-qr-file" class="glass-btn mini-btn file-pick-btn" style="cursor: pointer; white-space: nowrap;">
+                                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+                                    <span id="qr-file-chosen-text" data-i18n="choose_qr_image">Pilih Gambar</span>
+                                </label>
+                                <input type="file" id="input-new-qr-file" accept="image/jpeg,image/png,image/webp,image/jpg" style="display: none;">
+                            </div>
+                            <div id="qr-preview-box" class="qr-upload-preview" style="display: none; margin-top: 8px;">
+                                <img id="qr-preview-img" src="" alt="QR Preview">
+                                <button type="button" id="btn-remove-qr-preview" class="remove-preview-btn">&times;</button>
+                            </div>
+                            <button type="button" id="btn-add-bank-qr" class="glass-btn mini-btn" style="width: 100%; justify-content: center; margin-top: 8px;">
+                                <span data-i18n="btn_add_bank_qr">+ Add QR Code</span>
+                            </button>
+                        </div>
+                    </div>
+
                     <!-- Password Update Section -->
                     <div class="profile-password-section" style="margin-top: 20px; padding-top: 16px; border-top: 1px dashed var(--glass-border);">
                         <h4 style="font-size: 13px; font-weight: 700; color: var(--text-primary); margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
@@ -982,11 +1053,35 @@
         </div>
     </div>
 
+    <!-- QR LIGHTBOX MODAL (Enlarged Bank QR Code Display) -->
+    <div id="qr-lightbox-modal" class="glass-modal-backdrop" style="display: none; z-index: 100010;">
+        <div class="glass-modal qr-lightbox-card">
+            <div class="modal-header">
+                <div class="modal-user-info">
+                    <div class="user-avatar" style="background: rgba(139, 92, 246, 0.2); color: #8b5cf6;">📱</div>
+                    <div>
+                        <h3 id="lightbox-bank-title" class="modal-title">Bank QR</h3>
+                        <p class="modal-sub" data-i18n="lightbox_scan_hint">Scan to pay directly</p>
+                    </div>
+                </div>
+                <button type="button" id="btn-close-qr-lightbox" class="icon-close-btn" title="Close">&times;</button>
+            </div>
+            <div class="modal-body qr-lightbox-body">
+                <div class="qr-lightbox-frame">
+                    <img id="lightbox-qr-img" src="" alt="QR Code Enlarged">
+                </div>
+            </div>
+            <div class="modal-footer" style="display: flex; justify-content: center;">
+                <button type="button" id="btn-dismiss-qr-lightbox" class="glass-btn" data-i18n="close">Close</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Glass Toast Notifications Container -->
     <div id="toast-container" class="toast-stack"></div>
 
     <!-- Supabase JS Client via CDN -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="script.js?v=2.1"></script>
+    <script src="script.js?v=2.2"></script>
 </body>
 </html>

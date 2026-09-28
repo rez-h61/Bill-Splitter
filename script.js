@@ -280,7 +280,28 @@ const i18n = {
         amount_to_pay: "Amount to Settle",
         view_full_bill: "View Full Receipt",
         copy_bill_summary: "Copy Summary",
-        toast_receipt_copied: "Receipt summary copied!"
+        toast_receipt_copied: "Receipt summary copied!",
+        bank_accounts_title: "Bank Account Numbers",
+        bank_accounts_desc: "Add multiple accounts so friends can transfer directly.",
+        btn_add_bank_acc: "+ Add Account",
+        bank_qrs_title: "Bank QR Codes (DuitNow / eWallet)",
+        bank_qrs_desc: "Upload QR images (JPG, PNG, WEBP) with bank label.",
+        btn_add_bank_qr: "+ Add QR Code",
+        choose_qr_image: "Choose Image",
+        profile_sec_c_title: "Bank Details & QR Codes",
+        acc_copied: "Account number copied!",
+        view_qr: "View QR",
+        lightbox_scan_hint: "Scan to pay directly",
+        toast_enter_bank: "Please enter bank name and account number.",
+        toast_enter_qr_bank: "Please enter a bank label for the QR code.",
+        toast_select_qr_file: "Please select a QR image to upload.",
+        toast_acc_added: "Bank account added!",
+        toast_qr_added: "Bank QR code added!",
+        toast_acc_removed: "Bank account removed.",
+        toast_qr_removed: "QR code removed.",
+        no_bank_accounts: "No bank accounts added yet.",
+        no_bank_qrs: "No QR codes uploaded yet.",
+        bank_transfer_info: "Bank Transfer / DuitNow:"
     },
     ms: {
         title: "Split Bil",
@@ -541,7 +562,28 @@ const i18n = {
         amount_to_pay: "Jumlah Perlu Dibayar",
         view_full_bill: "Lihat Resit Penuh",
         copy_bill_summary: "Salin Ringkasan",
-        toast_receipt_copied: "Ringkasan resit berjaya disalin!"
+        toast_receipt_copied: "Ringkasan resit berjaya disalin!",
+        bank_accounts_title: "Nombor Akaun Bank",
+        bank_accounts_desc: "Tambah pelbagai akaun supaya rakan boleh buat pindahan terus.",
+        btn_add_bank_acc: "+ Tambah Akaun",
+        bank_qrs_title: "Kod QR Bank (DuitNow / eDompet)",
+        bank_qrs_desc: "Muat naik gambar QR (JPG, PNG, WEBP) berserta label bank.",
+        btn_add_bank_qr: "+ Tambah Kod QR",
+        choose_qr_image: "Pilih Gambar",
+        profile_sec_c_title: "Perincian Bank & Kod QR",
+        acc_copied: "Nombor akaun berjaya disalin!",
+        view_qr: "Lihat QR",
+        lightbox_scan_hint: "Imbas untuk bayar terus",
+        toast_enter_bank: "Sila masukkan nama bank dan nombor akaun.",
+        toast_enter_qr_bank: "Sila masukkan label bank bagi kod QR ini.",
+        toast_select_qr_file: "Sila pilih fail gambar QR untuk dimuat naik.",
+        toast_acc_added: "Akaun bank ditambah!",
+        toast_qr_added: "Kod QR bank ditambah!",
+        toast_acc_removed: "Akaun bank dipadam.",
+        toast_qr_removed: "Kod QR dipadam.",
+        no_bank_accounts: "Belum ada akaun bank ditambah.",
+        no_bank_qrs: "Belum ada kod QR dimuat naik.",
+        bank_transfer_info: "Pindahan Bank / DuitNow:"
     }
 };
 
@@ -581,9 +623,8 @@ const headerUserEmail = document.getElementById('header-user-email');
 const btnLogout = document.getElementById('btn-logout');
 const btnHeaderLogin = document.getElementById('btn-header-login');
 const btnReset = document.getElementById('btn-reset');
-const btnLang = document.getElementById('btn-lang');
-const langFlag = document.getElementById('lang-flag');
-const langText = document.getElementById('lang-text');
+const btnLangBm = document.getElementById('btn-lang-bm');
+const btnLangEn = document.getElementById('btn-lang-en');
 const btnTheme = document.getElementById('btn-theme');
 const themeIcon = document.getElementById('theme-icon');
 const themeText = document.getElementById('theme-text');
@@ -653,6 +694,26 @@ const inputEditPassword = document.getElementById('input-edit-password');
 const inputEditPasswordConfirm = document.getElementById('input-edit-password-confirm');
 const btnCloseMyProfile = document.getElementById('btn-close-my-profile');
 const btnCancelMyProfile = document.getElementById('btn-cancel-my-profile');
+const myBankAccountsList = document.getElementById('my-bank-accounts-list');
+const inputNewBankName = document.getElementById('input-new-bank-name');
+const inputNewBankAcc = document.getElementById('input-new-bank-acc');
+const inputNewBankHolder = document.getElementById('input-new-bank-holder');
+const btnAddBankAccount = document.getElementById('btn-add-bank-account');
+const myBankQrsList = document.getElementById('my-bank-qrs-list');
+const inputNewQrBank = document.getElementById('input-new-qr-bank');
+const inputNewQrFile = document.getElementById('input-new-qr-file');
+const qrFileChosenText = document.getElementById('qr-file-chosen-text');
+const qrPreviewBox = document.getElementById('qr-preview-box');
+const qrPreviewImg = document.getElementById('qr-preview-img');
+const btnRemoveQrPreview = document.getElementById('btn-remove-qr-preview');
+const btnAddBankQr = document.getElementById('btn-add-bank-qr');
+
+// QR Lightbox Modal Elements
+const qrLightboxModal = document.getElementById('qr-lightbox-modal');
+const lightboxBankTitle = document.getElementById('lightbox-bank-title');
+const lightboxQrImg = document.getElementById('lightbox-qr-img');
+const btnCloseQrLightbox = document.getElementById('btn-close-qr-lightbox');
+const btnDismissQrLightbox = document.getElementById('btn-dismiss-qr-lightbox');
 
 // Friends View Elements
 const formSendFriendRequest = document.getElementById('form-send-friend-request');
@@ -765,6 +826,9 @@ const profileBalanceVal = document.getElementById('profile-balance-val');
 const profileSettlementList = document.getElementById('profile-settlement-list');
 const btnProfileWa = document.getElementById('btn-profile-wa');
 const btnProfileCopy = document.getElementById('btn-profile-copy');
+const profilePaymentSection = document.getElementById('profile-payment-methods-section');
+const profileBankAccountsContainer = document.getElementById('profile-bank-accounts-container');
+const profileBankQrsContainer = document.getElementById('profile-bank-qrs-container');
 let activeProfilePersonId = null;
 
 // Cloud Bill Receipt Detail Modal Elements
@@ -895,12 +959,14 @@ function updateLanguageUI() {
         if (dict[key]) el.placeholder = dict[key];
     });
 
-    if (lang === 'en') {
-        if (langFlag) langFlag.textContent = '🇲🇾';
-        if (langText) langText.textContent = 'Tukar BM';
-    } else {
-        if (langFlag) langFlag.textContent = '🇬🇧';
-        if (langText) langText.textContent = 'Switch EN';
+    if (btnLangBm && btnLangEn) {
+        if (lang === 'ms') {
+            btnLangBm.classList.add('active');
+            btnLangEn.classList.remove('active');
+        } else {
+            btnLangEn.classList.add('active');
+            btnLangBm.classList.remove('active');
+        }
     }
 
     applyTheme(state.settings.darkMode);
@@ -911,12 +977,18 @@ function updateLanguageUI() {
     }
 }
 
-if (btnLang) {
-    btnLang.addEventListener('click', () => {
-        state.settings.language = state.settings.language === 'en' ? 'ms' : 'en';
-        saveToStorage();
-        updateLanguageUI();
-    });
+function setLanguage(lang) {
+    if (state.settings.language === lang) return;
+    state.settings.language = lang;
+    saveToStorage();
+    updateLanguageUI();
+}
+
+if (btnLangBm) {
+    btnLangBm.addEventListener('click', () => setLanguage('ms'));
+}
+if (btnLangEn) {
+    btnLangEn.addEventListener('click', () => setLanguage('en'));
 }
 
 function applyTheme(isDark) {
@@ -1157,16 +1229,20 @@ async function addPerson() {
         try {
             const { data: foundUser } = await supabaseClient
                 .from('users')
-                .select('id, email, display_name')
+                .select('id, email, display_name, phone_number, payment_methods')
                 .eq('email', email)
                 .maybeSingle();
             if (foundUser && foundUser.id) {
                 linkedUserId = foundUser.id;
+                cloudUsersCache.set(foundUser.id, foundUser);
+                if (foundUser.email) cloudUsersCache.set(foundUser.email.toLowerCase().trim(), foundUser);
             }
         } catch (e) {
             // Ignore lookup error
         }
     }
+
+    const cachedUser = linkedUserId ? cloudUsersCache.get(linkedUserId) : (email ? cloudUsersCache.get(email.toLowerCase().trim()) : null);
 
     state.people.push({
         id: state.personIdCounter++,
@@ -1177,7 +1253,8 @@ async function addPerson() {
         debt: 0,
         subtotal: 0,
         amountPaid: 0,
-        balance: 0
+        balance: 0,
+        payment_methods: (cachedUser && cachedUser.payment_methods) || null
     });
 
     inputPerson.value = '';
@@ -2040,6 +2117,15 @@ function generateSingleBuyerText(person) {
         });
     }
 
+    loadMyPaymentMethods();
+    if (myPaymentMethods.bank_accounts && myPaymentMethods.bank_accounts.length > 0) {
+        text += `\n━━━━━━━━━━━━━━━━━━━━━\n`;
+        text += `💳 *${t('bank_transfer_info')}*\n`;
+        myPaymentMethods.bank_accounts.forEach(acc => {
+            text += `• *${acc.bank_name}*: ${acc.account_number}${acc.holder_name ? ` (${acc.holder_name})` : ''}\n`;
+        });
+    }
+
     text += `\n_${t('receipt_footer')}_`;
     return text;
 }
@@ -2069,6 +2155,292 @@ function waSingleBuyerBill(person) {
     }
     const encoded = encodeURIComponent(text);
     window.open(`https://wa.me/?text=${encoded}`, '_blank');
+}
+
+// =============================================================
+// PAYMENT METHODS & BANK DETAILS / QR MANAGEMENT
+// =============================================================
+function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
+let myPaymentMethods = {
+    bank_accounts: [],
+    qrs: []
+};
+let pendingQrBase64 = null;
+
+function loadMyPaymentMethods() {
+    let loaded = null;
+    if (currentUserProfile && currentUserProfile.payment_methods) {
+        loaded = currentUserProfile.payment_methods;
+    } else if (currentUser && currentUser.user_metadata && currentUser.user_metadata.payment_methods) {
+        loaded = currentUser.user_metadata.payment_methods;
+    } else {
+        const local = localStorage.getItem('my_payment_methods');
+        if (local) {
+            try { loaded = JSON.parse(local); } catch (e) {}
+        }
+    }
+
+    if (loaded && typeof loaded === 'object') {
+        myPaymentMethods = {
+            bank_accounts: Array.isArray(loaded.bank_accounts) ? loaded.bank_accounts : [],
+            qrs: Array.isArray(loaded.qrs) ? loaded.qrs : []
+        };
+    } else {
+        myPaymentMethods = { bank_accounts: [], qrs: [] };
+    }
+}
+
+function saveMyPaymentMethodsLocally() {
+    localStorage.setItem('my_payment_methods', JSON.stringify(myPaymentMethods));
+    if (currentUserProfile) {
+        currentUserProfile.payment_methods = myPaymentMethods;
+    }
+}
+
+function renderMyBankAccounts() {
+    if (!myBankAccountsList) return;
+    myBankAccountsList.innerHTML = '';
+    if (!myPaymentMethods.bank_accounts || myPaymentMethods.bank_accounts.length === 0) {
+        myBankAccountsList.innerHTML = `<div style="font-size: 12px; color: var(--text-muted); font-style: italic; padding: 4px 0;">${t('no_bank_accounts')}</div>`;
+        return;
+    }
+
+    myPaymentMethods.bank_accounts.forEach((acc, index) => {
+        const card = document.createElement('div');
+        card.className = 'payment-card-item';
+        card.innerHTML = `
+            <div class="payment-card-info">
+                <span class="payment-bank-tag">${escapeHtml(acc.bank_name)}</span>
+                <span class="payment-acc-num">${escapeHtml(acc.account_number)}</span>
+                ${acc.holder_name ? `<span class="payment-holder">${escapeHtml(acc.holder_name)}</span>` : ''}
+            </div>
+            <div class="payment-card-actions">
+                <button type="button" class="btn-payment-action danger btn-delete-bank-acc" data-index="${index}" title="Delete">
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                </button>
+            </div>
+        `;
+        myBankAccountsList.appendChild(card);
+    });
+
+    myBankAccountsList.querySelectorAll('.btn-delete-bank-acc').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const idx = parseInt(btn.getAttribute('data-index'), 10);
+            if (!isNaN(idx) && idx >= 0 && idx < myPaymentMethods.bank_accounts.length) {
+                myPaymentMethods.bank_accounts.splice(idx, 1);
+                saveMyPaymentMethodsLocally();
+                renderMyBankAccounts();
+                showToast(t('toast_acc_removed'), 'info');
+            }
+        });
+    });
+}
+
+function compressQrImage(file, maxSize = 600, quality = 0.85) {
+    return new Promise((resolve, reject) => {
+        if (!file || !file.type.match(/^image\//i)) {
+            return reject(new Error('Selected file is not an image'));
+        }
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            const img = new Image();
+            img.onload = () => {
+                let { width, height } = img;
+                if (width > height) {
+                    if (width > maxSize) {
+                        height = Math.round((height * maxSize) / width);
+                        width = maxSize;
+                    }
+                } else {
+                    if (height > maxSize) {
+                        width = Math.round((width * maxSize) / height);
+                        height = maxSize;
+                    }
+                }
+
+                const canvas = document.createElement('canvas');
+                canvas.width = width;
+                canvas.height = height;
+                const ctx = canvas.getContext('2d');
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(0, 0, width, height);
+                ctx.drawImage(img, 0, 0, width, height);
+
+                const mimeType = (file.type === 'image/png') ? 'image/png' : 'image/jpeg';
+                const dataUrl = canvas.toDataURL(mimeType, quality);
+                resolve(dataUrl);
+            };
+            img.onerror = () => reject(new Error('Failed to render image'));
+            img.src = e.target.result;
+        };
+        reader.onerror = () => reject(new Error('Failed to read file'));
+        reader.readAsDataURL(file);
+    });
+}
+
+function renderMyBankQrs() {
+    if (!myBankQrsList) return;
+    myBankQrsList.innerHTML = '';
+    if (!myPaymentMethods.qrs || myPaymentMethods.qrs.length === 0) {
+        myBankQrsList.innerHTML = `<div style="font-size: 12px; color: var(--text-muted); font-style: italic; padding: 4px 0; grid-column: 1 / -1;">${t('no_bank_qrs')}</div>`;
+        return;
+    }
+
+    myPaymentMethods.qrs.forEach((qr, index) => {
+        const card = document.createElement('div');
+        card.className = 'qr-thumb-card';
+        card.innerHTML = `
+            <div class="qr-thumb-img-wrapper" data-index="${index}" title="${escapeHtml(qr.bank_label)} - ${t('view_qr')}">
+                <img src="${qr.image_data}" alt="${escapeHtml(qr.bank_label)}">
+            </div>
+            <span class="qr-thumb-label" title="${escapeHtml(qr.bank_label)}">${escapeHtml(qr.bank_label)}</span>
+            <button type="button" class="qr-thumb-delete btn-delete-qr" data-index="${index}" title="Delete">&times;</button>
+        `;
+        myBankQrsList.appendChild(card);
+    });
+
+    myBankQrsList.querySelectorAll('.btn-delete-qr').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const idx = parseInt(btn.getAttribute('data-index'), 10);
+            if (!isNaN(idx) && idx >= 0 && idx < myPaymentMethods.qrs.length) {
+                myPaymentMethods.qrs.splice(idx, 1);
+                saveMyPaymentMethodsLocally();
+                renderMyBankQrs();
+                showToast(t('toast_qr_removed'), 'info');
+            }
+        });
+    });
+
+    myBankQrsList.querySelectorAll('.qr-thumb-img-wrapper').forEach(wrapper => {
+        wrapper.addEventListener('click', () => {
+            const idx = parseInt(wrapper.getAttribute('data-index'), 10);
+            const qr = myPaymentMethods.qrs[idx];
+            if (qr) {
+                openQrLightbox(qr.bank_label, qr.image_data);
+            }
+        });
+    });
+}
+
+function openQrLightbox(bankTitle, imageSrc) {
+    if (!qrLightboxModal) return;
+    if (lightboxBankTitle) lightboxBankTitle.textContent = bankTitle || 'Bank QR';
+    if (lightboxQrImg) lightboxQrImg.src = imageSrc || '';
+    qrLightboxModal.style.display = 'flex';
+}
+
+function closeQrLightbox() {
+    if (qrLightboxModal) qrLightboxModal.style.display = 'none';
+}
+
+if (btnCloseQrLightbox) btnCloseQrLightbox.addEventListener('click', closeQrLightbox);
+if (btnDismissQrLightbox) btnDismissQrLightbox.addEventListener('click', closeQrLightbox);
+if (qrLightboxModal) {
+    qrLightboxModal.addEventListener('click', (e) => {
+        if (e.target === qrLightboxModal) closeQrLightbox();
+    });
+}
+
+// Add Bank Account Event
+if (btnAddBankAccount) {
+    btnAddBankAccount.addEventListener('click', () => {
+        const bankName = inputNewBankName ? inputNewBankName.value.trim() : '';
+        const accNum = inputNewBankAcc ? inputNewBankAcc.value.trim() : '';
+        const holderName = inputNewBankHolder ? inputNewBankHolder.value.trim() : '';
+
+        if (!bankName || !accNum) {
+            showToast(t('toast_enter_bank'), 'error');
+            return;
+        }
+
+        if (!myPaymentMethods.bank_accounts) myPaymentMethods.bank_accounts = [];
+        myPaymentMethods.bank_accounts.push({
+            id: 'acc_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+            bank_name: bankName,
+            account_number: accNum,
+            holder_name: holderName
+        });
+
+        if (inputNewBankName) inputNewBankName.value = '';
+        if (inputNewBankAcc) inputNewBankAcc.value = '';
+        if (inputNewBankHolder) inputNewBankHolder.value = '';
+
+        saveMyPaymentMethodsLocally();
+        renderMyBankAccounts();
+        showToast(t('toast_acc_added'), 'success');
+    });
+}
+
+// Add Bank QR Events
+if (inputNewQrFile) {
+    inputNewQrFile.addEventListener('change', async (e) => {
+        const file = e.target.files && e.target.files[0];
+        if (!file) return;
+
+        try {
+            const compressed = await compressQrImage(file);
+            pendingQrBase64 = compressed;
+            if (qrPreviewImg) qrPreviewImg.src = compressed;
+            if (qrPreviewBox) qrPreviewBox.style.display = 'inline-block';
+            if (qrFileChosenText) qrFileChosenText.textContent = file.name.length > 15 ? file.name.substring(0, 12) + '...' : file.name;
+        } catch (err) {
+            console.error('QR image process error:', err);
+            showToast('Failed to load QR image. Please try another image.', 'error');
+        }
+    });
+}
+
+if (btnRemoveQrPreview) {
+    btnRemoveQrPreview.addEventListener('click', () => {
+        pendingQrBase64 = null;
+        if (inputNewQrFile) inputNewQrFile.value = '';
+        if (qrPreviewImg) qrPreviewImg.src = '';
+        if (qrPreviewBox) qrPreviewBox.style.display = 'none';
+        if (qrFileChosenText) qrFileChosenText.textContent = t('choose_qr_image');
+    });
+}
+
+if (btnAddBankQr) {
+    btnAddBankQr.addEventListener('click', () => {
+        const bankLabel = inputNewQrBank ? inputNewQrBank.value.trim() : '';
+        if (!bankLabel) {
+            showToast(t('toast_enter_qr_bank'), 'error');
+            return;
+        }
+        if (!pendingQrBase64) {
+            showToast(t('toast_select_qr_file'), 'error');
+            return;
+        }
+
+        if (!myPaymentMethods.qrs) myPaymentMethods.qrs = [];
+        myPaymentMethods.qrs.push({
+            id: 'qr_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+            bank_label: bankLabel,
+            image_data: pendingQrBase64
+        });
+
+        if (inputNewQrBank) inputNewQrBank.value = '';
+        if (inputNewQrFile) inputNewQrFile.value = '';
+        if (qrPreviewImg) qrPreviewImg.src = '';
+        if (qrPreviewBox) qrPreviewBox.style.display = 'none';
+        if (qrFileChosenText) qrFileChosenText.textContent = t('choose_qr_image');
+        pendingQrBase64 = null;
+
+        saveMyPaymentMethodsLocally();
+        renderMyBankQrs();
+        showToast(t('toast_qr_added'), 'success');
+    });
 }
 
 // -------------------------------------------------------------
@@ -2182,6 +2554,95 @@ function openProfileModal(personId) {
                     </div>
                 </div>
             `;
+        }
+    }
+
+    // SECTION C: Payment Methods (Bank Accounts & QR Codes)
+    if (profilePaymentSection && profileBankAccountsContainer && profileBankQrsContainer) {
+        let personPaymentMethods = null;
+
+        if (person.isCurrentUser) {
+            loadMyPaymentMethods();
+            personPaymentMethods = myPaymentMethods;
+        } else {
+            const cachedUser = (person.userId && cloudUsersCache.get(person.userId)) ||
+                               (person.email && cloudUsersCache.get(person.email.toLowerCase().trim()));
+            if (cachedUser && cachedUser.payment_methods) {
+                personPaymentMethods = cachedUser.payment_methods;
+            } else if (person.payment_methods) {
+                personPaymentMethods = person.payment_methods;
+            }
+        }
+
+        const accounts = (personPaymentMethods && Array.isArray(personPaymentMethods.bank_accounts)) ? personPaymentMethods.bank_accounts : [];
+        const qrs = (personPaymentMethods && Array.isArray(personPaymentMethods.qrs)) ? personPaymentMethods.qrs : [];
+
+        if (accounts.length > 0 || qrs.length > 0) {
+            profilePaymentSection.style.display = 'block';
+
+            if (accounts.length > 0) {
+                profileBankAccountsContainer.style.display = 'flex';
+                profileBankAccountsContainer.innerHTML = accounts.map(acc => `
+                    <div class="profile-bank-row">
+                        <div>
+                            <span class="profile-bank-badge">${escapeHtml(acc.bank_name)}</span>
+                            <div class="profile-bank-acc-text">${escapeHtml(acc.account_number)}</div>
+                            ${acc.holder_name ? `<div style="font-size: 11px; color: var(--text-muted);">${escapeHtml(acc.holder_name)}</div>` : ''}
+                        </div>
+                        <button type="button" class="btn-copy-acc" data-acc="${escapeHtml(acc.account_number)}" title="Copy Account Number">
+                            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+                            <span>${t('btn_copy')}</span>
+                        </button>
+                    </div>
+                `).join('');
+
+                profileBankAccountsContainer.querySelectorAll('.btn-copy-acc').forEach(btn => {
+                    btn.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        const num = btn.getAttribute('data-acc');
+                        if (num) {
+                            if (navigator.clipboard && navigator.clipboard.writeText) {
+                                navigator.clipboard.writeText(num).then(() => {
+                                    showToast(t('acc_copied'), 'success');
+                                }).catch(() => fallbackCopy(num));
+                            } else {
+                                fallbackCopy(num);
+                            }
+                        }
+                    });
+                });
+            } else {
+                profileBankAccountsContainer.style.display = 'none';
+                profileBankAccountsContainer.innerHTML = '';
+            }
+
+            if (qrs.length > 0) {
+                profileBankQrsContainer.style.display = 'grid';
+                profileBankQrsContainer.innerHTML = qrs.map((qr, qIdx) => `
+                    <div class="profile-qr-card" data-qidx="${qIdx}" title="${escapeHtml(qr.bank_label)} - ${t('view_qr')}">
+                        <div class="profile-qr-thumb">
+                            <img src="${qr.image_data}" alt="${escapeHtml(qr.bank_label)}">
+                        </div>
+                        <div class="profile-qr-caption">${escapeHtml(qr.bank_label)}</div>
+                        <div class="profile-qr-hint">${t('view_qr')} 🔍</div>
+                    </div>
+                `).join('');
+
+                profileBankQrsContainer.querySelectorAll('.profile-qr-card').forEach(card => {
+                    card.addEventListener('click', () => {
+                        const qIdx = parseInt(card.getAttribute('data-qidx'), 10);
+                        const targetQr = qrs[qIdx];
+                        if (targetQr) {
+                            openQrLightbox(targetQr.bank_label, targetQr.image_data);
+                        }
+                    });
+                });
+            } else {
+                profileBankQrsContainer.style.display = 'none';
+                profileBankQrsContainer.innerHTML = '';
+            }
+        } else {
+            profilePaymentSection.style.display = 'none';
         }
     }
 
@@ -2301,6 +2762,15 @@ function generateReceiptText() {
         } else {
             text += `${t('receipt_all_settled')}\n`;
         }
+    }
+
+    loadMyPaymentMethods();
+    if (myPaymentMethods.bank_accounts && myPaymentMethods.bank_accounts.length > 0) {
+        text += `\n━━━━━━━━━━━━━━━━━━━━━\n`;
+        text += `💳 *${t('bank_transfer_info')}*\n`;
+        myPaymentMethods.bank_accounts.forEach(acc => {
+            text += `• *${acc.bank_name}*: ${acc.account_number}${acc.holder_name ? ` (${acc.holder_name})` : ''}\n`;
+        });
     }
 
     text += `\n_${t('receipt_footer')}_`;
@@ -2525,6 +2995,12 @@ async function checkUserPhoneStatus(user) {
             currentUserProfile = data;
             cloudUsersCache.set(data.id, data);
             if (data.email) cloudUsersCache.set(data.email.toLowerCase().trim(), data);
+            loadMyPaymentMethods();
+
+            const currentIdx = state.people.findIndex(p => p.isCurrentUser);
+            if (currentIdx !== -1 && myPaymentMethods) {
+                state.people[currentIdx].payment_methods = myPaymentMethods;
+            }
 
             const phone = data.phone_number || (user.user_metadata && user.user_metadata.phone_number);
             if (!phone || !phone.trim()) {
@@ -2541,7 +3017,27 @@ async function checkUserPhoneStatus(user) {
 }
 
 function openMyProfileModal() {
-    if (!currentUser) return;
+    loadMyPaymentMethods();
+    renderMyBankAccounts();
+    renderMyBankQrs();
+
+    // Reset pending QR inputs
+    if (inputNewQrBank) inputNewQrBank.value = '';
+    if (inputNewQrFile) inputNewQrFile.value = '';
+    if (qrPreviewImg) qrPreviewImg.src = '';
+    if (qrPreviewBox) qrPreviewBox.style.display = 'none';
+    if (qrFileChosenText) qrFileChosenText.textContent = t('choose_qr_image');
+    pendingQrBase64 = null;
+
+    if (!currentUser) {
+        if (myProfileEmail) myProfileEmail.textContent = 'Guest Mode';
+        const currentShopper = state.people.find(p => p.isCurrentUser);
+        if (inputEditDisplayName) inputEditDisplayName.value = currentShopper ? currentShopper.name : 'You';
+        if (inputEditPhone) inputEditPhone.value = '';
+        if (myProfileModal) myProfileModal.style.display = 'flex';
+        return;
+    }
+
     if (myProfileEmail) myProfileEmail.textContent = currentUser.email || '';
     const currentName = (currentUserProfile && currentUserProfile.display_name) ||
                         (currentUser.user_metadata && currentUser.user_metadata.display_name) ||
@@ -2587,7 +3083,25 @@ if (myProfileModal) {
 if (formUpdateProfile) {
     formUpdateProfile.addEventListener('submit', async (e) => {
         e.preventDefault();
-        if (!currentUser || !supabaseClient) return;
+
+        // If guest mode (no currentUser or supabase), save payment methods & display name locally
+        if (!currentUser || !supabaseClient) {
+            saveMyPaymentMethodsLocally();
+            const newName = inputEditDisplayName ? inputEditDisplayName.value.trim() : '';
+            if (newName) {
+                const currentIdx = state.people.findIndex(p => p.isCurrentUser);
+                if (currentIdx !== -1) {
+                    state.people[currentIdx].name = newName;
+                    state.people[currentIdx].payment_methods = myPaymentMethods;
+                    saveToStorage();
+                    renderPeopleUI();
+                    recalculateAndRender();
+                }
+            }
+            showToast(t('toast_profile_updated'), 'success');
+            closeMyProfileModal();
+            return;
+        }
 
         const newName = inputEditDisplayName ? inputEditDisplayName.value.trim() : '';
         const newPhone = inputEditPhone ? inputEditPhone.value.trim() : '';
@@ -2619,12 +3133,15 @@ if (formUpdateProfile) {
         if (submitBtn) submitBtn.disabled = true;
 
         try {
+            saveMyPaymentMethodsLocally();
+
             // 1. Update public.users table
             const { error: dbErr } = await supabaseClient
                 .from('users')
                 .update({
                     display_name: newName,
-                    phone_number: newPhone
+                    phone_number: newPhone,
+                    payment_methods: myPaymentMethods
                 })
                 .eq('id', currentUser.id);
 
@@ -2634,7 +3151,8 @@ if (formUpdateProfile) {
             const authUpdates = {
                 data: {
                     display_name: newName,
-                    phone_number: newPhone
+                    phone_number: newPhone,
+                    payment_methods: myPaymentMethods
                 }
             };
             if (newPassword) {
@@ -2652,6 +3170,7 @@ if (formUpdateProfile) {
             if (!currentUserProfile) currentUserProfile = {};
             currentUserProfile.display_name = newName;
             currentUserProfile.phone_number = newPhone;
+            currentUserProfile.payment_methods = myPaymentMethods;
             cloudUsersCache.set(currentUser.id, currentUserProfile);
 
             if (headerUserName) headerUserName.textContent = newName;
@@ -2664,6 +3183,7 @@ if (formUpdateProfile) {
             const currentIdx = state.people.findIndex(p => p.isCurrentUser);
             if (currentIdx !== -1) {
                 state.people[currentIdx].name = newName;
+                state.people[currentIdx].payment_methods = myPaymentMethods;
                 saveToStorage();
                 renderPeopleUI();
                 recalculateAndRender();
@@ -3650,7 +4170,7 @@ async function loadCloudData() {
         if (userIdsToFetch.size > 0) {
             const { data: usersData } = await supabaseClient
                 .from('users')
-                .select('id, email, display_name, phone_number')
+                .select('id, email, display_name, phone_number, payment_methods')
                 .in('id', Array.from(userIdsToFetch));
             if (usersData) {
                 usersData.forEach(u => {
@@ -4132,7 +4652,7 @@ async function loadCloudFriends() {
         if (userIds.size > 0) {
             const { data: users, error: uErr } = await supabaseClient
                 .from('users')
-                .select('id, email, display_name, phone_number')
+                .select('id, email, display_name, phone_number, payment_methods')
                 .in('id', Array.from(userIds));
 
             if (!uErr && users) {
@@ -4536,7 +5056,7 @@ async function loadCloudGroups() {
         // 3. Fetch all members for these groups
         const { data: allMembers, error: memErr } = await supabaseClient
             .from('group_members')
-            .select('group_id, user_id, role, users(id, email, display_name, phone_number)')
+            .select('group_id, user_id, role, users(id, email, display_name, phone_number, payment_methods)')
             .in('group_id', groupIds);
 
         if (memErr) throw memErr;
