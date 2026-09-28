@@ -1724,93 +1724,102 @@ body:not(.dark-mode) ::-webkit-scrollbar-thumb {
         padding: 10px 8px;
     }
 
-    /* Compact Mobile Header */
+    /* Clean Single-Row Mobile Header */
     .app-header {
-        padding: 12px 14px;
-        flex-direction: column;
-        align-items: stretch;
-        gap: 10px;
+        padding: 10px 14px;
         margin-bottom: 14px;
+        flex-direction: row !important;
+        justify-content: space-between !important;
+        align-items: center !important;
+        flex-wrap: nowrap !important;
+        gap: 8px !important;
     }
 
     .brand {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        width: 100%;
+        display: flex !important;
+        align-items: center !important;
+        gap: 8px !important;
+        width: auto !important;
+        min-width: 0 !important;
+        flex: 1 !important;
     }
 
     .brand-icon {
-        width: 36px;
-        height: 36px;
-        border-radius: 10px;
+        width: 34px !important;
+        height: 34px !important;
+        border-radius: 9px !important;
+        flex-shrink: 0 !important;
     }
 
     .brand h1 {
-        font-size: 17px;
+        font-size: 16px !important;
+        white-space: nowrap !important;
+        overflow: hidden !important;
+        text-overflow: ellipsis !important;
+        margin: 0 !important;
     }
 
     .brand-sub {
-        display: none;
+        display: none !important;
     }
 
     .header-actions {
-        width: 100%;
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
+        width: auto !important;
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        gap: 8px !important;
+        flex-wrap: nowrap !important;
+        flex-shrink: 0 !important;
     }
 
     .user-header-profile {
-        width: 100%;
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: 8px;
+        width: auto !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 0 !important;
     }
 
     .user-pill {
-        flex: 1;
-        min-width: 0;
-        padding: 5px 10px;
+        flex: none !important;
+        width: auto !important;
+        max-width: 120px !important;
+        padding: 5px 9px !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 6px !important;
+        cursor: pointer;
+        background: var(--glass-input);
+        border: 1px solid var(--glass-border-subtle);
+        border-radius: 12px !important;
+    }
+
+    .user-avatar-small {
+        width: 22px !important;
+        height: 22px !important;
+        font-size: 11px !important;
+        border-radius: 6px !important;
     }
 
     .user-name {
-        font-size: 13px;
+        font-size: 12px !important;
+        font-weight: 700;
+        max-width: 75px;
         overflow: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
+        line-height: 1.2;
     }
 
     .user-email-text {
-        display: none;
+        display: none !important;
     }
 
-    #btn-logout {
-        padding: 6px 12px;
-        font-size: 12px;
-        flex-shrink: 0;
-    }
-
-    .header-quick-actions {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
-        gap: 6px;
-        width: 100%;
-    }
-
-    .header-quick-actions .glass-btn {
-        width: 100%;
-        padding: 8px 6px;
-        font-size: 12px;
-        justify-content: center;
-        gap: 5px;
-        white-space: nowrap;
-    }
-
-    .header-quick-actions .glass-btn svg {
-        width: 13px;
-        height: 13px;
+    .icon-only-btn {
+        width: 34px !important;
+        height: 34px !important;
+        border-radius: 10px !important;
+        flex-shrink: 0 !important;
     }
 
     /* Scrollable Tab Navigation */
@@ -2762,27 +2771,40 @@ body:not(.dark-mode) ::-webkit-scrollbar-thumb {
 }
 
 @media (max-width: 768px) {
-    :root {
-        --glass-blur: blur(8px);
-    }
-
-    /* Disable expensive fixed blur animation on mobile to eliminate scroll lag & checkerboard redraws */
+    /* 1. Hide heavy fixed blur orbs on mobile to eliminate GPU tile eviction & checkerboard redraws */
     .glow-orb {
-        animation: none !important;
-        filter: blur(25px) !important;
-        opacity: 0.35 !important;
-        will-change: auto !important;
+        display: none !important;
     }
 
-    .glass-panel {
-        background: rgba(15, 23, 42, 0.78) !important;
-        backdrop-filter: blur(8px) !important;
-        -webkit-backdrop-filter: blur(8px) !important;
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25) !important;
+    /* 2. Paint ambient glowing orbs directly on body background - scrolls natively with 0% GPU overhead */
+    body {
+        background: radial-gradient(circle at 10% 0%, rgba(59, 130, 246, 0.18) 0%, transparent 45%),
+                    radial-gradient(circle at 95% 35%, rgba(139, 92, 246, 0.16) 0%, transparent 45%),
+                    radial-gradient(circle at 5% 75%, rgba(6, 182, 212, 0.13) 0%, transparent 45%),
+                    var(--bg-page) !important;
+        background-attachment: scroll !important;
     }
 
-    body:not(.dark-mode) .glass-panel {
-        background: rgba(255, 255, 255, 0.9) !important;
+    /* 3. Turn off backdrop-filter on mobile:
+       Chromium on Android (Brave / Chrome) struggles with multi-layer backdrop-filter during scrolling,
+       which drops tiles and causes content to appear to 'reload' or flash while scrolling.
+       Rich semi-translucent glass styling provides the identical visual aesthetic with smooth 120 FPS! */
+    .glass-panel, .app-nav-bar, .stat-glass-card {
+        background: rgba(15, 23, 42, 0.92) !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        border: 1px solid rgba(255, 255, 255, 0.08) !important;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35) !important;
+    }
+
+    body:not(.dark-mode) .glass-panel,
+    body:not(.dark-mode) .app-nav-bar,
+    body:not(.dark-mode) .stat-glass-card {
+        background: rgba(255, 255, 255, 0.95) !important;
+        backdrop-filter: none !important;
+        -webkit-backdrop-filter: none !important;
+        border: 1px solid rgba(0, 0, 0, 0.08) !important;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06) !important;
     }
 
     .dashboard-stats-grid {
