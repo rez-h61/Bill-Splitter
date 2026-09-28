@@ -301,7 +301,21 @@ const i18n = {
         toast_qr_removed: "QR code removed.",
         no_bank_accounts: "No bank accounts added yet.",
         no_bank_qrs: "No QR codes uploaded yet.",
-        bank_transfer_info: "Bank Transfer / DuitNow:"
+        bank_transfer_info: "Bank Transfer / DuitNow:",
+        pwa_install: "Install App",
+        pwa_install_success: "App installed successfully! Enjoy quick access.",
+        pwa_offline_badge: "Offline Mode — Calculations & data saved locally",
+        pwa_online_badge: "Back Online — Network connected!",
+        pwa_update_available: "Update Available",
+        pwa_update_desc: "A new version of Bill Splitter is ready.",
+        pwa_update_btn: "Update Now",
+        pwa_ios_title: "Install on iOS / Safari",
+        pwa_ios_sub: "Add Bill Splitter to your Home Screen",
+        pwa_ios_step1: "Tap the Share button",
+        pwa_ios_step1_sub: "in Safari's navigation bar.",
+        pwa_ios_step2: "Scroll down and tap 'Add to Home Screen'",
+        pwa_ios_step3: "Tap Add in the top right corner. Enjoy instant offline access!",
+        pwa_got_it: "Got It!"
     },
     ms: {
         title: "Split Bil",
@@ -583,7 +597,21 @@ const i18n = {
         toast_qr_removed: "Kod QR dipadam.",
         no_bank_accounts: "Belum ada akaun bank ditambah.",
         no_bank_qrs: "Belum ada kod QR dimuat naik.",
-        bank_transfer_info: "Pindahan Bank / DuitNow:"
+        bank_transfer_info: "Pindahan Bank / DuitNow:",
+        pwa_install: "Pasang Aplikasi",
+        pwa_install_success: "Aplikasi berjaya dipasang! Boleh dibuka terus dari skrin utama.",
+        pwa_offline_badge: "Mod Luar Talian — Pengiraan & data disimpan secara setempat",
+        pwa_online_badge: "Kembali Dalam Talian — Rangkaian disambung semula!",
+        pwa_update_available: "Kemas Kini Tersedia",
+        pwa_update_desc: "Versi terkini Bill Splitter sedia digunakan.",
+        pwa_update_btn: "Kemas Kini",
+        pwa_ios_title: "Pasang di iOS / Safari",
+        pwa_ios_sub: "Tambah Bill Splitter ke Skrin Utama",
+        pwa_ios_step1: "Tekan butang Kongsi (Share)",
+        pwa_ios_step1_sub: "pada bar navigasi Safari.",
+        pwa_ios_step2: "Tatal ke bawah dan tekan 'Tambah ke Skrin Utama'",
+        pwa_ios_step3: "Tekan Tambah (Add) di bahagian atas kanan. Boleh digunakan secara luar talian!",
+        pwa_got_it: "Faham!"
     }
 };
 
@@ -1000,6 +1028,10 @@ function applyTheme(isDark) {
         document.body.classList.remove('dark-mode');
         if (themeIcon) themeIcon.textContent = '🌙';
         if (themeText) themeText.textContent = t('theme_dark');
+    }
+    const metaThemeColor = document.getElementById('meta-theme-color');
+    if (metaThemeColor) {
+        metaThemeColor.setAttribute('content', isDark ? '#070a12' : '#f1f5f9');
     }
 }
 
@@ -5496,6 +5528,176 @@ if (btnApplyGroupLoad && selectGroupLoad) {
 }
 
 // -------------------------------------------------------------
+// PROGRESSIVE WEB APP (PWA) INITIALIZATION & CONTROLLER
+// -------------------------------------------------------------
+let deferredInstallPrompt = null;
+let waitingWorker = null;
+
+function initPWA() {
+    const btnInstallPwa = document.getElementById('btn-install-pwa');
+    const offlineBar = document.getElementById('offline-bar');
+    const offlineText = document.getElementById('offline-text');
+    const pwaUpdateBar = document.getElementById('pwa-update-bar');
+    const btnPwaUpdate = document.getElementById('btn-pwa-update');
+    const btnPwaDismiss = document.getElementById('btn-pwa-dismiss');
+    const iosInstallModal = document.getElementById('ios-install-modal');
+    const btnCloseIosInstall = document.getElementById('btn-close-ios-install');
+    const btnDismissIosInstall = document.getElementById('btn-dismiss-ios-install');
+
+    // 1. Service Worker Registration & Lifecycle
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('./sw.js')
+                .then((registration) => {
+                    // Check if an updated worker is waiting
+                    if (registration.waiting && navigator.serviceWorker.controller) {
+                        waitingWorker = registration.waiting;
+                        if (pwaUpdateBar) pwaUpdateBar.style.display = 'block';
+                    }
+
+                    // Listen for new service worker installation
+                    registration.addEventListener('updatefound', () => {
+                        const newWorker = registration.installing;
+                        if (newWorker) {
+                            newWorker.addEventListener('statechange', () => {
+                                if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                                    waitingWorker = newWorker;
+                                    if (pwaUpdateBar) pwaUpdateBar.style.display = 'block';
+                                }
+                            });
+                        }
+                    });
+                })
+                .catch((err) => {
+                    console.warn('[PWA] Service Worker registration failed:', err);
+                });
+
+            // Reload page once new service worker activates
+            let refreshing = false;
+            navigator.serviceWorker.addEventListener('controllerchange', () => {
+                if (!refreshing) {
+                    refreshing = true;
+                    window.location.reload();
+                }
+            });
+        });
+    }
+
+    // 2. Service Worker Update Trigger
+    if (btnPwaUpdate) {
+        btnPwaUpdate.addEventListener('click', () => {
+            if (waitingWorker) {
+                waitingWorker.postMessage({ type: 'SKIP_WAITING' });
+            }
+            if (pwaUpdateBar) pwaUpdateBar.style.display = 'none';
+        });
+    }
+
+    if (btnPwaDismiss) {
+        btnPwaDismiss.addEventListener('click', () => {
+            if (pwaUpdateBar) pwaUpdateBar.style.display = 'none';
+        });
+    }
+
+    // 3. Native App Install Prompt (Chrome / Edge / Android)
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredInstallPrompt = e;
+        if (btnInstallPwa) {
+            btnInstallPwa.style.display = 'inline-flex';
+        }
+    });
+
+    // 4. iOS Safari Add to Home Screen Detection
+    const userAgent = window.navigator.userAgent.toLowerCase();
+    const isIos = /iphone|ipad|ipod/.test(userAgent);
+    const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
+
+    if (isIos && !isStandalone) {
+        if (btnInstallPwa) {
+            btnInstallPwa.style.display = 'inline-flex';
+        }
+    }
+
+    // 5. Install Button Click Handler
+    if (btnInstallPwa) {
+        btnInstallPwa.addEventListener('click', async () => {
+            if (deferredInstallPrompt) {
+                deferredInstallPrompt.prompt();
+                const { outcome } = await deferredInstallPrompt.userChoice;
+                if (outcome === 'accepted') {
+                    btnInstallPwa.style.display = 'none';
+                }
+                deferredInstallPrompt = null;
+            } else if (isIos) {
+                if (iosInstallModal) iosInstallModal.style.display = 'flex';
+            } else {
+                showToast(t('pwa_install_success') || 'App is already installed or supported natively.', 'info');
+            }
+        });
+    }
+
+    // 6. Handle App Installed Event
+    window.addEventListener('appinstalled', () => {
+        if (btnInstallPwa) btnInstallPwa.style.display = 'none';
+        deferredInstallPrompt = null;
+        showToast(t('pwa_install_success'), 'success');
+    });
+
+    // 7. iOS Modal Dismiss Handlers
+    if (btnCloseIosInstall && iosInstallModal) {
+        btnCloseIosInstall.addEventListener('click', () => {
+            iosInstallModal.style.display = 'none';
+        });
+    }
+    if (btnDismissIosInstall && iosInstallModal) {
+        btnDismissIosInstall.addEventListener('click', () => {
+            iosInstallModal.style.display = 'none';
+        });
+    }
+    if (iosInstallModal) {
+        iosInstallModal.addEventListener('click', (e) => {
+            if (e.target === iosInstallModal) {
+                iosInstallModal.style.display = 'none';
+            }
+        });
+    }
+
+    // 8. Online / Offline State Monitoring
+    let onlineTimer = null;
+    function updateNetworkStatus() {
+        if (!navigator.onLine) {
+            if (offlineBar) {
+                if (onlineTimer) clearTimeout(onlineTimer);
+                offlineBar.classList.remove('online-restored');
+                if (offlineText) offlineText.textContent = t('pwa_offline_badge');
+                offlineBar.style.display = 'flex';
+            }
+        } else {
+            if (offlineBar && offlineBar.style.display !== 'none') {
+                offlineBar.classList.add('online-restored');
+                if (offlineText) offlineText.textContent = t('pwa_online_badge');
+                onlineTimer = setTimeout(() => {
+                    offlineBar.style.display = 'none';
+                    offlineBar.classList.remove('online-restored');
+                }, 3200);
+            }
+            // Auto sync with cloud when back online if authenticated
+            if (currentUser && typeof loadCloudBills === 'function' && typeof loadCloudDebts === 'function') {
+                loadCloudBills();
+                loadCloudDebts();
+            }
+        }
+    }
+
+    window.addEventListener('online', updateNetworkStatus);
+    window.addEventListener('offline', updateNetworkStatus);
+    if (!navigator.onLine) {
+        updateNetworkStatus();
+    }
+}
+
+// -------------------------------------------------------------
 // APP INITIALIZATION
 // -------------------------------------------------------------
 async function initApp() {
@@ -5512,6 +5714,9 @@ async function initApp() {
     updateLanguageUI();
     renderPeopleUI();
     recalculateAndRender();
+
+    // Initialize PWA Service Worker & Install Support
+    initPWA();
 
     // Initialize Supabase Full-Stack Authentication & Sync
     await initAuth();
