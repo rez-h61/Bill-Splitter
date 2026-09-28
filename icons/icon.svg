@@ -1,0 +1,89 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="bgGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0a0f1d"/>
+      <stop offset="50%" stop-color="#070a12"/>
+      <stop offset="100%" stop-color="#050811"/>
+    </linearGradient>
+
+    <!-- Glass Surface Gradient -->
+    <linearGradient id="glassGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b" stop-opacity="0.85"/>
+      <stop offset="100%" stop-color="#0f172a" stop-opacity="0.95"/>
+    </linearGradient>
+
+    <!-- Accent Gradient -->
+    <linearGradient id="accentGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8"/>
+      <stop offset="50%" stop-color="#2563eb"/>
+      <stop offset="100%" stop-color="#7c3aed"/>
+    </linearGradient>
+
+    <!-- Emerald / Success Gradient -->
+    <linearGradient id="emeraldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#34d399"/>
+      <stop offset="100%" stop-color="#059669"/>
+    </linearGradient>
+
+    <!-- Glow Filter -->
+    <filter id="glow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="24" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+
+    <radialGradient id="ambientOrb1" cx="30%" cy="20%" r="50%">
+      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.45"/>
+      <stop offset="100%" stop-color="#38bdf8" stop-opacity="0"/>
+    </radialGradient>
+
+    <radialGradient id="ambientOrb2" cx="70%" cy="80%" r="50%">
+      <stop offset="0%" stop-color="#8b5cf6" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#8b5cf6" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Receipt Shadow -->
+    <filter id="cardShadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="16" stdDeviation="20" flood-color="#000000" flood-opacity="0.6"/>
+    </filter>
+  </defs>
+
+  <!-- Background Canvas -->
+  <rect width="512" height="512" rx="112" fill="url(#bgGradient)"/>
+
+  <!-- Ambient Glow Orbs -->
+  <circle cx="150" cy="130" r="140" fill="url(#ambientOrb1)"/>
+  <circle cx="360" cy="380" r="160" fill="url(#ambientOrb2)"/>
+
+  <!-- Subtle Outer Border Rim -->
+  <rect x="12" y="12" width="488" height="488" rx="102" fill="none" stroke="rgba(255, 255, 255, 0.08)" stroke-width="2"/>
+
+  <!-- Center Card (Glass Backplate) -->
+  <rect x="96" y="86" width="320" height="340" rx="36" fill="url(#glassGradient)" stroke="rgba(255, 255, 255, 0.14)" stroke-width="2.5" filter="url(#cardShadow)"/>
+
+  <!-- Shopping Bag / Bill Silhouette -->
+  <!-- Top Handles / Flap -->
+  <path d="M168 184 L196 116 L316 116 L344 184 Z" fill="none" stroke="url(#accentGradient)" stroke-width="12" stroke-linecap="round" stroke-linejoin="round"/>
+  
+  <!-- Bag Body -->
+  <rect x="156" y="184" width="200" height="196" rx="20" fill="rgba(15, 23, 42, 0.65)" stroke="url(#accentGradient)" stroke-width="12" stroke-linejoin="round"/>
+
+  <!-- Bag Handle Arc -->
+  <path d="M216 230 C216 264 296 264 296 230" fill="none" stroke="url(#accentGradient)" stroke-width="12" stroke-linecap="round"/>
+
+  <!-- Split Line / Slash (Symbolizing Bill Splitting) -->
+  <line x1="140" y1="350" x2="372" y2="210" stroke="#38bdf8" stroke-width="9" stroke-linecap="round" stroke-dasharray="14 10" filter="url(#glow)"/>
+
+  <!-- Split People Badges / Coins -->
+  <!-- User 1 (Left) -->
+  <circle cx="160" cy="370" r="28" fill="url(#accentGradient)" stroke="#ffffff" stroke-width="3"/>
+  <path d="M153 364 A7 7 0 1 1 167 364 A7 7 0 1 1 153 364 Z M144 384 C144 376 150 374 160 374 C170 374 176 376 176 384" fill="#ffffff"/>
+
+  <!-- User 2 (Right) -->
+  <circle cx="352" cy="190" r="28" fill="url(#emeraldGradient)" stroke="#ffffff" stroke-width="3"/>
+  <path d="M345 184 A7 7 0 1 1 359 184 A7 7 0 1 1 345 184 Z M336 204 C336 196 342 194 352 194 C362 194 368 196 368 204" fill="#ffffff"/>
+
+  <!-- Sparkle Accent in Center-Right -->
+  <path d="M324 330 Q334 330 334 320 Q334 330 344 330 Q334 330 334 340 Q334 330 324 330 Z" fill="#38bdf8" filter="url(#glow)"/>
+  <circle cx="204" cy="300" r="4" fill="#67e8f9"/>
+</svg>
