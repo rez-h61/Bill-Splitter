@@ -82,6 +82,11 @@ body:not(.dark-mode) {
     padding: 0;
 }
 
+html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+}
+
 body {
     font-family: var(--font-main);
     background-color: var(--bg-page);
@@ -92,6 +97,7 @@ body {
     overflow-x: hidden;
     line-height: 1.5;
     -webkit-font-smoothing: antialiased;
+    -webkit-overflow-scrolling: touch;
     transition: background-color 0.4s ease, color 0.4s ease;
 }
 
@@ -100,15 +106,21 @@ body {
     font-variant-numeric: tabular-nums;
 }
 
-/* Ambient Animated Glowing Orbs */
+/* Ambient Glowing Orbs (Hardware Accelerated Layer) */
 .glow-orb {
     position: fixed;
     border-radius: 50%;
-    filter: blur(80px);
+    filter: blur(50px);
     z-index: -1;
     pointer-events: none;
-    opacity: 0.55;
-    animation: floatOrbs 20s infinite alternate ease-in-out;
+    opacity: 0.45;
+    transform: translate3d(0, 0, 0);
+    -webkit-transform: translate3d(0, 0, 0);
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    contain: strict;
+    will-change: transform;
+    animation: floatOrbs 25s infinite alternate ease-in-out;
 }
 
 .orb-1 {
@@ -2750,6 +2762,29 @@ body:not(.dark-mode) ::-webkit-scrollbar-thumb {
 }
 
 @media (max-width: 768px) {
+    :root {
+        --glass-blur: blur(8px);
+    }
+
+    /* Disable expensive fixed blur animation on mobile to eliminate scroll lag & checkerboard redraws */
+    .glow-orb {
+        animation: none !important;
+        filter: blur(25px) !important;
+        opacity: 0.35 !important;
+        will-change: auto !important;
+    }
+
+    .glass-panel {
+        background: rgba(15, 23, 42, 0.78) !important;
+        backdrop-filter: blur(8px) !important;
+        -webkit-backdrop-filter: blur(8px) !important;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.25) !important;
+    }
+
+    body:not(.dark-mode) .glass-panel {
+        background: rgba(255, 255, 255, 0.9) !important;
+    }
+
     .dashboard-stats-grid {
         grid-template-columns: 1fr;
     }
